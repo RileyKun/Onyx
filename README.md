@@ -1,2 +1,2 @@
-# RPM
-Redline Package Manager, an In Engine alternative to the VRChat Creator Companion
+# Redline Package Manager  
+Good things are coming  
