@@ -1,0 +1,19 @@
+{
+  "name": "dev.runaxr.redline",
+  "version": "1.0.0",
+  "description": "A Unity3D Package Manager for VRChat",
+  "displayName": "Redline Package Maneger",
+  "unity": "2022.3",
+  "author": {
+    "name": "Redline Package Manager",
+    "url": "https://github.com/Redline-Team"
+  },
+  "changelogUrl": "https://github.com/Redline-Team/RPM/releases",
+  "license": "MIT",
+  "type": "Tool",
+  "vpmDependencies": {},
+  "legacyFolders": {
+    "Assets\\Redline": ""
+  },
+  "url": ""
+}
