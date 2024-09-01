@@ -30,11 +30,7 @@
         },
         "Redline": {
             "name": "Redline Package Manager",
-            "file": "RPM.unitypackage"
-        },
-        "RPM Starter Kit": {
-            "name": "RPM Starter Kit",
-            "file": "RPMSK.unitypackage"
+            "file": "Redline.unitypackage"
         },
 
         "Cool Stuff": {
