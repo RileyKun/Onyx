@@ -9,7 +9,7 @@ using UnityEditor;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-namespace dev.runaxr.redline.RedlineUpdater.Editor {
+namespace RedlineUpdater.Editor {
 
   public class RedlineAutomaticUpdateAndInstall: MonoBehaviour {
 

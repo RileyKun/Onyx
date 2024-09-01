@@ -3,13 +3,11 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-//using Amazon.S3.Model;
-
-namespace dev.runaxr.redline.Redline.Scripts.Editor {
+namespace Redline.Scripts.Editor {
   [InitializeOnLoad]
   public class RedlineSettings: EditorWindow {
     private
-    const string Url = "https://github.com/Redline/Redline/";
+    const string Url = "https://github.com/Redline-Team/RPM/";
     private
     const string Url1 = "https://trigon.systems/";
     private

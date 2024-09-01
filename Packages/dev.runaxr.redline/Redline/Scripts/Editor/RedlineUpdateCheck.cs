@@ -1,10 +1,10 @@
 ﻿using System.IO;
 using System.Net.Http;
-using dev.runaxr.redline.RedlineUpdater.Editor;
+using RedlineUpdater.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace dev.runaxr.redline.Redline.Scripts.Editor {
+namespace Redline.Scripts.Editor {
     public class RedlineUpdateCheck: MonoBehaviour {
         [InitializeOnLoad]
         public class Startup {

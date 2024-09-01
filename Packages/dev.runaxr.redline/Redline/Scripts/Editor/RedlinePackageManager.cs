@@ -5,7 +5,7 @@ using System.Net;
 using UnityEditor;
 using UnityEngine;
 
-namespace dev.runaxr.redline.Redline.Scripts.Editor {
+namespace Redline.Scripts.Editor {
   public abstract class RedlineImportManager {
     private
     const string V = "https://c0dera.in/Redline/api/assets/";

@@ -1,11 +1,9 @@
-//https://docs.unity3d.com/ScriptReference/EditorApplication.SaveScene.html
-
 #if UNITY_EDITOR
 using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace dev.runaxr.redline.Redline.Scripts.Editor {
+namespace Redline.Scripts.Editor {
   [InitializeOnLoad]
   public class Sceneautosave: EditorWindow {
     static Sceneautosave() {
@@ -71,7 +69,7 @@ namespace dev.runaxr.redline.Redline.Scripts.Editor {
 
       GUI.backgroundColor = Color.red;
       if (GUILayout.Button("Github")) {
-        Application.OpenURL("https://github.com/TheBlackArms/Redline");
+        Application.OpenURL("https://github.com/Redline-Team/RPM");
       }
 
       GUI.backgroundColor = Color.yellow;
@@ -81,7 +79,7 @@ namespace dev.runaxr.redline.Redline.Scripts.Editor {
 
       GUI.backgroundColor = Color.green;
       if (GUILayout.Button("Support")) {
-        Application.OpenURL("https://github.com/TheBlackArms/Redline/issues");
+        Application.OpenURL("https://github.com/Redline-Team/RPM/issues");
       }
 
       GUI.backgroundColor = Color.white;

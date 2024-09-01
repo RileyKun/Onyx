@@ -1,8 +1,8 @@
-﻿using dev.runaxr.redline.RedlineUpdater.Editor;
+﻿using RedlineUpdater.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace dev.runaxr.redline.Redline.Scripts.Editor {
+namespace Redline.Scripts.Editor {
     public abstract class RedlineHelp {
         [MenuItem("Redline/Help/Github", false, 1049)]
         public static void OpenDiscordLink() {

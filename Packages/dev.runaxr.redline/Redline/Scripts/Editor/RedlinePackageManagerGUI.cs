@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.IO;
-using dev.runaxr.redline.RedlineUpdater.Editor;
+using RedlineUpdater.Editor;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace dev.runaxr.redline.Redline.Scripts.Editor {
+namespace Redline.Scripts.Editor {
   [InitializeOnLoad]
   public class RedlinePackageManager: EditorWindow {
     private

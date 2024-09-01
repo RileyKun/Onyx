@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using static UnityEngine.Color;
 
-namespace dev.runaxr.redline.Redline.Scripts.Editor {
+namespace Redline.Scripts.Editor {
     [InitializeOnLoad]
     public class RedlineInfo: EditorWindow {
       private
