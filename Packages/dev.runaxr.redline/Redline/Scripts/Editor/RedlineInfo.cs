@@ -43,7 +43,7 @@ namespace Redline.Scripts.Editor {
       
 
       public void OnEnable() {
-        titleContent = new GUIContent("The Black Arms Info");
+        titleContent = new GUIContent("Redline Info");
 
         minSize = new Vector2(400, 720);;
         _redlineBottomHeader = new GUIStyle();

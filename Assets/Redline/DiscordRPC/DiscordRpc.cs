@@ -54,12 +54,12 @@ namespace Redline.DiscordRPC {
     }
 
     public struct EventHandlers {
-      public OnReadyInfo ReadyCallback;
-      public OnDisconnectedInfo DisconnectedCallback;
-      public OnErrorInfo ErrorCallback;
-      public OnJoinInfo JoinCallback;
-      public OnSpectateInfo SpectateCallback;
-      public OnRequestInfo RequestCallback;
+      internal OnReadyInfo ReadyCallback;
+      internal OnDisconnectedInfo DisconnectedCallback;
+      internal OnErrorInfo ErrorCallback;
+      internal OnJoinInfo JoinCallback;
+      internal OnSpectateInfo SpectateCallback;
+      internal OnRequestInfo RequestCallback;
     }
 
     [Serializable, StructLayout(LayoutKind.Sequential)]
@@ -99,7 +99,7 @@ namespace Redline.DiscordRPC {
       string optionalSteamId) {
       Callbacks = handlers;
 
-      EventHandlers staticEventHandlers = new EventHandlers();
+      var staticEventHandlers = new EventHandlers();
       staticEventHandlers.ReadyCallback += ReadyCallback;
       staticEventHandlers.DisconnectedCallback += DisconnectedCallback;
       staticEventHandlers.ErrorCallback += ErrorCallback;
@@ -195,7 +195,7 @@ namespace Redline.DiscordRPC {
         if (string.IsNullOrEmpty(input)) return IntPtr.Zero;
         var convbytecnt = Encoding.UTF8.GetByteCount(input);
         var buffer = Marshal.AllocHGlobal(convbytecnt + 1);
-        for (int i = 0; i < convbytecnt + 1; i++) {
+        for (var i = 0; i < convbytecnt + 1; i++) {
           Marshal.WriteByte(buffer, i, 0);
         }
 
@@ -212,7 +212,7 @@ namespace Redline.DiscordRPC {
       private static string StrToUtf8NullTerm(string toconv) {
         var str = toconv.Trim();
         var bytes = Encoding.Default.GetBytes(str);
-        if (bytes.Length > 0 && bytes[bytes.Length - 1] != 0) {
+        if (bytes.Length > 0 && bytes[^1] != 0) {
           str += "\0\0";
         }
 

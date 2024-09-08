@@ -2,6 +2,7 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Redline.Scripts.Editor {
   [InitializeOnLoad]
@@ -22,7 +23,7 @@ namespace Redline.Scripts.Editor {
     private
     const string ProjectDownloadPath = "Packages/dev.runaxr.Redline/Redline/Assets/";
     private static GUIStyle _toolkitHeader;
-    public Color RedlineColor = Color.red;
+    [FormerlySerializedAs("RedlineColor")] public Color redlineColor = Color.red;
     public static bool UITextRainbow {
       get;
       set;
@@ -54,7 +55,7 @@ namespace Redline.Scripts.Editor {
     }
 
     public void OnEnable() {
-      titleContent = new GUIContent("The Black Arms Settings");
+      titleContent = new GUIContent("Redline Settings");
 
       minSize = new Vector2(400, 600);
 
@@ -125,24 +126,24 @@ namespace Redline.Scripts.Editor {
 
       EditorGUI.BeginChangeCheck();
 
-      RedlineColor = EditorGUI.ColorField(new Rect(3, 270, position.width - 6, 15), "Kit UI Color", RedlineColor);
+      redlineColor = EditorGUI.ColorField(new Rect(3, 270, position.width - 6, 15), "Kit UI Color", redlineColor);
       //RedlineGRADIENT = EditorGUI.GradientField(new Rect(3, 360, position.width - 6, 15), "Redline Gradient", RedlineGRADIENT);
 
       if (EditorGUI.EndChangeCheck()) {
-        EditorPrefs.SetFloat("RedlineColor_R", RedlineColor.r);
-        EditorPrefs.SetFloat("RedlineColor_G", RedlineColor.g);
-        EditorPrefs.SetFloat("RedlineColor_B", RedlineColor.b);
-        EditorPrefs.SetFloat("RedlineColor_A", RedlineColor.a);
+        EditorPrefs.SetFloat("RedlineColor_R", redlineColor.r);
+        EditorPrefs.SetFloat("RedlineColor_G", redlineColor.g);
+        EditorPrefs.SetFloat("RedlineColor_B", redlineColor.b);
+        EditorPrefs.SetFloat("RedlineColor_A", redlineColor.a);
       }
 
       EditorGUILayout.Space();
       if (GUILayout.Button("Reset Color")) {
-        var RedlineColor = Color.red;
+        var redlineColor = Color.red;
 
-        EditorPrefs.SetFloat("RedlineColor_R", RedlineColor.r);
-        EditorPrefs.SetFloat("RedlineColor_G", RedlineColor.g);
-        EditorPrefs.SetFloat("RedlineColor_B", RedlineColor.b);
-        EditorPrefs.SetFloat("RedlineColor_A", RedlineColor.a);
+        EditorPrefs.SetFloat("RedlineColor_R", redlineColor.r);
+        EditorPrefs.SetFloat("RedlineColor_G", redlineColor.g);
+        EditorPrefs.SetFloat("RedlineColor_B", redlineColor.b);
+        EditorPrefs.SetFloat("RedlineColor_A", redlineColor.a);
       }
 
       //RedlineGRADIENT = EditorGUI.GradientField(new Rect(3, 290, position.width - 6, 15), "Redline Gradient", RedlineGRADIENT);

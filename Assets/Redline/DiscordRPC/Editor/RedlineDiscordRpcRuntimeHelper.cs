@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 
 namespace Redline.DiscordRPC.Editor {

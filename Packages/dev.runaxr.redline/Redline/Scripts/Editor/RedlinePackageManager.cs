@@ -9,9 +9,10 @@ namespace Redline.Scripts.Editor {
   public abstract class RedlineImportManager {
     private
     const string V = "https://c0dera.in/Redline/api/assets/";
-    public static readonly string ConfigName = "importConfig.json";
+
+    public const string ConfigName = "importConfig.json";
     public static string ServerUrl = V;
-    private static readonly string InternalServerUrl = V;
+    private const string InternalServerUrl = V;
 
     public static void DownloadAndImportAssetFromServer(string assetName) {
       if (File.Exists(RedlineSettings.GetAssetPath() + assetName)) {
