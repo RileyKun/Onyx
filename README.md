@@ -5,12 +5,12 @@
 [![Patreon](https://img.shields.io/badge/Patreon-Donate-pink?style=for-the-badge)](https://www.patreon.com/PhoenixAceVFX)
 [![GitHub all releases](https://img.shields.io/github/downloads/Redline-Team/RPM/total?color=red&label=Total%20Downloads&logo=github&logoColor=red&style=for-the-badge)](https://github.com/Redline-Team/RPM/releases/latest)  
 [![Rider](https://img.shields.io/badge/Rider-000000.svg?style=for-the-badge&logo=Rider&logoColor=white&color=black&labelColor=crimson)](https://www.jetbrains.com/rider/)  
+[![Discord](https://img.shields.io/discord/1253122047354077258?style=for-the-badge&logo=discord&logoColor=white&label=RXR%20Coalition&labelColor=black)](https://discord.gg/hrD7KJkhde)  
 # Redline Package Manager  
-Currently an attempt at an in engine VCC replacement  
-A properly independent VRC Development toolset  
-Currently in development :D  
-Note this is based on Zenith's ZPUK  
-As of this moment the Asset Portal is ONLINE  
+An attempt at replacing the VRChat Creator Companion with something directly in Unity  
+This came as I got tired of tabbing out of Unity to import things so I decided to make this  
+Currently as it stands Redline is a Curated Package Manager developed and curated by me  
+Curation requests have been opened in the discord if you wish to request a pacakge be added  
 
 # Installation  
 Download the [latest release](https://github.com/Redline-Team/RPM/releases/latest) and import it into unity  
