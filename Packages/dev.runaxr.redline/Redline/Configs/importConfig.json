@@ -16,13 +16,16 @@
             "name": "Packages curated by the developer"
         },
         "Announcement4": {
-            "name": "Del then download to update packages"
+            "name": "Curation Requests available in Discord"
         },
         "Announcement5": {
+            "name": "Del then download to update packages"
+        },
+        "Announcement6": {
             "name": "VRCSDK Packages are now on 3.7.0"
         },
-        "announcement6": {
-            "name": "Latest Package List Edit: 9/1/24 at 5:32pm EST"
+        "announcement7": {
+            "name": "Latest Package List Edit: 9/5/24 at 6:26pm EST"
         },
 
         "Redline Files": {

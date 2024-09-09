@@ -1,6 +1,6 @@
 {
   "name": "dev.runaxr.redline",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Unity3D Package Manager for VRChat",
   "displayName": "Redline Package Manager",
   "unity": "2022.3",

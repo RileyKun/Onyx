@@ -93,7 +93,7 @@ namespace Redline.Scripts.Editor {
 
         GUILayout.EndHorizontal();
         GUILayout.Space(4);
-        GUILayout.Label("Redline Version 1.1.2");
+        GUILayout.Label("Redline Version 1.0.1");
         GUILayout.Space(2);
         GUILayout.Label("Redline imported correctly if you are seeing this");
         _changeLogScroll = GUILayout.BeginScrollView(_changeLogScroll, GUILayout.Width(390));
