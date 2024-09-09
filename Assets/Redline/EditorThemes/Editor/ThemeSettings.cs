@@ -1,23 +1,22 @@
-using UnityEngine;
-using UnityEditor;
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.Serialization;
 
-using ThemesPlugin;
-using UnityEditorInternal;
 //to do TextColor
 //EditorStyles.label.normal.textColor 
 
-namespace ThemesPlugin
+namespace Redline.EditorThemes.Editor
 {
 
     public class ThemeSettings : EditorWindow
     {
-        public List<string> AllThemes = new List<string>();
+        [FormerlySerializedAs("AllThemes")] public List<string> allThemes = new List<string>();
         
 
-        [MenuItem("Themes/Select Themes")]
+        [MenuItem("Redline/Themes/Select Themes")]
         public static void ShowWindow()
         {
             EditorWindow.GetWindow<ThemeSettings>("Theme Settings");
@@ -26,9 +25,9 @@ namespace ThemesPlugin
 
         
 
-        public string ThemeName;
+        [FormerlySerializedAs("ThemeName")] public string themeName;
 
-        Vector2 scrollPosition;
+        private Vector2 _scrollPosition;
 
 
         private void OnGUI()
@@ -37,47 +36,49 @@ namespace ThemesPlugin
             //window code
 
             GUILayout.Label("Create & Select Themes", EditorStyles.boldLabel);
-            GUILayout.Label("Currently Selected: " + Path.GetFileNameWithoutExtension(ThemesUtility.currentTheme), EditorStyles.boldLabel);
+            GUILayout.Label("Currently Selected: " + Path.GetFileNameWithoutExtension(ThemesUtility.CurrentTheme), EditorStyles.boldLabel);
 
 
 
             if (GUILayout.Button("Create new Theme"))
             {
                 
-                CreateThemeWindow window = (CreateThemeWindow)EditorWindow.GetWindow(typeof(CreateThemeWindow), false, "Create Theme");
+                var window = (CreateThemeWindow)EditorWindow.GetWindow(typeof(CreateThemeWindow), false, "Create Theme");
                 window.Show();
             }
             GUILayout.Label("or Select:", EditorStyles.boldLabel);
 
             
 
-            List<CustomTheme> DarkThemes = new List<CustomTheme>();
-            List<CustomTheme> LightThemes = new List<CustomTheme>();
-            List<CustomTheme> BothThemes = new List<CustomTheme>();
+            var darkThemes = new List<CustomTheme>();
+            var lightThemes = new List<CustomTheme>();
+            var bothThemes = new List<CustomTheme>();
 
-            foreach (string s in Directory.GetFiles(ThemesUtility.CustomThemesPath, "*"+ ThemesUtility.Enc))
+            foreach (var s in Directory.GetFiles(ThemesUtility.CustomThemesPath, "*"+ ThemesUtility.Enc))
             {
                 
-                CustomTheme ct = ThemesUtility.GetCustomThemeFromJson(s);
+                var ct = ThemesUtility.GetCustomThemeFromJson(s);
                 switch (ct.unityTheme)
                 {
                     case CustomTheme.UnityTheme.Dark:
-                        DarkThemes.Add(ct);
+                        darkThemes.Add(ct);
                         break;
                     case CustomTheme.UnityTheme.Light:
-                        LightThemes.Add(ct);
+                        lightThemes.Add(ct);
                         break;
                     case CustomTheme.UnityTheme.Both:
-                        BothThemes.Add(ct);
+                        bothThemes.Add(ct);
                         break ;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
             
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("Dark & Light Themes:");
-            foreach (CustomTheme ct in BothThemes)
+            foreach (var ct in bothThemes)
             {
                 DisplayGUIThemeItem(ct);
             }
@@ -85,13 +86,13 @@ namespace ThemesPlugin
 
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("Dark Themes:");
-            foreach(CustomTheme ct in DarkThemes)
+            foreach(var ct in darkThemes)
             {
                 DisplayGUIThemeItem(ct);
             }
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("Light Themes:");
-            foreach (CustomTheme ct in LightThemes)
+            foreach (var ct in lightThemes)
             {
                 DisplayGUIThemeItem(ct);
             }
@@ -102,10 +103,10 @@ namespace ThemesPlugin
         }
 
 
-        void DisplayGUIThemeItem(CustomTheme ct)
+        private static void DisplayGUIThemeItem(CustomTheme ct)
         {
             
-            string Name = ct.Name;
+            var Name = ct.name;
 
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(Name))
@@ -114,7 +115,7 @@ namespace ThemesPlugin
                 ThemesUtility.LoadUssFileForTheme(Name);
             }
 
-            if (!ct.IsUnEditable && GUILayout.Button("Edit", GUILayout.Width(70)))
+            if (!ct.isUnEditable && GUILayout.Button("Edit", GUILayout.Width(70)))
             {
 
                 ThemesUtility.OpenEditTheme(ct);
@@ -124,9 +125,9 @@ namespace ThemesPlugin
                 //window.Show();
 
             }
-            if (!ct.IsUnDeletable && GUILayout.Button("Delete", GUILayout.Width(70)))
+            if (!ct.isUnDeletable && GUILayout.Button("Delete", GUILayout.Width(70)))
             {
-                if (EditorUtility.DisplayDialog("Do you want to Delete " + ct.Name + " ?", "Do you want to Permanently Delete the Theme " + ct.Name +" (No undo!)", "Delete", "Cancel") == false)
+                if (EditorUtility.DisplayDialog("Do you want to Delete " + ct.name + " ?", "Do you want to Permanently Delete the Theme " + ct.name +" (No undo!)", "Delete", "Cancel") == false)
                 {
                     return;
                 }

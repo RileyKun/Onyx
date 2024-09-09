@@ -25,7 +25,9 @@ namespace Redline.Scripts.Editor {
           EditorPrefs.SetBool("Redline_ShowInfoPanel", true);
         }
 
-        if (EditorPrefs.GetBool("Redline_ShowInfoPanel")) ;
+        if (EditorPrefs.GetBool("Redline_ShowInfoPanel"))
+        {
+        }
       }
 
       private static Vector2 _changeLogScroll;
