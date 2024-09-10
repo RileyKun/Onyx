@@ -19,13 +19,11 @@ namespace RedlineUpdater.Editor {
 
     //get download url
     private
-    const string UnitypackageUrl = "https://c0dera.in/Redline/api/assets/latest/Redline.unitypackage"; //This fucker is case sensitive... LMAO it took me 3 updates to figure it out
+    const string UnitypackageUrl = "https://c0dera.in/Redline/api/assets/latest/Redline.unitypackage"; //This fucker is case-sensitive... LMAO it took me 3 updates to figure it out
 
     //GetVersion
     private static readonly string CurrentVersion = File.ReadAllText("Packages/dev.runaxr.Redline/RedlineUpdater/editor/RedlineVersion.txt");
-
-    //select where to be imported (Redline)
-    public static string AssetPath = "Assets\\"; //We put the unitypackage here temporarily
+    
     //Custom name for downloaded unitypackage
     private
     const string AssetName = "Redline.unitypackage"; //We name it this because yes
@@ -62,7 +60,7 @@ namespace RedlineUpdater.Editor {
     // ReSharper disable Unity.PerformanceAnalysis
     private static async Task DownloadRedline() {
       RedlineLog("Asking for Approval..");
-      if (EditorUtility.DisplayDialog("Redline Updater", "Your Version (V" + CurrentVersion.ToString() + ") is Outdated!" + " Do you wanna update?", "Yes", "No")) {
+      if (EditorUtility.DisplayDialog("Redline Updater", "Your Version (V" + CurrentVersion + ") is Outdated!" + " Do you wanna update?", "Yes", "No")) {
         //starting deletion of old Redline
         await DeleteAndDownloadAsync();
       } else {
@@ -73,7 +71,7 @@ namespace RedlineUpdater.Editor {
 
     private static async Task DeleteAndDownloadAsync() {
       try {
-        if (EditorUtility.DisplayDialog("Redline_Automatic_DownloadAndInstall", "We're going to delete the old RPM real quick, This is so you dont have to manually do it in case of file structure changes :D", "Okay")) {
+        if (EditorUtility.DisplayDialog("Redline_Automatic_DownloadAndInstall", "Alright we're gonna import the new RPM, This should just install right on top as an update", "Okay")) {
           //gets every file in Toolkit folder
           var toolkitDir = Directory.GetFiles(ToolkitPath, "*.*");
 
@@ -98,7 +96,7 @@ namespace RedlineUpdater.Editor {
         //Creates WebClient to Download latest .unitypackage
         var w = new WebClient();
         w.Headers.Set(HttpRequestHeader.UserAgent, "Webkit Gecko wHTTPS (Keep Alive 55)");
-        w.DownloadFileCompleted += new AsyncCompletedEventHandler(FileDownloadComplete);
+        w.DownloadFileCompleted += FileDownloadComplete;
         w.DownloadProgressChanged += FileDownloadProgress;
         w.DownloadFileAsync(new Uri(UnitypackageUrl), AssetName);
       }

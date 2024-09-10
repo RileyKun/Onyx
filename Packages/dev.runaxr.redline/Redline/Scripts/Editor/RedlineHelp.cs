@@ -1,5 +1,4 @@
-﻿using RedlineUpdater.Editor;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace Redline.Scripts.Editor {
@@ -12,10 +11,6 @@ namespace Redline.Scripts.Editor {
         [MenuItem("Redline/Update Importer Config", false, 1000)]
         public static void ForceUpdateConfigs() {
             RedlineImportManager.UpdateConfig();
-        }
-
-        public static void UpdateRedlineBtn() {
-            RedlineAutomaticUpdateAndInstall.AutomaticRedlineInstaller();
         }
     }
 }

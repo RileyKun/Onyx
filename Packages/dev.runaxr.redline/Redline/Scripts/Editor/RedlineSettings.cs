@@ -5,16 +5,11 @@ using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace Redline.Scripts.Editor {
-  [InitializeOnLoad]
   public class RedlineSettings: EditorWindow {
     private
     const string Url = "https://github.com/Redline-Team/RPM/";
     private
     const string Url1 = "https://trigon.systems/";
-    private
-    const string Link = "";
-    private
-    const string Link1 = "";
 
     public
     const string ProjectConfigPath = "Packages/dev.runaxr.Redline/Redline/Configs/";
@@ -24,16 +19,12 @@ namespace Redline.Scripts.Editor {
     const string ProjectDownloadPath = "Packages/dev.runaxr.Redline/Redline/Assets/";
     private static GUIStyle _toolkitHeader;
     [FormerlySerializedAs("RedlineColor")] public Color redlineColor = Color.red;
-    public static bool UITextRainbow {
-      get;
-      set;
-    }
-    //public Gradient RedlineGRADIENT;
+    
 
     [MenuItem("Redline/Settings", false, 501)]
     private static void Init()
     {
-      var window=(RedlineSettings)EditorWindow.GetWindow(typeof(RedlineSettings));
+      var window=(RedlineSettings)GetWindow(typeof(RedlineSettings));
       window.Show();
     }
 
@@ -116,18 +107,10 @@ namespace Redline.Scripts.Editor {
 
       EditorGUILayout.LabelField("Redline Settings", EditorStyles.boldLabel);
       EditorGUILayout.Space(10);
-      //if (GUILayout.Button("Set Color"))
-      //{
-      //    UnityEditor.EditorPrefs.SetFloat("RedlineColor_R", RedlineColor.r);
-      //    UnityEditor.EditorPrefs.SetFloat("RedlineColor_G", RedlineColor.g);
-      //    UnityEditor.EditorPrefs.SetFloat("RedlineColor_B", RedlineColor.b);
-      //    UnityEditor.EditorPrefs.SetFloat("RedlineColor_A", RedlineColor.a);
-      //}
 
       EditorGUI.BeginChangeCheck();
 
       redlineColor = EditorGUI.ColorField(new Rect(3, 270, position.width - 6, 15), "Kit UI Color", redlineColor);
-      //RedlineGRADIENT = EditorGUI.GradientField(new Rect(3, 360, position.width - 6, 15), "Redline Gradient", RedlineGRADIENT);
 
       if (EditorGUI.EndChangeCheck()) {
         EditorPrefs.SetFloat("RedlineColor_R", redlineColor.r);
@@ -145,8 +128,6 @@ namespace Redline.Scripts.Editor {
         EditorPrefs.SetFloat("RedlineColor_B", redlineColor.b);
         EditorPrefs.SetFloat("RedlineColor_A", redlineColor.a);
       }
-
-      //RedlineGRADIENT = EditorGUI.GradientField(new Rect(3, 290, position.width - 6, 15), "Redline Gradient", RedlineGRADIENT);
 
       EditorGUILayout.Space(10);
       EditorGUILayout.EndVertical();
@@ -185,9 +166,7 @@ namespace Redline.Scripts.Editor {
       var enableUITextRainbow = EditorGUILayout.ToggleLeft("Rainbow Text", isUITextRainbowEnabled);
       if (enableUITextRainbow != isUITextRainbowEnabled) {
         EditorPrefs.SetBool("Redline_UITextRainbow", enableUITextRainbow);
-        UITextRainbow = true;
       } else {
-        UITextRainbow = false;
       }
 
       GUILayout.EndHorizontal();

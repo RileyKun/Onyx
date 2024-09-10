@@ -25,21 +25,17 @@ namespace Redline.Scripts.Editor {
     private static Vector2 _changeLogScroll;
     private
     const float Timer = 60f;
-    private float _timeLeft = 0f;
+    private float _timeLeft;
 
     [MenuItem("Redline/Scene AutoSave", false, 500)]
     private static void Init()
     {
-      var window=(Sceneautosave)EditorWindow.GetWindow(typeof(Sceneautosave));
+      var window=(Sceneautosave)GetWindow(typeof(Sceneautosave));
       window.Show();
     }
 
     private static void OpenSplashScreen() {
       GetWindowWithRect < Sceneautosave > (new Rect(0, 0, 400, 180), true);
-    }
-
-    public static void Open() {
-      OpenSplashScreen();
     }
 
     public void OnEnable() {
@@ -51,8 +47,8 @@ namespace Redline.Scripts.Editor {
     public void OnGUI() {
       EditorGUILayout.LabelField("Time:", Timer + " Secs");
       var timeToSave = (int)(_timeLeft - EditorApplication.timeSinceStartup);
-      EditorGUILayout.LabelField("time left:", timeToSave.ToString() + " Sec");
-      this.Repaint();
+      EditorGUILayout.LabelField("time left:", timeToSave + " Sec");
+      Repaint();
       if (EditorApplication.timeSinceStartup > _timeLeft) {
         var path = EditorApplication.currentScene.Split(char.Parse("/"));
         path[ ^ 1] = "AutoSave_" + path[ ^ 1];

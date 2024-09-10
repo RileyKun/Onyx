@@ -18,7 +18,7 @@ namespace Redline.EditorThemes.Editor
         public static void ShowWindow()
         {
             ThemeSettings.ShowWindow();
-            EditorWindow.GetWindow<CreateThemeWindow>("Theme Settings");
+            GetWindow<CreateThemeWindow>("Theme Settings");
 
 
 
@@ -71,7 +71,7 @@ namespace Redline.EditorThemes.Editor
             var path = Application.dataPath + "/EditorThemes/Editor/StyleSheets/Extensions/CustomThemes/" + _name + ".json";
             if (File.Exists(path))
             {
-                if( EditorUtility.DisplayDialog("This Theme already exsists", "Do you want to overide the old Theme?", "Yes",  "Cancel") == false)
+                if( EditorUtility.DisplayDialog("This Theme already exists", "Do you want to override the old Theme?", "Yes",  "Cancel") == false)
                 {
                     return;
                 }
@@ -95,7 +95,7 @@ namespace Redline.EditorThemes.Editor
 
             ThemesUtility.OpenEditTheme(t);
 
-            this.Close();
+            Close();
 
 
 

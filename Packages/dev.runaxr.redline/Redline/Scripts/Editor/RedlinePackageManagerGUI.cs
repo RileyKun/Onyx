@@ -6,25 +6,20 @@ using UnityEditor;
 using UnityEngine;
 
 namespace Redline.Scripts.Editor {
-  [InitializeOnLoad]
   public class RedlinePackageManager: EditorWindow {
     private
     const string Url = "https://github.com/Redline/Redline/";
     private
     const string Url1 = "https://trigon.systems/";
-    private
-    const string Link = "";
-    private
-    const string Link1 = "";
 
     private static GUIStyle _redlineHeader;
-    private static readonly Dictionary < string, string > Assets = new Dictionary < string, string > ();
+    private static readonly Dictionary < string, string > Assets = new();
     private static Vector2 _changeLogScroll;
 
     [MenuItem("Redline/Package Manager", false, 501)]
     private static void Init()
     {
-      var window=(RedlinePackageManager)EditorWindow.GetWindow(typeof(RedlinePackageManager));
+      var window=(RedlinePackageManager)GetWindow(typeof(RedlinePackageManager));
       window.Show();
     }
 

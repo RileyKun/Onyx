@@ -49,7 +49,7 @@ namespace Redline.EditorThemes.Editor
                 File.Delete(path);
                 File.Delete(path + ".meta");
             }
-            else Debug.LogWarning("Path: " + path + " does not exsit");
+            else Debug.LogWarning("Path: " + path + " does not exist");
             
         }
 
@@ -104,13 +104,13 @@ namespace Redline.EditorThemes.Editor
         }
         public static void LoadUssFileForTheme(string name)
         {
-            LoadUssFileForThemeUsingPath(ThemesUtility.GetPathForTheme(name));
+            LoadUssFileForThemeUsingPath(GetPathForTheme(name));
         }
 
         private static void LoadUssFileForThemeUsingPath(string path)
         {
 
-            var t = ThemesUtility.GetCustomThemeFromJson(path);
+            var t = GetCustomThemeFromJson(path);
 
             if ((EditorGUIUtility.isProSkin && t.unityTheme == CustomTheme.UnityTheme.Light) || (!EditorGUIUtility.isProSkin && t.unityTheme == CustomTheme.UnityTheme.Dark))
             {
@@ -118,7 +118,7 @@ namespace Redline.EditorThemes.Editor
 
             }
 
-            var ussText = ThemesUtility.GenerateUssString(t);
+            var ussText = GenerateUssString(t);
             WriteUss(ussText);
 
             CurrentTheme = path;
@@ -163,7 +163,7 @@ namespace Redline.EditorThemes.Editor
                     colorList.Add("TV LineBold");
 
                     break;
-                case 2://secondery
+                case 2://secondary
                     colorList.Add("ToolbarDropDownToogleRight");
                     colorList.Add("ToolbarPopupLeft");
                     colorList.Add("ToolbarPopup");
@@ -178,11 +178,11 @@ namespace Redline.EditorThemes.Editor
 
                     colorList.Add("ProjectBrowserIconAreaBg");
 
-                    //colorList.Add("dragTab");//this is the currently clicked tab  has to be a diffrent color than the other tabs
+                    //colorList.Add("dragTab");//this is the currently clicked tab  has to be a different color than the other tabs
                     break;
                 case 3://Tab
                     //colorList.Add("dragtab first");
-                    colorList.Add("dragtab-label");//changing this color has overriten dragTab and dragtab first so removed
+                    colorList.Add("dragtab-label");//changing this color has overwritten dragTab and dragtab first so removed
                     break;
                 case 4://button
 

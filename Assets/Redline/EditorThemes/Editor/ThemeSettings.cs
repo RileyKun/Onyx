@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 //to do TextColor
 //EditorStyles.label.normal.textColor 
@@ -13,19 +12,12 @@ namespace Redline.EditorThemes.Editor
 
     public class ThemeSettings : EditorWindow
     {
-        [FormerlySerializedAs("AllThemes")] public List<string> allThemes = new List<string>();
-        
-
         [MenuItem("Redline/Themes/Select Themes")]
         public static void ShowWindow()
         {
-            EditorWindow.GetWindow<ThemeSettings>("Theme Settings");
+            GetWindow<ThemeSettings>("Theme Settings");
         }
 
-
-        
-
-        [FormerlySerializedAs("ThemeName")] public string themeName;
 
         private Vector2 _scrollPosition;
 
@@ -43,7 +35,7 @@ namespace Redline.EditorThemes.Editor
             if (GUILayout.Button("Create new Theme"))
             {
                 
-                var window = (CreateThemeWindow)EditorWindow.GetWindow(typeof(CreateThemeWindow), false, "Create Theme");
+                var window = (CreateThemeWindow)GetWindow(typeof(CreateThemeWindow), false, "Create Theme");
                 window.Show();
             }
             GUILayout.Label("or Select:", EditorStyles.boldLabel);
@@ -135,7 +127,7 @@ namespace Redline.EditorThemes.Editor
 
                 ThemesUtility.DeleteFileWithMeta(ThemesUtility.GetPathForTheme(Name));
 
-                ThemesUtility.LoadUssFileForTheme("_deafault");
+                ThemesUtility.LoadUssFileForTheme("_default");
 
             }
 

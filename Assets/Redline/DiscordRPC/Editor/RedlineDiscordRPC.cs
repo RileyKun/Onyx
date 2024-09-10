@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 namespace Redline.DiscordRPC.Editor {
   [InitializeOnLoad]
   public class RedlineDiscordRPC {
-    private static readonly DiscordRpc.RichPresence Presence = new DiscordRpc.RichPresence();
+    private static readonly DiscordRpc.RichPresence Presence = new();
 
     private static TimeSpan _time = (DateTime.UtcNow - new DateTime(1970, 1, 1));
     private static long _timestamp = (long) _time.TotalSeconds;
@@ -52,7 +52,7 @@ namespace Redline.DiscordRPC.Editor {
     }
 
     public static void ResetTime() {
-      RedlineLog("Reseting timer");
+      RedlineLog("Resetting timer");
       _time = (DateTime.UtcNow - new DateTime(1970, 1, 1));
       _timestamp = (long) _time.TotalSeconds;
       Presence.StartTimestamp = _timestamp;

@@ -49,7 +49,6 @@ namespace Redline.Scripts.Editor {
 
     private static void ConfigDownloadCompleted(object sender, AsyncCompletedEventArgs e) {
       if (e.Error == null) {
-        //var updateFile = File.ReadAllText(Redline_Settings.projectConfigPath + "update_" + configName);
         File.Delete(RedlineSettings.ProjectConfigPath + ConfigName);
         File.Move(RedlineSettings.ProjectConfigPath + "update_" + ConfigName,
           RedlineSettings.ProjectConfigPath + ConfigName);

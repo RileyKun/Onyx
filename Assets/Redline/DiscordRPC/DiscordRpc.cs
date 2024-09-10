@@ -90,9 +90,6 @@ namespace Redline.DiscordRPC {
     }
 
     public enum Reply {
-      No = 0,
-        Yes = 1,
-        Ignore = 2
     }
 
     public static void Initialize(string applicationId, ref EventHandlers handlers, bool autoRegister,
@@ -140,7 +137,7 @@ namespace Redline.DiscordRPC {
 
     public class RichPresence {
       private RichPresenceStruct _presence;
-      private readonly List < IntPtr > _buffers = new List < IntPtr > (10);
+      private readonly List < IntPtr > _buffers = new(10);
 
       public string State; /* max 128 bytes */
       public string Details; /* max 128 bytes */
