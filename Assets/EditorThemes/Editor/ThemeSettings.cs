@@ -1,25 +1,34 @@
-using System;
+using UnityEngine;
+using UnityEditor;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using UnityEditor;
-using UnityEngine;
 
+using ThemesPlugin;
+using UnityEditorInternal;
 //to do TextColor
 //EditorStyles.label.normal.textColor 
 
-namespace Redline.EditorThemes.Editor
+namespace ThemesPlugin
 {
 
     public class ThemeSettings : EditorWindow
     {
-        [MenuItem("Redline/Themes/Select Themes")]
+        public List<string> AllThemes = new List<string>();
+        
+
+        [MenuItem("Themes/Select Themes")]
         public static void ShowWindow()
         {
-            GetWindow<ThemeSettings>("Theme Settings");
+            EditorWindow.GetWindow<ThemeSettings>("Theme Settings");
         }
 
 
-        private Vector2 _scrollPosition;
+        
+
+        public string ThemeName;
+
+        Vector2 scrollPosition;
 
 
         private void OnGUI()
@@ -28,49 +37,47 @@ namespace Redline.EditorThemes.Editor
             //window code
 
             GUILayout.Label("Create & Select Themes", EditorStyles.boldLabel);
-            GUILayout.Label("Currently Selected: " + Path.GetFileNameWithoutExtension(ThemesUtility.CurrentTheme), EditorStyles.boldLabel);
+            GUILayout.Label("Currently Selected: " + Path.GetFileNameWithoutExtension(ThemesUtility.currentTheme), EditorStyles.boldLabel);
 
 
 
             if (GUILayout.Button("Create new Theme"))
             {
                 
-                var window = (CreateThemeWindow)GetWindow(typeof(CreateThemeWindow), false, "Create Theme");
+                CreateThemeWindow window = (CreateThemeWindow)EditorWindow.GetWindow(typeof(CreateThemeWindow), false, "Create Theme");
                 window.Show();
             }
             GUILayout.Label("or Select:", EditorStyles.boldLabel);
 
             
 
-            var darkThemes = new List<CustomTheme>();
-            var lightThemes = new List<CustomTheme>();
-            var bothThemes = new List<CustomTheme>();
+            List<CustomTheme> DarkThemes = new List<CustomTheme>();
+            List<CustomTheme> LightThemes = new List<CustomTheme>();
+            List<CustomTheme> BothThemes = new List<CustomTheme>();
 
-            foreach (var s in Directory.GetFiles(ThemesUtility.CustomThemesPath, "*"+ ThemesUtility.Enc))
+            foreach (string s in Directory.GetFiles(ThemesUtility.CustomThemesPath, "*"+ ThemesUtility.Enc))
             {
                 
-                var ct = ThemesUtility.GetCustomThemeFromJson(s);
+                CustomTheme ct = ThemesUtility.GetCustomThemeFromJson(s);
                 switch (ct.unityTheme)
                 {
                     case CustomTheme.UnityTheme.Dark:
-                        darkThemes.Add(ct);
+                        DarkThemes.Add(ct);
                         break;
                     case CustomTheme.UnityTheme.Light:
-                        lightThemes.Add(ct);
+                        LightThemes.Add(ct);
                         break;
                     case CustomTheme.UnityTheme.Both:
-                        bothThemes.Add(ct);
+                        BothThemes.Add(ct);
                         break ;
-                    default:
-                        throw new ArgumentOutOfRangeException();
                 }
             }
             
-            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
             
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("Dark & Light Themes:");
-            foreach (var ct in bothThemes)
+            foreach (CustomTheme ct in BothThemes)
             {
                 DisplayGUIThemeItem(ct);
             }
@@ -78,13 +85,13 @@ namespace Redline.EditorThemes.Editor
 
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("Dark Themes:");
-            foreach(var ct in darkThemes)
+            foreach(CustomTheme ct in DarkThemes)
             {
                 DisplayGUIThemeItem(ct);
             }
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("Light Themes:");
-            foreach (var ct in lightThemes)
+            foreach (CustomTheme ct in LightThemes)
             {
                 DisplayGUIThemeItem(ct);
             }
@@ -95,10 +102,10 @@ namespace Redline.EditorThemes.Editor
         }
 
 
-        private static void DisplayGUIThemeItem(CustomTheme ct)
+        void DisplayGUIThemeItem(CustomTheme ct)
         {
             
-            var Name = ct.name;
+            string Name = ct.Name;
 
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(Name))
@@ -107,7 +114,7 @@ namespace Redline.EditorThemes.Editor
                 ThemesUtility.LoadUssFileForTheme(Name);
             }
 
-            if (!ct.isUnEditable && GUILayout.Button("Edit", GUILayout.Width(70)))
+            if (!ct.IsUnEditable && GUILayout.Button("Edit", GUILayout.Width(70)))
             {
 
                 ThemesUtility.OpenEditTheme(ct);
@@ -117,9 +124,9 @@ namespace Redline.EditorThemes.Editor
                 //window.Show();
 
             }
-            if (!ct.isUnDeletable && GUILayout.Button("Delete", GUILayout.Width(70)))
+            if (!ct.IsUnDeletable && GUILayout.Button("Delete", GUILayout.Width(70)))
             {
-                if (EditorUtility.DisplayDialog("Do you want to Delete " + ct.name + " ?", "Do you want to Permanently Delete the Theme " + ct.name +" (No undo!)", "Delete", "Cancel") == false)
+                if (EditorUtility.DisplayDialog("Do you want to Delete " + ct.Name + " ?", "Do you want to Permanently Delete the Theme " + ct.Name +" (No undo!)", "Delete", "Cancel") == false)
                 {
                     return;
                 }
@@ -127,7 +134,7 @@ namespace Redline.EditorThemes.Editor
 
                 ThemesUtility.DeleteFileWithMeta(ThemesUtility.GetPathForTheme(Name));
 
-                ThemesUtility.LoadUssFileForTheme("_default");
+                ThemesUtility.LoadUssFileForTheme("_deafault");
 
             }
 

@@ -1,61 +1,61 @@
+using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using UnityEditor;
-using UnityEditorInternal;
 using UnityEngine;
-
-namespace Redline.EditorThemes.Editor
+using System.IO;
+using UnityEditorInternal;
+using UnityEditor;
+namespace ThemesPlugin
 { 
     public static class ThemesUtility
     {
-        public static readonly string CustomThemesPath = Application.dataPath + "/EditorThemes/Editor/Themes/";
-        private static readonly string UssFilePath = Application.dataPath + "/EditorThemes/Editor/StyleSheets/Extensions/";
-        public static readonly string PresetsPath = Application.dataPath + "/EditorThemes/Editor/CreatePresets/";
-        private const string Version = "v0.65";
-        public const string Enc = ".json";
+        readonly public static string CustomThemesPath = Application.dataPath + "/EditorThemes/Editor/Themes/";
+        readonly public static string UssFilePath = Application.dataPath + "/EditorThemes/Editor/StyleSheets/Extensions/";
+        readonly public static string PresetsPath = Application.dataPath + "/EditorThemes/Editor/CreatePresets/";
+        readonly public static string Version = "v0.65";
+        readonly public static string Enc = ".json";
 
-        public static string CurrentTheme;
+        public static string currentTheme;
         
 
         public static Color HtmlToRgb(string s)
         {
-            ColorUtility.TryParseHtmlString(s, out var c);
+            Color c = Color.black;
+            ColorUtility.TryParseHtmlString(s, out c);
             return c;
         }
 
         public static void OpenEditTheme(CustomTheme ct)
         {
-            EditThemeWindow.Ct = ct;
-            var window = (EditThemeWindow)EditorWindow.GetWindow(typeof(EditThemeWindow), false, "Edit Theme");
+            EditThemeWindow.ct = ct;
+            EditThemeWindow window = (EditThemeWindow)EditorWindow.GetWindow(typeof(EditThemeWindow), false, "Edit Theme");
            
             window.Show();
         }
-        public static CustomTheme GetCustomThemeFromJson(string path)
+        public static CustomTheme GetCustomThemeFromJson(string Path)
         {
-            var json = File.ReadAllText(path);
+            string json = File.ReadAllText(Path);
             
             return JsonUtility.FromJson<CustomTheme>(json);
         }
 
-        public static string GetPathForTheme(string name)
+        public static string GetPathForTheme(string Name)
         {
-            return CustomThemesPath + name + Enc;
+            return CustomThemesPath + Name + Enc;
         }
-        public static void DeleteFileWithMeta(string path)
+        public static void DeleteFileWithMeta(string Path)
         {
-            if (File.Exists(path))
+            if (File.Exists(Path))
             {
-                File.Delete(path);
-                File.Delete(path + ".meta");
+                File.Delete(Path);
+                File.Delete(Path + ".meta");
             }
-            else Debug.LogWarning("Path: " + path + " does not exist");
+            else Debug.LogWarning("Path: " + Path + " does not exsit");
             
         }
 
-        private static string GenerateUssString(CustomTheme c)
+        public static string GenerateUssString(CustomTheme c)
         {
-            var ussText = "";
+            string ussText = "";
             ussText += "/* ========== Editor Themes Plugin ==========*/";
             ussText += "\n";
             ussText += "/*            Auto Generated Code            */";
@@ -64,23 +64,29 @@ namespace Redline.EditorThemes.Editor
             ussText += "\n";
             ussText += "/*"+ Version + "*/";
 
-            return c.items.Aggregate(ussText, (current, I) => current + UssBlock(I.name, I.color));
+            foreach (CustomTheme.UIItem I in c.Items)
+            {
+                ussText += UssBlock(I.Name, I.Color);
+            }
+
+            return ussText;
         }
 
+        
 
-        private static string UssBlock(string name, Color color)
+        public static string UssBlock(string Name, Color Color)
         {
-            Color32 color32 = color;
+            Color32 color32 = Color;
             //Debug.Log(color32);
-            var a = color.a + "";
+            string a = Color.a + "";
             a = a.Replace(",", ".");
 
-            var colors = "rgba(" + color32.r + ", " + color32.g + ", " + color32.b + ", " + a + ")";// Generate colors for later
+            string Colors = "rgba(" + color32.r + ", " + color32.g + ", " + color32.b + ", " + a + ")";// Generate colors for later
 
-            var s = "\n" + "\n";//add two empty lines
+            string s = "\n" + "\n";//add two empty lines
 
-            s += "." + name + "\n";//add name
-            s += "{" + "\n" + "\t" + "background-color: " + colors + ";" + "\n" + "}";//add color
+            s += "." + Name + "\n";//add name
+            s += "{" + "\n" + "\t" + "background-color: " + Colors + ";" + "\n" + "}";//add color
 
             return s;
         }
@@ -88,29 +94,28 @@ namespace Redline.EditorThemes.Editor
         public static void SaveJsonFileForTheme(CustomTheme t)
         {
 
-            t.version = Version;
-            var newJson = JsonUtility.ToJson(t);
+            t.Version = Version;
+            string NewJson = JsonUtility.ToJson(t);
 
 
-            var path = GetPathForTheme(t.name);
-            if (File.Exists(path))
+            string Path = GetPathForTheme(t.Name);
+            if (File.Exists(Path))
             {
-                File.Delete(path);
+                File.Delete(Path);
             }
 
-            File.WriteAllText(path, newJson);
-            LoadUssFileForTheme(t.name);
+            File.WriteAllText(Path, NewJson);
+            LoadUssFileForTheme(t.Name);
 
         }
-        public static void LoadUssFileForTheme(string name)
+        public static void LoadUssFileForTheme(string Name)
         {
-            LoadUssFileForThemeUsingPath(GetPathForTheme(name));
+            LoadUssFileForThemeUsingPath(ThemesUtility.GetPathForTheme(Name));
         }
-
-        private static void LoadUssFileForThemeUsingPath(string path)
+        public static void LoadUssFileForThemeUsingPath(string Path)
         {
 
-            var t = GetCustomThemeFromJson(path);
+            CustomTheme t = ThemesUtility.GetCustomThemeFromJson(Path);
 
             if ((EditorGUIUtility.isProSkin && t.unityTheme == CustomTheme.UnityTheme.Light) || (!EditorGUIUtility.isProSkin && t.unityTheme == CustomTheme.UnityTheme.Dark))
             {
@@ -118,25 +123,25 @@ namespace Redline.EditorThemes.Editor
 
             }
 
-            var ussText = GenerateUssString(t);
+            string ussText = ThemesUtility.GenerateUssString(t);
             WriteUss(ussText);
 
-            CurrentTheme = path;
+            currentTheme = Path;
         }
 
 
-        private static void WriteUss(string ussText)
+        public static void WriteUss(string ussText)
         {
-            var path = UssFilePath + "/dark.uss";
-            DeleteFileWithMeta(path);
+            string Path = UssFilePath + "/dark.uss";
+            DeleteFileWithMeta(Path);
 
-            File.WriteAllText(path, ussText);
+            File.WriteAllText(Path, ussText);
 
 
-            var path2 = Application.dataPath + "/EditorThemes/Editor/StyleSheets/Extensions/light.uss";
-            DeleteFileWithMeta(path2);
+            string Path2 = Application.dataPath + "/EditorThemes/Editor/StyleSheets/Extensions/light.uss";
+            DeleteFileWithMeta(Path2);
             
-            File.WriteAllText(path2, ussText);
+            File.WriteAllText(Path2, ussText);
 
 
             AssetDatabase.Refresh();
@@ -146,7 +151,7 @@ namespace Redline.EditorThemes.Editor
 
         public static List<string> GetColorListByInt(int i)
         {
-            var colorList = new List<string>();
+            List<string> colorList = new List<string>();
 
 
             switch (i)
@@ -163,7 +168,7 @@ namespace Redline.EditorThemes.Editor
                     colorList.Add("TV LineBold");
 
                     break;
-                case 2://secondary
+                case 2://secondery
                     colorList.Add("ToolbarDropDownToogleRight");
                     colorList.Add("ToolbarPopupLeft");
                     colorList.Add("ToolbarPopup");
@@ -178,11 +183,11 @@ namespace Redline.EditorThemes.Editor
 
                     colorList.Add("ProjectBrowserIconAreaBg");
 
-                    //colorList.Add("dragTab");//this is the currently clicked tab  has to be a different color than the other tabs
+                    //colorList.Add("dragTab");//this is the currently clicked tab  has to be a diffrent color than the other tabs
                     break;
                 case 3://Tab
                     //colorList.Add("dragtab first");
-                    colorList.Add("dragtab-label");//changing this color has overwritten dragTab and dragtab first so removed
+                    colorList.Add("dragtab-label");//changing this color has overriten dragTab and dragtab first so removed
                     break;
                 case 4://button
 
