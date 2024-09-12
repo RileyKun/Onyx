@@ -1,11 +1,8 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
-
-
-
-namespace ThemesPlugin
+namespace EditorThemes.Editor
 {   
     [System.Serializable]
     public class CustomTheme
@@ -13,22 +10,21 @@ namespace ThemesPlugin
     
     
     
-        public string Name;
+        [FormerlySerializedAs("Name")] public string name;
         
     
         public enum UnityTheme { Dark,Light,Both}
         public UnityTheme unityTheme;
-        public bool IsUnDeletable;
-        public bool IsUnEditable;
-        public string Version;
-        
-        public List<UIItem> Items;
+        [FormerlySerializedAs("IsUnDeletable")] public bool isUnDeletable;
+        [FormerlySerializedAs("IsUnEditable")] public bool isUnEditable;
+
+        [FormerlySerializedAs("Items")] public List<UIItem> items;
         
         [System.Serializable]
         public class UIItem
         {
             public string Name;
-            public Color Color;
+            [FormerlySerializedAs("Color")] public Color color;
         
         }
     }

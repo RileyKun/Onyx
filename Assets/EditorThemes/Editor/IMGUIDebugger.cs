@@ -1,13 +1,15 @@
-using UnityEditor;
 using System;
+using UnityEditor;
 
-public static class IMGUIDebugger
+namespace EditorThemes.Editor
 {
+	public static class IMGUIDebugger
+	{
+		private static readonly Type Type = Type.GetType("UnityEditor.GUIViewDebuggerWindow,UnityEditor");
 
-	static Type type = Type.GetType("UnityEditor.GUIViewDebuggerWindow,UnityEditor");
-
-	[MenuItem("Window/IMGUI Debugger")]
-	public static void Open() => EditorWindow.GetWindow(type).Show();
+		[MenuItem("HyperX/IMGUI Debugger")]
+		public static void Open() => EditorWindow.GetWindow(Type).Show();
 	
 	
+	}
 }

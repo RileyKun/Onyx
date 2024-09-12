@@ -1,61 +1,62 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.IO;
-using UnityEditorInternal;
+using System.Linq;
 using UnityEditor;
-namespace ThemesPlugin
+using UnityEditorInternal;
+using UnityEngine;
+
+namespace EditorThemes.Editor
 { 
     public static class ThemesUtility
     {
-        readonly public static string CustomThemesPath = Application.dataPath + "/EditorThemes/Editor/Themes/";
-        readonly public static string UssFilePath = Application.dataPath + "/EditorThemes/Editor/StyleSheets/Extensions/";
-        readonly public static string PresetsPath = Application.dataPath + "/EditorThemes/Editor/CreatePresets/";
-        readonly public static string Version = "v0.65";
-        readonly public static string Enc = ".json";
+        public static readonly string CustomThemesPath = Application.dataPath + "/EditorThemes/Editor/Themes/";
+        public static readonly string UssFilePath = Application.dataPath + "/EditorThemes/Editor/StyleSheets/Extensions/";
+        public static readonly string PresetsPath = Application.dataPath + "/EditorThemes/Editor/CreatePresets/";
+        public static readonly string Version = "v0.65";
+        public static readonly string Enc = ".json";
 
-        public static string currentTheme;
+        public static string CurrentTheme;
         
 
         public static Color HtmlToRgb(string s)
         {
-            Color c = Color.black;
+            var c = Color.black;
             ColorUtility.TryParseHtmlString(s, out c);
             return c;
         }
 
         public static void OpenEditTheme(CustomTheme ct)
         {
-            EditThemeWindow.ct = ct;
-            EditThemeWindow window = (EditThemeWindow)EditorWindow.GetWindow(typeof(EditThemeWindow), false, "Edit Theme");
+            EditThemeWindow.Ct = ct;
+            var window = (EditThemeWindow)EditorWindow.GetWindow(typeof(EditThemeWindow), false, "Edit Theme");
            
             window.Show();
         }
-        public static CustomTheme GetCustomThemeFromJson(string Path)
+        public static CustomTheme GetCustomThemeFromJson(string path)
         {
-            string json = File.ReadAllText(Path);
+            var json = File.ReadAllText(path);
             
             return JsonUtility.FromJson<CustomTheme>(json);
         }
 
-        public static string GetPathForTheme(string Name)
+        public static string GetPathForTheme(string name)
         {
-            return CustomThemesPath + Name + Enc;
+            return CustomThemesPath + name + Enc;
         }
-        public static void DeleteFileWithMeta(string Path)
+        public static void DeleteFileWithMeta(string path)
         {
-            if (File.Exists(Path))
+            if (File.Exists(path))
             {
-                File.Delete(Path);
-                File.Delete(Path + ".meta");
+                File.Delete(path);
+                File.Delete(path + ".meta");
             }
-            else Debug.LogWarning("Path: " + Path + " does not exsit");
+            else Debug.LogWarning("Path: " + path + " does not exist");
             
         }
 
         public static string GenerateUssString(CustomTheme c)
         {
-            string ussText = "";
+            var ussText = "";
             ussText += "/* ========== Editor Themes Plugin ==========*/";
             ussText += "\n";
             ussText += "/*            Auto Generated Code            */";
@@ -64,58 +65,51 @@ namespace ThemesPlugin
             ussText += "\n";
             ussText += "/*"+ Version + "*/";
 
-            foreach (CustomTheme.UIItem I in c.Items)
-            {
-                ussText += UssBlock(I.Name, I.Color);
-            }
-
-            return ussText;
+            return c.items.Aggregate(ussText, (current, I) => current + UssBlock(I.Name, I.color));
         }
 
         
 
-        public static string UssBlock(string Name, Color Color)
+        public static string UssBlock(string name, Color color)
         {
-            Color32 color32 = Color;
+            Color32 color32 = color;
             //Debug.Log(color32);
-            string a = Color.a + "";
+            var a = color.a + "";
             a = a.Replace(",", ".");
 
-            string Colors = "rgba(" + color32.r + ", " + color32.g + ", " + color32.b + ", " + a + ")";// Generate colors for later
+            var colors = "rgba(" + color32.r + ", " + color32.g + ", " + color32.b + ", " + a + ")";// Generate colors for later
 
-            string s = "\n" + "\n";//add two empty lines
+            var s = "\n" + "\n";//add two empty lines
 
-            s += "." + Name + "\n";//add name
-            s += "{" + "\n" + "\t" + "background-color: " + Colors + ";" + "\n" + "}";//add color
+            s += "." + name + "\n";//add name
+            s += "{" + "\n" + "\t" + "background-color: " + colors + ";" + "\n" + "}";//add color
 
             return s;
         }
 
         public static void SaveJsonFileForTheme(CustomTheme t)
         {
-
-            t.Version = Version;
-            string NewJson = JsonUtility.ToJson(t);
+            var newJson = JsonUtility.ToJson(t);
 
 
-            string Path = GetPathForTheme(t.Name);
-            if (File.Exists(Path))
+            var path = GetPathForTheme(t.name);
+            if (File.Exists(path))
             {
-                File.Delete(Path);
+                File.Delete(path);
             }
 
-            File.WriteAllText(Path, NewJson);
-            LoadUssFileForTheme(t.Name);
+            File.WriteAllText(path, newJson);
+            LoadUssFileForTheme(t.name);
 
         }
-        public static void LoadUssFileForTheme(string Name)
+        public static void LoadUssFileForTheme(string name)
         {
-            LoadUssFileForThemeUsingPath(ThemesUtility.GetPathForTheme(Name));
+            LoadUssFileForThemeUsingPath(GetPathForTheme(name));
         }
-        public static void LoadUssFileForThemeUsingPath(string Path)
+        public static void LoadUssFileForThemeUsingPath(string path)
         {
 
-            CustomTheme t = ThemesUtility.GetCustomThemeFromJson(Path);
+            var t = GetCustomThemeFromJson(path);
 
             if ((EditorGUIUtility.isProSkin && t.unityTheme == CustomTheme.UnityTheme.Light) || (!EditorGUIUtility.isProSkin && t.unityTheme == CustomTheme.UnityTheme.Dark))
             {
@@ -123,25 +117,25 @@ namespace ThemesPlugin
 
             }
 
-            string ussText = ThemesUtility.GenerateUssString(t);
+            var ussText = GenerateUssString(t);
             WriteUss(ussText);
 
-            currentTheme = Path;
+            CurrentTheme = path;
         }
 
 
         public static void WriteUss(string ussText)
         {
-            string Path = UssFilePath + "/dark.uss";
-            DeleteFileWithMeta(Path);
+            var path = UssFilePath + "/dark.uss";
+            DeleteFileWithMeta(path);
 
-            File.WriteAllText(Path, ussText);
+            File.WriteAllText(path, ussText);
 
 
-            string Path2 = Application.dataPath + "/EditorThemes/Editor/StyleSheets/Extensions/light.uss";
-            DeleteFileWithMeta(Path2);
+            var path2 = Application.dataPath + "/EditorThemes/Editor/StyleSheets/Extensions/light.uss";
+            DeleteFileWithMeta(path2);
             
-            File.WriteAllText(Path2, ussText);
+            File.WriteAllText(path2, ussText);
 
 
             AssetDatabase.Refresh();
@@ -151,7 +145,7 @@ namespace ThemesPlugin
 
         public static List<string> GetColorListByInt(int i)
         {
-            List<string> colorList = new List<string>();
+            var colorList = new List<string>();
 
 
             switch (i)
@@ -168,7 +162,7 @@ namespace ThemesPlugin
                     colorList.Add("TV LineBold");
 
                     break;
-                case 2://secondery
+                case 2://secondary
                     colorList.Add("ToolbarDropDownToogleRight");
                     colorList.Add("ToolbarPopupLeft");
                     colorList.Add("ToolbarPopup");
@@ -183,11 +177,11 @@ namespace ThemesPlugin
 
                     colorList.Add("ProjectBrowserIconAreaBg");
 
-                    //colorList.Add("dragTab");//this is the currently clicked tab  has to be a diffrent color than the other tabs
+                    //colorList.Add("dragTab");//this is the currently clicked tab  has to be a different color than the other tabs
                     break;
                 case 3://Tab
                     //colorList.Add("dragtab first");
-                    colorList.Add("dragtab-label");//changing this color has overriten dragTab and dragtab first so removed
+                    colorList.Add("dragtab-label");//changing this color has overwritten dragTab and dragtab first so removed
                     break;
                 case 4://button
 

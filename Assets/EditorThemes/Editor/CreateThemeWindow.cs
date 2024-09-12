@@ -1,22 +1,20 @@
-using UnityEngine;
-using UnityEditor;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
+using UnityEditor;
+using UnityEngine;
 
-using UnityEditorInternal;
 //to do TextColor
 //EditorStyles.label.normal.textColor 
 
-namespace ThemesPlugin 
+namespace EditorThemes.Editor 
 {
     public class CreateThemeWindow : EditorWindow
     {
-        enum UnityTheme { FullDark, FullLight, Dark, Light, Both }
-        UnityTheme unityTheme;
+        private enum UnityTheme { FullDark, FullLight, Dark, Light, Both }
+
+        private UnityTheme _unityTheme;
 
 
-        [MenuItem("Themes/Create Theme")]
+        [MenuItem("Redline/Themes/Create Theme")]
         public static void ShowWindow()
         {
             ThemeSettings.ShowWindow();
@@ -28,45 +26,34 @@ namespace ThemesPlugin
         }
 
 
-
-        string Name = "EnterName";
+        private string _name = "EnterName";
         private void OnGUI()
         {
             EditorGUILayout.LabelField("");
 
 
-            Name = EditorGUILayout.TextField(Name, GUILayout.Width(200));
+            _name = EditorGUILayout.TextField(_name, GUILayout.Width(200));
 
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("Preset:");
 
-            unityTheme = (UnityTheme)EditorGUILayout.EnumPopup(unityTheme, GUILayout.Width(100));
-            string Description = "";
-            switch (unityTheme)
+            _unityTheme = (UnityTheme)EditorGUILayout.EnumPopup(_unityTheme, GUILayout.Width(100));
+            var description = _unityTheme switch
             {
-                case UnityTheme.FullDark:
-                    Description = "Everything you need for a Dark Theme";
-                    break;
-                case UnityTheme.FullLight:
-                    Description = "Everything you need for a Light Theme";
-                    break;
-                case UnityTheme.Light:
-                    Description = "Minimalistic Preset for a Light Theme";
-                    break;
-                case UnityTheme.Dark:
-                    Description = "Minimalistic Preset for a Dark Theme";
-                    break;
-                case UnityTheme.Both:
-                    Description = "Minimalistic Preset for a Light & Dark Theme";
-                    break;
-            }
+                UnityTheme.FullDark => "Everything you need for a Dark Theme",
+                UnityTheme.FullLight => "Everything you need for a Light Theme",
+                UnityTheme.Light => "Minimalistic Preset for a Light Theme",
+                UnityTheme.Dark => "Minimalistic Preset for a Dark Theme",
+                UnityTheme.Both => "Minimalistic Preset for a Light & Dark Theme",
+                _ => ""
+            };
 
-            EditorGUILayout.LabelField(Description);
+            EditorGUILayout.LabelField(description);
             EditorGUILayout.LabelField("");
 
-            bool create = false;
+            var create = false;
             
-            Event e = Event.current;
+            var e = Event.current;
             if (e.type == EventType.KeyDown)
             {
                 if (e.keyCode == KeyCode.Return)
@@ -80,147 +67,50 @@ namespace ThemesPlugin
             }
 
 
-            if (create)
+            if (!create) return;
+            var path = Application.dataPath + "/EditorThemes/Editor/StyleSheets/Extensions/CustomThemes/" + _name + ".json";
+            if (File.Exists(path))
             {
-                string Path = Application.dataPath + "/EditorThemes/Editor/StyleSheets/Extensions/CustomThemes/" + Name + ".json";
-                if (File.Exists(Path))
+                if( EditorUtility.DisplayDialog("This Theme already exists", "Do you want to override the old Theme?", "Yes",  "Cancel") == false)
                 {
-                    if( EditorUtility.DisplayDialog("This Theme already exsists", "Do you want to overide the old Theme?", "Yes",  "Cancel") == false)
-                    {
-                        return;
-                    }
+                    return;
                 }
-
-                CustomTheme t = new CustomTheme();
-                string PresetName = "";
-                switch (unityTheme)
-                {
-                    case UnityTheme.FullDark:
-                        PresetName = "FullDark";
-                        break;
-                    case UnityTheme.FullLight:
-                        PresetName = "FullLight";
-                        break ;
-                    case UnityTheme.Light:
-                        PresetName = "Light";
-                        break;
-                    case UnityTheme.Dark:
-                        PresetName = "Dark";
-                        break;
-                    case UnityTheme.Both:
-                        PresetName = "Both";
-                        break;
-                }
-
-                t = FetchTheme(PresetName,Name);
-
-
-
-                ThemesUtility.SaveJsonFileForTheme(t);
-
-                ThemesUtility.OpenEditTheme(t);
-
-                this.Close();
             }
 
-           
+            var presetName = _unityTheme switch
+            {
+                UnityTheme.FullDark => "FullDark",
+                UnityTheme.FullLight => "FullLight",
+                UnityTheme.Light => "Light",
+                UnityTheme.Dark => "Dark",
+                UnityTheme.Both => "Both",
+                _ => ""
+            };
+
+            var t = FetchTheme(presetName,_name);
+
+
+
+            ThemesUtility.SaveJsonFileForTheme(t);
+
+            ThemesUtility.OpenEditTheme(t);
+
+            this.Close();
+
+
 
         }
 
-        CustomTheme FetchTheme(string PresetName,string Name)
+        private static CustomTheme FetchTheme(string presetName,string Name)
         {
-            CustomTheme CustomTheme = ThemesUtility.GetCustomThemeFromJson(ThemesUtility.PresetsPath + PresetName + ".json");
+            var customTheme = ThemesUtility.GetCustomThemeFromJson(ThemesUtility.PresetsPath + presetName + ".json");
 
-            CustomTheme.Name = Name;
+            customTheme.name = Name;
             
 
 
-            return CustomTheme;
+            return customTheme;
         }
-        
-        /*
-         old theme instructions:
-        //fetch all ColorObjects
-                for(int i = 0; i < 6; i++)
-                {
-                    Color DefaultColor = Color.black;
-                    if(unityTheme == UnityTheme.Dark)
-                    {
-                        switch (i)
-                        {
-                            case 0:
-                                DefaultColor = ThemesUtility.HtmlToRgb("#383838");
-                                break;
-                                case 1:
-                                DefaultColor = ThemesUtility.HtmlToRgb("#282828");
-                                break;
-                            case 2:
-                                DefaultColor = ThemesUtility.HtmlToRgb("#3C3C3C");
-                                break ;
-                                case 3:
-                                DefaultColor= ThemesUtility.HtmlToRgb("#2D2D2D");
-                                break;
-                            case 4:
-                                DefaultColor = ThemesUtility.HtmlToRgb("#383838");
-                                break;    
-                            case 5:
-                                DefaultColor = ThemesUtility.HtmlToRgb("#585858");
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        switch (i)
-                        {
-                            case 0:
-                                DefaultColor = ThemesUtility.HtmlToRgb("#C8C8C8");
-                                break;
-                            case 1:
-                                DefaultColor = ThemesUtility.HtmlToRgb("#A5A5A5");
-                                break;
-                            case 2:
-                                DefaultColor = ThemesUtility.HtmlToRgb("#A5A5A5");
-                                break;
-                            case 3:
-                                DefaultColor = ThemesUtility.HtmlToRgb("#CBCBCB");
-                                break;
-                            case 4:
-                                DefaultColor = ThemesUtility.HtmlToRgb("#C8C8C8");
-                                break;
-                            case 5:
-                                DefaultColor = ThemesUtility.HtmlToRgb("#DFDFDF");
-                                break;
-                        }
-                    }
-                    
-                    
-                    foreach(string s in ThemeSettings.i.GetColorListByInt(i))
-                    {
-                        CustomTheme.UIItem uiItem = new CustomTheme.UIItem();
-                        uiItem.Name = s;
-                        if(s != "AppToolbar")
-                        {
-                            uiItem.Color = DefaultColor;
-                        }
-                        else
-                        {
-                            if(unityTheme == UnityTheme.Dark)
-                            {
-                                uiItem.Color = ThemesUtility.HtmlToRgb("#191919");
-                            }
-                            else
-                            {
-                                uiItem.Color = ThemesUtility.HtmlToRgb("#8A8A8A");
-                            }
-                        }
-                        
-                        t.Items.Add(uiItem);
-                    }
-         
-         
-         
-         
-         */
 
     }
 
