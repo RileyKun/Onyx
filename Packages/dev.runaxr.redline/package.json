@@ -9,7 +9,7 @@
     "url": "https://github.com/Redline-Team"
   },
   "changelogUrl": "https://github.com/Redline-Team/RPM/releases",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "type": "Tool",
   "vpmDependencies": {},
   "legacyFolders": {
