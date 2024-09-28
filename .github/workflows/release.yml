@@ -9,8 +9,8 @@ on:
 env:
   packageName: "dev.runaxr.redline"
   packagePath: "Packages/dev.runaxr.redline"
-  packageFileName: "Redline Package Manager"
-  packageReleaseName: "Redline Package Manager"
+  packageFileName: "Redline"
+  packageReleaseName: "Redline"
 
 permissions:
   contents: write
