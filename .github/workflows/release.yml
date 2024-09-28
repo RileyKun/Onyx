@@ -10,7 +10,7 @@ env:
   packageName: "dev.runaxr.redline"
   packagePath: "Packages/dev.runaxr.redline"
   packageFileName: "Redline"
-  packageReleaseName: "BleedingEdge"
+  packageReleaseName: "Bleeding Edge"
 
 permissions:
   contents: write

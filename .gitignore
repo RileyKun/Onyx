@@ -51,7 +51,7 @@ ExportedObj/
 *.pidb.meta
 *.pdb.meta
 *.mdb.meta
-*.meta
+# *.meta  since this isn't active anymore for bleeding edge builds to work
 
 # Unity3D generated file on crash reports
 sysinfo.txt
