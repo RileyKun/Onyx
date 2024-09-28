@@ -131,42 +131,36 @@ namespace Redline.Scripts.Editor {
 
       EditorGUILayout.Space(10);
       EditorGUILayout.EndVertical();
+
       GUILayout.Label("Overall:");
       GUILayout.BeginHorizontal();
-      var isDiscordEnabled = EditorPrefs.GetBool("RedlineDiscordRPC", true);
-      var enableDiscord = EditorGUILayout.ToggleLeft("Discord RPC", isDiscordEnabled);
-      if (enableDiscord != isDiscordEnabled) {
-        EditorPrefs.SetBool("RedlineDiscordRPC", enableDiscord);
-      }
-
       GUILayout.EndHorizontal();
+
       //Hide Console logs
       GUILayout.Space(4);
       GUILayout.BeginHorizontal();
       var isHiddenConsole = EditorPrefs.GetBool("Redline_HideConsole");
       var enableConsoleHide = EditorGUILayout.ToggleLeft("Hide Console Errors", isHiddenConsole);
-      switch (enableConsoleHide)
-      {
-        case true:
+
+      if(enableConsoleHide){
           EditorPrefs.SetBool("Redline_HideConsole", true);
-          Debug.ClearDeveloperConsole();
           Debug.unityLogger.logEnabled = false;
-          break;
-        case false:
+      }else{
           EditorPrefs.SetBool("Redline_HideConsole", false);
-          Debug.ClearDeveloperConsole();
           Debug.unityLogger.logEnabled = true;
-          break;
       }
+
+      Debug.ClearDeveloperConsole();
 
       GUILayout.EndHorizontal();
       GUILayout.Space(4);
       GUILayout.BeginHorizontal();
+
       var isUITextRainbowEnabled = EditorPrefs.GetBool("Redline_UITextRainbow", false);
       var enableUITextRainbow = EditorGUILayout.ToggleLeft("Rainbow Text", isUITextRainbowEnabled);
+
       if (enableUITextRainbow != isUITextRainbowEnabled) {
         EditorPrefs.SetBool("Redline_UITextRainbow", enableUITextRainbow);
-      } else {
       }
 
       GUILayout.EndHorizontal();

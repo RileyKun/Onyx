@@ -23,8 +23,8 @@ namespace Redline.Scripts.Editor {
 
     private static GUIStyle _header;
     private static Vector2 _changeLogScroll;
-    private
-    const float Timer = 60f;
+    // NOTE: Pixy; made const int instead of const float because const float in C is stupid.
+    private const int Timer = 60;
     private float _timeLeft;
 
     [MenuItem("Redline/Scene AutoSave", false, 500)]
@@ -45,10 +45,14 @@ namespace Redline.Scripts.Editor {
 
     [Obsolete("Obsolete")]
     public void OnGUI() {
-      EditorGUILayout.LabelField("Time:", Timer + " Secs");
+      EditorGUILayout.LabelField("Interval:", Timer + " seconds");
+
       var timeToSave = (int)(_timeLeft - EditorApplication.timeSinceStartup);
-      EditorGUILayout.LabelField("time left:", timeToSave + " Sec");
+
+      EditorGUILayout.LabelField("Time to next save:", timeToSave + " seconds");
+
       Repaint();
+
       if (EditorApplication.timeSinceStartup > _timeLeft) {
         var path = EditorApplication.currentScene.Split(char.Parse("/"));
         path[ ^ 1] = "AutoSave_" + path[ ^ 1];
@@ -58,7 +62,8 @@ namespace Redline.Scripts.Editor {
 
       GUILayout.BeginHorizontal();
       GUI.backgroundColor = Color.cyan;
-
+      
+      // TODO: remove these?
       if (GUILayout.Button("Trigon")) {
         Application.OpenURL("https://trigon.systems/");
       }
