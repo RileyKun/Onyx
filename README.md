@@ -31,9 +31,8 @@ You can import by drag and dropping into assets or double clicking the package w
 You can add our VCC Repository to ALCOM/VCC  
 [Main Redline Repo URL](https://rpmrepo.c0dera.in)  
 [Backup Redline Repo URL](https://redline-team.github.io/RedlineVCC/)  
-## VCC/ALCOM NOTE  
-Importing via VCC/ALCOM will NOT include the DiscordRPC or the UnityThemer, You will only have the base package manager  
-This is until I find a way to safely integrate them without breaking unity  
-
+## BLEEDING EDGE BUILDS  
+This repository auto builds BLEEDING EDGE packages  
+Using these can have unexpected issues  
 <img src="TWpuYSR.png" />  
 </div>
