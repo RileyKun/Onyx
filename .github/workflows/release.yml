@@ -27,7 +27,7 @@ jobs:
         id: version
         uses: zoexx/github-action-json-file-properties@b9f36ce6ee6fe2680cd3c32b2c62e22eade7e590
         with: 
-            file_path: "./dev.runaxr.redline/package.json"
+            file_path: "./Packages/dev.runaxr.redline/package.json"
             prop_path: "version"
       
       - name: Generate Tag
@@ -104,4 +104,4 @@ jobs:
           files: |
             ${{ env.zipFile }}
             ${{ env.unityPackage }}
-            ./dev.runaxr.redline/package.json
+            ./Packages/dev.runaxr.redline/package.json
