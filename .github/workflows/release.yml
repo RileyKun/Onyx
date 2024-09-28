@@ -90,7 +90,7 @@ jobs:
         uses: foxscore/add-icon-to-unitypackage@v1
         with:
           package_path: ${{ env.unityPackage }}
-          icon_path: '.github/thumbnail.png'
+          icon_path: '.github/thumbnail.jpg'
           package_not_found_behavior: 'warn'
           icon_not_found_behavior: 'warn'
           icon_already_present_behavior: 'warn'
