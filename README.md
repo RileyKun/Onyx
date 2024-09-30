@@ -27,9 +27,9 @@ Curation requests have been opened in the discord if you wish to request a pacak
 ## Traditional Package  
 Download the [latest release](https://github.com/Redline-Team/RPM/releases/latest) and import it into unity  
 You can import by drag and dropping into assets or double clicking the package while unity is open  
-## VRChat Creator Companion  
+## VRChat Creator Companion/ALCOM  
 You can add our VCC Repository to ALCOM/VCC  
-[Main Redline Repo URL](https://rpmrepo.c0dera.in)  
+[Main Redline Repo URL](https://rpmrepo.trigon.systems)  
 [Backup Redline Repo URL](https://redline-team.github.io/RedlineVCC/)  
 ## BLEEDING EDGE BUILDS  
 This repository auto builds BLEEDING EDGE packages  
