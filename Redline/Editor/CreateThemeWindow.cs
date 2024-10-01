@@ -9,8 +9,9 @@ namespace Redline.Editor
 {
     public class CreateThemeWindow : EditorWindow
     {
-        enum UnityTheme { FullDark, FullLight, Dark, Light, Both }
-        UnityTheme unityTheme;
+        private enum UnityTheme { FullDark, FullLight, Dark, Light, Both }
+
+        private UnityTheme _unityTheme;
 
 
         [MenuItem("Redline/Themes/Create Theme")]
@@ -25,20 +26,19 @@ namespace Redline.Editor
         }
 
 
-
-        string Name = "EnterName";
+        private string _name = "EnterName";
         private void OnGUI()
         {
             EditorGUILayout.LabelField("");
 
 
-            Name = EditorGUILayout.TextField(Name, GUILayout.Width(200));
+            _name = EditorGUILayout.TextField(_name, GUILayout.Width(200));
 
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("Preset:");
 
-            unityTheme = (UnityTheme)EditorGUILayout.EnumPopup(unityTheme, GUILayout.Width(100));
-            var Description = unityTheme switch
+            _unityTheme = (UnityTheme)EditorGUILayout.EnumPopup(_unityTheme, GUILayout.Width(100));
+            var description = _unityTheme switch
             {
                 UnityTheme.FullDark => "Everything you need for a Dark Theme",
                 UnityTheme.FullLight => "Everything you need for a Light Theme",
@@ -48,7 +48,7 @@ namespace Redline.Editor
                 _ => ""
             };
 
-            EditorGUILayout.LabelField(Description);
+            EditorGUILayout.LabelField(description);
             EditorGUILayout.LabelField("");
 
             var create = false;
@@ -68,8 +68,8 @@ namespace Redline.Editor
 
 
             if (!create) return;
-            var Path = @"Packages\dev.runaxr.redline\Redline\Editor\StyleSheets\Extensions\CustomThemes\" + Name + ".json";
-            if (File.Exists(Path))
+            var path = @"Packages\dev.runaxr.redline\Redline\Editor\StyleSheets\Extensions\CustomThemes\" + _name + ".json";
+            if (File.Exists(path))
             {
                 if( EditorUtility.DisplayDialog("This Theme already exists", "Do you want to override the old Theme?", "Yes",  "Cancel") == false)
                 {
@@ -77,8 +77,7 @@ namespace Redline.Editor
                 }
             }
 
-            var t = new CustomTheme();
-            var PresetName = unityTheme switch
+            var presetName = _unityTheme switch
             {
                 UnityTheme.FullDark => "FullDark",
                 UnityTheme.FullLight => "FullLight",
@@ -88,7 +87,7 @@ namespace Redline.Editor
                 _ => ""
             };
 
-            t = FetchTheme(PresetName,Name);
+            var t = FetchTheme(presetName,_name);
 
 
 
@@ -102,15 +101,15 @@ namespace Redline.Editor
 
         }
 
-        CustomTheme FetchTheme(string PresetName,string Name)
+        private static CustomTheme FetchTheme(string presetName,string Name)
         {
-            var CustomTheme = ThemesUtility.GetCustomThemeFromJson(ThemesUtility.PresetsPath + PresetName + ".json");
+            var customTheme = ThemesUtility.GetCustomThemeFromJson(ThemesUtility.PresetsPath + presetName + ".json");
 
-            CustomTheme.Name = Name;
+            customTheme.Name = Name;
             
 
 
-            return CustomTheme;
+            return customTheme;
         }
 
     }

@@ -15,19 +15,18 @@ namespace Redline.Editor
         private const string Version = "v0.65";
         public const string Enc = ".json";
 
-        public static string currentTheme;
+        public static string CurrentTheme;
         
 
         public static Color HtmlToRgb(string s)
         {
-            var c = Color.black;
-            ColorUtility.TryParseHtmlString(s, out c);
+            ColorUtility.TryParseHtmlString(s, out var c);
             return c;
         }
 
         public static void OpenEditTheme(CustomTheme ct)
         {
-            EditThemeWindow.ct = ct;
+            EditThemeWindow.Ct = ct;
             var window = (EditThemeWindow)EditorWindow.GetWindow(typeof(EditThemeWindow), false, "Edit Theme");
            
             window.Show();
@@ -90,7 +89,7 @@ namespace Redline.Editor
         {
 
             t.Version = Version;
-            var NewJson = JsonUtility.ToJson(t);
+            var newJson = JsonUtility.ToJson(t);
 
 
             var Path = GetPathForTheme(t.Name);
@@ -99,7 +98,7 @@ namespace Redline.Editor
                 File.Delete(Path);
             }
 
-            File.WriteAllText(Path, NewJson);
+            File.WriteAllText(Path, newJson);
             LoadUssFileForTheme(t.Name);
 
         }
@@ -122,13 +121,13 @@ namespace Redline.Editor
             var ussText = GenerateUssString(t);
             WriteUss(ussText);
 
-            currentTheme = Path;
+            CurrentTheme = Path;
         }
 
 
         private static void WriteUss(string ussText)
         {
-            var path = UssFilePath + "/dark.uss";
+            const string path = UssFilePath + "/dark.uss";
             DeleteFileWithMeta(path);
 
             File.WriteAllText(path, ussText);

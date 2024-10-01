@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -12,53 +13,54 @@ namespace Redline.Editor
 public class EditThemeWindow : EditorWindow
 {
         
-        public static CustomTheme ct;
+        public static CustomTheme Ct;
 
         string Name;
 
-        Vector2 scrollPosition;
+        private Vector2 _scrollPosition;
 
 
-        List<Color> SimpleColors = new List<Color>();
-        List<Color> LastSimpleColors = new List<Color>();
+        private List<Color> _simpleColors = new();
+        private List<Color> _lastSimpleColors = new();
 
-        enum CustomView { Simple, Advanced };
-        CustomView customView;
+        private enum CustomView { Simple, Advanced };
 
-        bool Rhold;
-        bool STRGHold;
+        private CustomView _customView;
+
+        private bool _rhold;
+        private bool _strgHold;
 
 
         
         
         private void OnDestroy()
         {
-            ct = null;
+            Ct = null;
 
         }
 
         private void Awake()
         {
             //Debug.Log(ct.Items[0].Color);
-            SimpleColors = CreateAverageCoolors();
-            LastSimpleColors = CreateAverageCoolors();
+            _simpleColors = CreateAverageCoolors();
+            _lastSimpleColors = CreateAverageCoolors();
 
 
-            Name = ct.Name;
+            Name = Ct.Name;
         }
         private void OnGUI()
         {
             
 
             
-            if (ct == null)
+            if (Ct == null)
             {
                 Close();
                 return;
             }
                 
                 
-            var Regenerate = false;
+            var regenerate = false;
 
             var e = Event.current;
             switch (e.type)
@@ -67,7 +69,7 @@ public class EditThemeWindow : EditorWindow
                 {
                     if (e.keyCode == KeyCode.R)
                     {
-                        Rhold = true;
+                        _rhold = true;
                     }
 
                     break;
@@ -76,11 +78,36 @@ public class EditThemeWindow : EditorWindow
                 {
                     if (e.keyCode == KeyCode.R)
                     {
-                        Rhold = false;
+                        _rhold = false;
                     }
 
                     break;
                 }
+                case EventType.MouseDown:
+                case EventType.MouseUp:
+                case EventType.MouseMove:
+                case EventType.MouseDrag:
+                case EventType.ScrollWheel:
+                case EventType.Repaint:
+                case EventType.Layout:
+                case EventType.DragUpdated:
+                case EventType.DragPerform:
+                case EventType.DragExited:
+                case EventType.Ignore:
+                case EventType.Used:
+                case EventType.ValidateCommand:
+                case EventType.ExecuteCommand:
+                case EventType.ContextClick:
+                case EventType.MouseEnterWindow:
+                case EventType.MouseLeaveWindow:
+                case EventType.TouchDown:
+                case EventType.TouchUp:
+                case EventType.TouchMove:
+                case EventType.TouchEnter:
+                case EventType.TouchLeave:
+                case EventType.TouchStationary:
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             switch (e.type)
@@ -89,7 +116,7 @@ public class EditThemeWindow : EditorWindow
                 {
                     if (e.keyCode == KeyCode.LeftControl)
                     {
-                        STRGHold = true;
+                        _strgHold = true;
                     }
 
                     break;
@@ -98,34 +125,58 @@ public class EditThemeWindow : EditorWindow
                 {
                     if (e.keyCode == KeyCode.LeftControl)
                     {
-                        STRGHold = false;
+                        _strgHold = false;
                     }
 
                     break;
                 }
+                case EventType.MouseDown:
+                case EventType.MouseUp:
+                case EventType.MouseMove:
+                case EventType.MouseDrag:
+                case EventType.ScrollWheel:
+                case EventType.Repaint:
+                case EventType.Layout:
+                case EventType.DragUpdated:
+                case EventType.DragPerform:
+                case EventType.DragExited:
+                case EventType.Ignore:
+                case EventType.Used:
+                case EventType.ValidateCommand:
+                case EventType.ExecuteCommand:
+                case EventType.ContextClick:
+                case EventType.MouseEnterWindow:
+                case EventType.MouseLeaveWindow:
+                case EventType.TouchDown:
+                case EventType.TouchUp:
+                case EventType.TouchMove:
+                case EventType.TouchEnter:
+                case EventType.TouchLeave:
+                case EventType.TouchStationary:
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
-            if (Rhold && STRGHold)
+            if (_rhold && _strgHold)
             {
-                Regenerate = true;
-                Rhold = false;
-                STRGHold = false;
+                regenerate = true;
+                _rhold = false;
+                _strgHold = false;
             }
 
-            if (Regenerate && EditorUtility.DisplayDialog("Do you want to regenerate this Theme? (Make a Clone first!)", "Regenerating is helpful when the Theme was made with an older version of the Plugin (but you might loose small amounts of data)", "Continue", "Cancel") == true)
+            if (regenerate && EditorUtility.DisplayDialog("Do you want to regenerate this Theme? (Make a Clone first!)", "Regenerating is helpful when the Theme was made with an older version of the Plugin (but you might loose small amounts of data)", "Continue", "Cancel") == true)
             {
-                ct.Items = new List<CustomTheme.UIItem>();
+                Ct.Items = new List<CustomTheme.UIItem>();
                 //fetch all ColorObjects
                 for (var i = 0; i < 6; i++)
                 {
-
-                    foreach (var s in ThemesUtility.GetColorListByInt(i))
+                    foreach (var uiItem in ThemesUtility.GetColorListByInt(i).Select(s => new CustomTheme.UIItem
+                             {
+                                 Name = s,
+                                 Color = _simpleColors[i]
+                             }))
                     {
-                        var uiItem = new CustomTheme.UIItem();
-                        uiItem.Name = s;
-                        uiItem.Color = SimpleColors[i];
-
-                        ct.Items.Add(uiItem);
+                        Ct.Items.Add(uiItem);
                     }
                 }
             }
@@ -135,26 +186,26 @@ public class EditThemeWindow : EditorWindow
 
             Name = EditorGUILayout.TextField(Name);
             EditorGUILayout.LabelField("\n");
-            customView = (CustomView)EditorGUILayout.EnumPopup(customView, GUILayout.Width(100));
+            _customView = (CustomView)EditorGUILayout.EnumPopup(_customView, GUILayout.Width(100));
 
 
 
 
 
 
-            if (customView == CustomView.Advanced)
+            if (_customView == CustomView.Advanced)
             {
                 EditorGUILayout.LabelField("");
-                scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+                _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
 
-                var CTItemsClone = new List<CustomTheme.UIItem>(ct.Items);
-                foreach (var I in CTItemsClone)
+                var ctItemsClone = new List<CustomTheme.UIItem>(Ct.Items);
+                foreach (var I in ctItemsClone)
                 {
                     EditorGUILayout.BeginHorizontal();
                     I.Name = EditorGUILayout.TextField(I.Name, GUILayout.Width(200));
                     if (GUILayout.Button("Del", GUILayout.Width(50)))
                     {
-                        ct.Items.Remove(I);
+                        Ct.Items.Remove(I);
                     }
                     EditorGUILayout.EndHorizontal();
                     I.Color = EditorGUILayout.ColorField(I.Color, GUILayout.Width(200));
@@ -169,16 +220,18 @@ public class EditThemeWindow : EditorWindow
                 EditorGUILayout.BeginHorizontal();
                 if (GUILayout.Button("Add", GUILayout.Width(200)))
                 {
-                    var I = new CustomTheme.UIItem();
-                    I.Name = "Enter Name";
+                    var I = new CustomTheme.UIItem
+                    {
+                        Name = "Enter Name"
+                    };
 
-                    ct.Items.Add(I);
+                    Ct.Items.Add(I);
                 }
-                if (ct.Items.Count > 0)
+                if (Ct.Items.Count > 0)
                 {
                     if (GUILayout.Button("Remove", GUILayout.Width(200)))
                     {
-                        ct.Items.RemoveAt(ct.Items.Count - 1);
+                        Ct.Items.RemoveAt(Ct.Items.Count - 1);
                     }
                 }
 
@@ -190,36 +243,36 @@ public class EditThemeWindow : EditorWindow
             else
             {
                 GUILayout.Label("Base Color:", EditorStyles.boldLabel);
-                SimpleColors[0] = EditorGUILayout.ColorField(SimpleColors[0]);
+                _simpleColors[0] = EditorGUILayout.ColorField(_simpleColors[0]);
                 GUILayout.Label("Accent Color:", EditorStyles.boldLabel);
-                SimpleColors[1] = EditorGUILayout.ColorField(SimpleColors[1]);
+                _simpleColors[1] = EditorGUILayout.ColorField(_simpleColors[1]);
                 GUILayout.Label("Secondary Base Color:", EditorStyles.boldLabel);
-                SimpleColors[2] = EditorGUILayout.ColorField(SimpleColors[2]);
+                _simpleColors[2] = EditorGUILayout.ColorField(_simpleColors[2]);
                 GUILayout.Label("Tab Color:", EditorStyles.boldLabel);
-                SimpleColors[3] = EditorGUILayout.ColorField(SimpleColors[3]);
+                _simpleColors[3] = EditorGUILayout.ColorField(_simpleColors[3]);
                 GUILayout.Label("Command Bar Color:", EditorStyles.boldLabel);
-                SimpleColors[4] = EditorGUILayout.ColorField(SimpleColors[4]);
+                _simpleColors[4] = EditorGUILayout.ColorField(_simpleColors[4]);
                 GUILayout.Label("Additional Color:", EditorStyles.boldLabel);
-                SimpleColors[5] = EditorGUILayout.ColorField(SimpleColors[5]);
+                _simpleColors[5] = EditorGUILayout.ColorField(_simpleColors[5]);
 
 
 
 
 
 
-                for (var i = 0; i < SimpleColors.Count; i++)
+                for (var i = 0; i < _simpleColors.Count; i++)
                 {
-                    if (SimpleColors[i] != LastSimpleColors[i])
+                    if (_simpleColors[i] != _lastSimpleColors[i])
                     {
                         //Debug.Log("not same");
-                        EditColor(i, SimpleColors[i]);
+                        EditColor(i, _simpleColors[i]);
                     }
                 }
 
             }
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("Unity Theme:");
-            ct.unityTheme = (CustomTheme.UnityTheme)EditorGUILayout.EnumPopup(ct.unityTheme, GUILayout.Width(100));
+            Ct.unityTheme = (CustomTheme.UnityTheme)EditorGUILayout.EnumPopup(Ct.unityTheme, GUILayout.Width(100));
             EditorGUILayout.LabelField("");
             EditorGUILayout.BeginHorizontal();
             //Debug.Log(ct.Name);
@@ -227,32 +280,31 @@ public class EditThemeWindow : EditorWindow
             if (GUILayout.Button("Save", GUILayout.Width(200)))
             {
 
-                if (ct.Name != Name)
+                if (Ct.Name != Name)
                 {
-                    ThemesUtility.DeleteFileWithMeta(ThemesUtility.GetPathForTheme(ct.Name));
+                    ThemesUtility.DeleteFileWithMeta(ThemesUtility.GetPathForTheme(Ct.Name));
                 }
 
-                ct.Name = Name;
+                Ct.Name = Name;
 
-                ThemesUtility.SaveJsonFileForTheme(ct);
+                ThemesUtility.SaveJsonFileForTheme(Ct);
 
             }
 
             if (!GUILayout.Button("Clone", GUILayout.Width(200))) return;
-            ct.Name = Name + " - c";
+            Ct.Name = Name + " - c";
 
-            ThemesUtility.SaveJsonFileForTheme(ct);
+            ThemesUtility.SaveJsonFileForTheme(Ct);
 
 
         }
-        
-        
-        
-        CustomTheme.UIItem GeItemByName(string s)
+
+
+        private static CustomTheme.UIItem GeItemByName(string s)
         {
             CustomTheme.UIItem item = null;
 
-            foreach (var u in ct.Items.Where(u => u.Name == s))
+            foreach (var u in Ct.Items.Where(u => u.Name == s))
             {
                 item = u;
             }
@@ -269,16 +321,7 @@ public class EditThemeWindow : EditorWindow
                 var ColorObjects = ThemesUtility.GetColorListByInt(i);
                 var AllColors = (from s in ColorObjects where GeItemByName(s) != null select GeItemByName(s).Color).ToList();
 
-                if (AllColors.Count > 0)
-                {
-                    colors.Add(GetAverage(AllColors));
-                }
-                else
-                {
-                    colors.Add(ThemesUtility.HtmlToRgb("#9A7B6E"));
-                }
-
-
+                colors.Add(AllColors.Count > 0 ? GetAverage(AllColors) : ThemesUtility.HtmlToRgb("#9A7B6E"));
             }
 
 
@@ -289,26 +332,26 @@ public class EditThemeWindow : EditorWindow
         {
 
 
-            //Color difrence = oc - nc;
+            //Color difference = oc - nc;
             var edit = ThemesUtility.GetColorListByInt(i);
 
 
-            foreach (var Item in edit.Select(s => GeItemByName(s)).Where(Item => Item != null))
+            foreach (var Item in edit.Select(GeItemByName).Where(Item => Item != null))
             {
                 Item.Color = nc;
             }
 
-            LastSimpleColors[i] = SimpleColors[i];
+            _lastSimpleColors[i] = _simpleColors[i];
         }
 
-        Color GetAverage(List<Color> cl)
+        private static Color GetAverage(List<Color> cl)
         {
 
             float r = 0;
             float g = 0;
             float b = 0;
 
-            var Count = cl.Count;
+            var count = cl.Count;
             foreach (var c in cl)
             {
                 
@@ -319,7 +362,7 @@ public class EditThemeWindow : EditorWindow
 
 
 
-            return new Color(r / Count, g / Count, b / Count);
+            return new Color(r / count, g / count, b / count);
         }
 
         

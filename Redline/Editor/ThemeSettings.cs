@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -11,7 +12,7 @@ namespace Redline.Editor
 
     public class ThemeSettings : EditorWindow
     {
-        public List<string> AllThemes = new List<string>();
+        public List<string> AllThemes = new();
         
 
         [MenuItem("Redline/Themes/Select Themes")]
@@ -25,7 +26,7 @@ namespace Redline.Editor
 
         public string ThemeName;
 
-        Vector2 scrollPosition;
+        private Vector2 _scrollPosition;
 
 
         private void OnGUI()
@@ -34,7 +35,7 @@ namespace Redline.Editor
             //window code
 
             GUILayout.Label("Create & Select Themes", EditorStyles.boldLabel);
-            GUILayout.Label("Currently Selected: " + Path.GetFileNameWithoutExtension(ThemesUtility.currentTheme), EditorStyles.boldLabel);
+            GUILayout.Label("Currently Selected: " + Path.GetFileNameWithoutExtension(ThemesUtility.CurrentTheme), EditorStyles.boldLabel);
 
 
 
@@ -48,9 +49,9 @@ namespace Redline.Editor
 
             
 
-            var DarkThemes = new List<CustomTheme>();
-            var LightThemes = new List<CustomTheme>();
-            var BothThemes = new List<CustomTheme>();
+            var darkThemes = new List<CustomTheme>();
+            var lightThemes = new List<CustomTheme>();
+            var bothThemes = new List<CustomTheme>();
 
             foreach (var s in Directory.GetFiles(ThemesUtility.CustomThemesPath, "*"+ ThemesUtility.Enc))
             {
@@ -59,22 +60,24 @@ namespace Redline.Editor
                 switch (ct.unityTheme)
                 {
                     case CustomTheme.UnityTheme.Dark:
-                        DarkThemes.Add(ct);
+                        darkThemes.Add(ct);
                         break;
                     case CustomTheme.UnityTheme.Light:
-                        LightThemes.Add(ct);
+                        lightThemes.Add(ct);
                         break;
                     case CustomTheme.UnityTheme.Both:
-                        BothThemes.Add(ct);
+                        bothThemes.Add(ct);
                         break ;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
             
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("Dark & Light Themes:");
-            foreach (var ct in BothThemes)
+            foreach (var ct in bothThemes)
             {
                 DisplayGUIThemeItem(ct);
             }
@@ -82,13 +85,13 @@ namespace Redline.Editor
 
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("Dark Themes:");
-            foreach(var ct in DarkThemes)
+            foreach(var ct in darkThemes)
             {
                 DisplayGUIThemeItem(ct);
             }
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("Light Themes:");
-            foreach (var ct in LightThemes)
+            foreach (var ct in lightThemes)
             {
                 DisplayGUIThemeItem(ct);
             }
@@ -99,7 +102,7 @@ namespace Redline.Editor
         }
 
 
-        void DisplayGUIThemeItem(CustomTheme ct)
+        private static void DisplayGUIThemeItem(CustomTheme ct)
         {
             
             var Name = ct.Name;
