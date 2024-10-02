@@ -12,7 +12,6 @@ You can use our [RLIST](https://redline-team.github.io/RedlineList) with VCC/ALC
 [![Patreon](https://img.shields.io/badge/Patreon-Donate-pink?style=for-the-badge)](https://www.patreon.com/PhoenixAceVFX)
 [![GitHub all releases](https://img.shields.io/github/downloads/Redline-Team/RPM/total?color=red&label=Total%20Downloads&logo=github&logoColor=red&style=for-the-badge)](https://github.com/Redline-Team/RPM/releases/latest)  
 [![Rider](https://img.shields.io/badge/Rider-000000.svg?style=for-the-badge&logo=Rider&logoColor=white&color=black&labelColor=crimson)](https://www.jetbrains.com/rider/)  
-[![Discord](https://img.shields.io/discord/1253122047354077258?style=for-the-badge&logo=discord&logoColor=white&label=RXR%20Coalition&labelColor=black)](https://discord.gg/hrD7KJkhde)  
 [![Better Stack Badge](https://uptime.betterstack.com/status-badges/v3/monitor/1htdw.svg)](https://status.c0dera.in)
 [![Better Stack Badge](https://uptime.betterstack.com/status-badges/v3/monitor/1htdf.svg)](https://status.c0dera.in)
 [![Better Stack Badge](https://uptime.betterstack.com/status-badges/v3/monitor/1jo75.svg)](https://status.c0dera.in)
