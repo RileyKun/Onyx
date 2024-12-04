@@ -22,10 +22,10 @@
             "name": "Del then download to update packages"
         },
         "Announcement6": {
-            "name": "VRCSDK Packages are now on 3.7.0"
+            "name": "VRCSDK Packages are now on 3.7.3"
         },
         "announcement7": {
-            "name": "Latest Package List Edit: 9/5/24 at 6:26pm EST"
+            "name": "Latest Package List Edit: 11/15/24 at 12:14am EST"
         },
 
         "Redline Files": {
@@ -39,10 +39,6 @@
         "Cool Stuff": {
             "name": "\nUnity Editor Additions"
         },
-        "Unity Themer": {
-            "name": "Unity Editor Themer",
-            "file": "UnityThemer.unitypackage"
-        },
         "PlayModeSaver": {
             "name": "PLAY MODE SAVER",
             "file": "PMS.unitypackage"
@@ -54,6 +50,10 @@
         "HierarchyPlus": {
             "name": "HierarchyPlus",
             "file": "HierarchyPlus.unitypackage"
+        },
+        "RiderFlow": {
+            "name": "RiderFlow",
+            "file": "RiderFlow.unitypackage"
         },
 
         "VRCSDK Packages": {
@@ -115,6 +115,10 @@
             "name": "VRCSDKP (VRCSDK)",
             "file": "vrcsdkp.unitypackage"
         },
+        "BlendTreeBuilder": {
+            "name": "BlendTreeBuilder (VRCSDK)",
+            "file": "BlendTreeBuilder.unitypackage"
+        },
         "WFT": {
             "name": "Workflow Tools (VRCSDK)",
             "file": "wft.unitypackage"
@@ -134,10 +138,6 @@
         "RATS": {
             "name": "Raz's Animator Tweaks n Stuff",
             "file": "RATS.unitypackage"
-        },
-        "FACS": {
-            "name": "FACS Utilities",
-            "file": "FACS.unitypackage"
         },
         "BitAnimator": {
             "name": "Bit Animator",
