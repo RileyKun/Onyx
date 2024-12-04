@@ -1,149 +1,137 @@
-﻿using System;
-using System.ComponentModel;
-using System.Diagnostics;
+using System;
 using System.IO;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
+using UnityEngine.Networking;
 
-// TODO: @Pixy; rewrite?
-namespace RedlineUpdater.Editor{
-  public class RedlineAutomaticUpdateAndInstall : MonoBehaviour{
-    //get version from server
-    private const string VersionURL = "https://c0dera.in/Redline/api/version.txt";
+namespace RedlineUpdater.Editor
+{
+    public class RedlineAutomaticUpdateAndInstall : MonoBehaviour
+    {
+        // Define the URLs and paths
+        private const string VersionURL = "https://c0dera.in/Redline/api/version.txt";
+        private const string UnitypackageUrl = "https://c0dera.in/Redline/api/assets/latest/Redline.unitypackage";
+        private static readonly string CurrentVersion = File.ReadAllText("Packages/dev.runaxr.Redline/RedlineUpdater/editor/RedlineVersion.txt");
+        private const string AssetName = "Redline.unitypackage";
+        private const string ToolkitPath = @"Packages\dev.runaxr.redline";
 
-    //get download url
-    private const string UnitypackageUrl = "https://c0dera.in/Redline/api/assets/latest/Redline.unitypackage";
+        // Starting the automatic update process
+        public static async void AutomaticRedlineInstaller()
+        {
+            using (UnityWebRequest www = UnityWebRequest.Get(VersionURL))
+            {
+                // Make an HTTP request to fetch the version from the server
+                await www.SendWebRequest();
 
-    //GetVersion
-    private static readonly string CurrentVersion = File.ReadAllText("Packages/dev.runaxr.Redline/RedlineUpdater/editor/RedlineVersion.txt");
+                if (www.result == UnityWebRequest.Result.Success)
+                {
+                    string serverVersion = www.downloadHandler.text;
+                    if (string.IsNullOrEmpty(serverVersion)) return;
 
-    //Custom name for downloaded unitypackage
-    private const string AssetName = "Redline.unitypackage";
-
-    //gets Toolkit Directory Path
-    private const string ToolkitPath = @"Packages\dev.runaxr.redline";
-
-    // ReSharper disable Unity.PerformanceAnalysis
-    public static async void AutomaticRedlineInstaller(){
-      //Starting Browser
-      var httpClient = new HttpClient();
-      //Reading Version data
-      var result = await httpClient.GetAsync(VersionURL);
-      var szServerVersion = await result.Content.ReadAsStringAsync();
-
-      if(string.IsNullOrEmpty(szServerVersion))
-        return;
-
-      try{
-        //Checking if Uptodate or not
-        if(CurrentVersion == szServerVersion){
-          RedlineLog("Alright we're up to date!"); //I finally shot the fucking prompt for annoying people, this is much better
-        }
-        else{
-          //not up to date
-          RedlineLog("There is an Update Available");
-          //start download
-          await DownloadRedline();
-        }
-      }
-      catch(Exception ex){
-        Debug.LogError("[Redline] AssetDownloadManager:" + ex.Message);
-      }
-    }
-
-    // ReSharper disable Unity.PerformanceAnalysis
-    private static async Task DownloadRedline(){
-      RedlineLog("Asking for Approval..");
-      if(EditorUtility.DisplayDialog("Redline Updater",
-           "Your version (V" + CurrentVersion + ") is outdated from the repo!" + " Do you wish to update?", "Yes", "No")){
-        //starting deletion of old Redline
-        await DeleteAndDownloadAsync();
-      }
-      else{
-        //canceling the whole process
-        RedlineLog("Update cancelled...");
-      }
-    }
-
-    private static async Task DeleteAndDownloadAsync(){
-      if(EditorUtility.DisplayDialog("Redline Updater",
-           "Updater will now attempt to update the package manager. We would recommend backing up your project files in case something fails!",
-           "OK")){
-        try{
-          // NOTE: Pixy; Scary! Verification of directories might be needed?
-          var toolkitDir = Directory.GetFiles(ToolkitPath, "*.*");
-          await Task.Run(() => {
-            foreach(var f in toolkitDir){
-              RedlineLog($"File {f} was deleted");
-              File.Delete(f);
+                    // Check if the version is up to date
+                    if (CurrentVersion == serverVersion)
+                    {
+                        RedlineLog("Alright we're up to date!");
+                    }
+                    else
+                    {
+                        RedlineLog("There is an Update Available");
+                        // Start downloading the update
+                        await DownloadRedline();
+                    }
+                }
+                else
+                {
+                    Debug.LogError("[Redline] AssetDownloadManager: " + www.error);
+                }
             }
-          });
         }
-        catch(DirectoryNotFoundException){
-          RedlineLog("Update failed...");
-          EditorUtility.DisplayDialog("Error Deleting Files",
-            "Failed to update Redline! If this error persists, update Redline manually from the GitHub repository!",
-            "OK");
+
+        private static async Task DownloadRedline()
+        {
+            RedlineLog("Asking for Approval..");
+
+            // Simulating the user prompt for update confirmation
+            bool shouldUpdate = EditorUtility.DisplayDialog("Redline Updater",
+                $"Your version (V{CurrentVersion}) is outdated! Do you wish to update?", "Yes", "No");
+
+            if (shouldUpdate)
+            {
+                await DeleteAndDownloadAsync();
+            }
+            else
+            {
+                RedlineLog("Update cancelled...");
+            }
         }
-      }
 
-      RedlineLog("Files deleted...");
+        private static async Task DeleteAndDownloadAsync()
+        {
+            bool proceedWithDeletion = EditorUtility.DisplayDialog("Redline Updater",
+                "Updater will now attempt to update the package manager. We recommend backing up your project files in case something fails!", "OK");
 
-      // refresh our assets database to reflect our new changes
-      AssetDatabase.Refresh();
+            if (proceedWithDeletion)
+            {
+                try
+                {
+                    // Delete files in the toolkit directory
+                    var toolkitDir = Directory.GetFiles(ToolkitPath);
+                    foreach (var file in toolkitDir)
+                    {
+                        File.Delete(file);
+                        RedlineLog($"File {file} was deleted");
+                    }
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    RedlineLog("Update failed...");
+                    EditorUtility.DisplayDialog("Error Deleting Files", 
+                        "Failed to update Redline! If this error persists, update Redline manually from the GitHub repository!", "OK");
+                    return;
+                }
+            }
 
-      // fetch the new files
-      if(EditorUtility.DisplayDialog("Redline_Automatic_DownloadAndInstall", "Alright we're installing the new RPM now",
-           "Nice!")){
-        var w = new WebClient();
-        w.Headers.Set(HttpRequestHeader.UserAgent, "Webkit Gecko wHTTPS (Keep Alive 55)");
-        w.DownloadFileCompleted += FileDownloadComplete;
-        w.DownloadProgressChanged += FileDownloadProgress;
-        w.DownloadFileAsync(new Uri(UnitypackageUrl), AssetName);
-      }
-    }
+            RedlineLog("Files deleted...");
 
-    private static void FileDownloadProgress(object sender, DownloadProgressChangedEventArgs e){
-      //Creates A ProgressBar
-      var progress = e.ProgressPercentage;
-      switch(progress){
-        case< 0:
-          return;
-        case>= 100:
-          EditorUtility.ClearProgressBar();
-          break;
-        default:
-          EditorUtility.DisplayProgressBar("Download of " + AssetName,
-            "Downloading " + AssetName + " " + progress + "%",
-            (progress / 100F));
-          break;
-      }
-    }
+            // Refresh the assets in the Unity editor to reflect the new changes
+            AssetDatabase.Refresh();
 
-    private static void FileDownloadComplete(object sender, AsyncCompletedEventArgs e){
-      //Checks if Download is complete
-      if(e.Error == null){
-        RedlineLog("Download completed!");
-        //Opens .unitypackage
-        Process.Start(AssetName);
-      }
-      else{
-        //Asks to open Download Page Manually
-        RedlineLog("Download failed!");
-        if(EditorUtility.DisplayDialog("Redline_Automatic_DownloadAndInstall", "Something screwed up and we couldn't download the latest Redline",
-             "Open URL instead", "Cancel")){
-          Application.OpenURL(UnitypackageUrl);
+            // Proceed with downloading the .unitypackage
+            bool confirmDownload = EditorUtility.DisplayDialog("Redline_Automatic_DownloadAndInstall", 
+                "Alright, we're installing the new RPM now", "Nice!");
+
+            if (confirmDownload)
+            {
+                using (UnityWebRequest download = UnityWebRequest.Get(UnitypackageUrl))
+                {
+                    string downloadPath = Path.Combine(Application.dataPath, AssetName);
+                    download.downloadHandler = new DownloadHandlerFile(downloadPath);
+                    await download.SendWebRequest();
+
+                    if (download.result == UnityWebRequest.Result.Success)
+                    {
+                        RedlineLog("Download completed!");
+                        Process.Start(downloadPath); // Automatically open the .unitypackage file
+                    }
+                    else
+                    {
+                        RedlineLog("Download failed!");
+                        if (EditorUtility.DisplayDialog("Redline_Automatic_DownloadAndInstall", 
+                            "Something went wrong, and we couldn't download the latest Redline. Would you like to open the URL manually?", 
+                            "Open URL", "Cancel"))
+                        {
+                            Application.OpenURL(UnitypackageUrl);
+                        }
+                    }
+                }
+            }
         }
-      }
-    }
 
-    private static void RedlineLog(string message){
-      //Our Logger
-      Debug.Log("[Redline] AssetDownloadManager: " + message);
+        private static void RedlineLog(string message)
+        {
+            Debug.Log("[Redline] AssetDownloadManager: " + message);
+        }
     }
-  }
 }
