@@ -5,10 +5,12 @@
 [![Patreon](https://img.shields.io/badge/Patreon-Donate-pink?style=for-the-badge)](https://www.patreon.com/PhoenixAceVFX)
 [![GitHub all releases](https://img.shields.io/github/downloads/Redline-Team/RPM/total?color=red&label=Total%20Downloads&logo=github&logoColor=red&style=for-the-badge)](https://github.com/Redline-Team/RPM/releases/latest)  
 [![Rider](https://img.shields.io/badge/Rider-000000.svg?style=for-the-badge&logo=Rider&logoColor=white&color=black&labelColor=crimson)](https://www.jetbrains.com/rider/)  
-[![Better Stack Badge](https://uptime.betterstack.com/status-badges/v3/monitor/1htdw.svg)](https://status.arch-linux.pro)
-[![Better Stack Badge](https://uptime.betterstack.com/status-badges/v3/monitor/1htdf.svg)](https://status.arch-linux.pro)
-[![Better Stack Badge](https://uptime.betterstack.com/status-badges/v3/monitor/1jo75.svg)](https://status.arch-linux.pro)
-[![Better Stack Badge](https://uptime.betterstack.com/status-badges/v3/monitor/1jo77.svg)](https://status.arch-linux.pro)  
+[![Arch-Linux.Pro](https://uptime.betterstack.com/status-badges/v3/monitor/1psjj.svg)](https://status.arch-linux.pro)
+[![Miku.Baby](https://uptime.betterstack.com/status-badges/v3/monitor/1psjl.svg)](https://status.arch-linux.pro)
+[![C0deRa.in](https://uptime.betterstack.com/status-badges/v3/monitor/1htdf.svg)](https://status.arch-linux.pro)
+[![HyprUpld.Space](https://uptime.betterstack.com/status-badges/v3/monitor/1tg12.svg)](https://status.arch-linux.pro)
+[![Redline API](https://uptime.betterstack.com/status-badges/v3/monitor/1jo77.svg)](https://status.arch-linux.pro)
+[![NewGenKillers.lol](https://uptime.betterstack.com/status-badges/v3/monitor/1pt55.svg)](https://status.arch-linux.pro)
 # Redline Package Manager  
 An attempt at replacing the VRChat Creator Companion with something directly in Unity  
 This came as I got tired of tabbing out of Unity to import things so I decided to make this  
