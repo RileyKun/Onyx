@@ -26,12 +26,19 @@ namespace Redline.Scripts.Editor {
     // NOTE: Pixy; made const int instead of const float because const float in C is stupid.
     private const int Timer = 60;
     private float _timeLeft;
+    private static bool m_bHasShownPrompt = false;
 
     [MenuItem("Redline/Scene AutoSave", false, 500)]
     private static void Init()
     {
       var window=(Sceneautosave)GetWindow(typeof(Sceneautosave));
-      window.Show();
+      // Stop the window from recreating itself when we don't want it to.
+      // The only condition that it will recreate itself is if the engine decides to run a script recompilation on this file.
+      if (!m_bHasShownPrompt)
+      {
+        window.Show();
+        m_bHasShownPrompt = true;
+      }
     }
 
     private static void OpenSplashScreen() {

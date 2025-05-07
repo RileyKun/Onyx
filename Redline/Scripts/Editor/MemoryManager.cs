@@ -25,6 +25,7 @@ public class MemoryManagementTool : EditorWindow
     private static bool initializedSettings = false;
     
     // Memory limit presets
+    // TODO: Why the hell are you using strings to index this array? This is slow.
     private static Dictionary<string, float> memoryPresets = new Dictionary<string, float>()
     {
         {"Very Low-End (1GB Limit)", 1024},
@@ -170,12 +171,12 @@ public class MemoryManagementTool : EditorWindow
                 DetectMacOSMemory();
             }
             
-            // Fallback if detection failed
-            if (totalPhysicalMemoryMB <= 0)
+            // 1024 is our bare minimum with configurations, don't let the total drop below this.
+            if (totalPhysicalMemoryMB < 1024)
             {
-                totalPhysicalMemoryMB = 8192; // Default to 8GB assumption
-                totalSystemMemoryMB = totalPhysicalMemoryMB;
-                UnityEngine.Debug.LogWarning("[Redline Memory Master] Could not detect system memory, defaulting to 8GB assumption");
+                UnityEngine.Debug.LogWarning("[Redline Memory Master] Total memory amount was found to be below 1024MiB... How are you even running this?");
+                totalPhysicalMemoryMB = totalSystemMemoryMB = 1024;
+                UnityEngine.Debug.LogWarning("[Redline Memory Master] Forcing memory amount to 1024.");
             }
             
             // Update the auto preset values
@@ -219,6 +220,7 @@ public class MemoryManagementTool : EditorWindow
     private static void DetectWindowsMemory()
     {
         long memoryKb;
+        // Anyone ever heard of TotalPhysicalMemory or TotalVirtualMemory? This is a disgrace...
         if (GetPhysicallyInstalledSystemMemory(out memoryKb))
         {
             totalPhysicalMemoryMB = memoryKb / 1024f;
@@ -475,6 +477,7 @@ public class MemoryManagementTool : EditorWindow
         GUILayout.Label("Redline Memory Master", EditorStyles.boldLabel);
         
         // System memory info
+        // TODO: Might be best to remove these if statements.
         if (totalPhysicalMemoryMB > 0)
         {
             EditorGUILayout.LabelField($"Physical RAM: {totalPhysicalMemoryMB:F0} MB");
