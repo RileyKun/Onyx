@@ -6,72 +6,102 @@ using UnityEngine;
 namespace Redline.Scripts.Editor {
   [InitializeOnLoad]
   public class Sceneautosave: EditorWindow {
+    private const string AUTOSAVE_ENABLED_KEY = "Redline_Autosave_Enabled";
+    private const string SHOW_SPLASH_SCREEN_KEY = "ShowSplashScreen";
+    private const string AUTOSAVE_INTERVAL_KEY = "Redline_Autosave_Interval";
+    private const int DEFAULT_INTERVAL = 300; // 5 minutes default
+    private static bool _hasCheckedInitialSetup = false;
+    
     static Sceneautosave() {
       EditorApplication.update -= DoSplashScreen;
       EditorApplication.update += DoSplashScreen;
     }
 
+    private static int AutoSaveInterval {
+      get { return EditorPrefs.GetInt(AUTOSAVE_INTERVAL_KEY, DEFAULT_INTERVAL); }
+      set { 
+        if (value < 30) value = 30; // Minimum 30 seconds
+        if (value > 3600) value = 3600; // Maximum 1 hour
+        EditorPrefs.SetInt(AUTOSAVE_INTERVAL_KEY, value); 
+      }
+    }
+
     private static void DoSplashScreen() {
       EditorApplication.update -= DoSplashScreen;
-      if (!EditorPrefs.HasKey("ShowSplashScreen")) {
-        EditorPrefs.SetBool("ShowSplashScreen", true);
+      if (!EditorPrefs.HasKey(SHOW_SPLASH_SCREEN_KEY)) {
+        EditorPrefs.SetBool(SHOW_SPLASH_SCREEN_KEY, true);
       }
 
-      if (EditorPrefs.GetBool("ShowSplashScreen"))
+      if (EditorPrefs.GetBool(SHOW_SPLASH_SCREEN_KEY))
         OpenSplashScreen();
     }
 
     private static GUIStyle _header;
     private static Vector2 _changeLogScroll;
-    // NOTE: Pixy; made const int instead of const float because const float in C is stupid.
-    private const int Timer = 60;
     private float _timeLeft;
     private static bool m_bHasShownPrompt = false;
 
     [MenuItem("Redline/Scene AutoSave", false, 500)]
-    private static void Init()
-    {
-      var window=(Sceneautosave)GetWindow(typeof(Sceneautosave));
-      // Stop the window from recreating itself when we don't want it to.
-      // The only condition that it will recreate itself is if the engine decides to run a script recompilation on this file.
-      if (!m_bHasShownPrompt)
-      {
+    private static void Init() {
+      var window = (Sceneautosave)GetWindow(typeof(Sceneautosave));
+      if (!m_bHasShownPrompt) {
         window.Show();
         m_bHasShownPrompt = true;
       }
     }
 
     private static void OpenSplashScreen() {
-      GetWindowWithRect < Sceneautosave > (new Rect(0, 0, 400, 180), true);
-    }
+  var window = GetWindow<Sceneautosave>(true);
+  window.position = new Rect(0, 0, 400, 180);
+}
 
     public void OnEnable() {
       titleContent = new GUIContent("Auto Save");
       minSize = new Vector2(400, 200);
+
+      if (!_hasCheckedInitialSetup && !EditorPrefs.HasKey(AUTOSAVE_ENABLED_KEY)) {
+        if (EditorUtility.DisplayDialog(
+          "Redline Autosave",
+          "Would you like to enable automatic scene saving? This will save your scene every " + (AutoSaveInterval / 60) + " minutes.",
+          "Enable", "Disable")) {
+          EditorPrefs.SetBool(AUTOSAVE_ENABLED_KEY, true);
+        } else {
+          EditorPrefs.SetBool(AUTOSAVE_ENABLED_KEY, false);
+        }
+        _hasCheckedInitialSetup = true;
+      }
     }
 
     [Obsolete("Obsolete")]
     public void OnGUI() {
-      EditorGUILayout.LabelField("Interval:", Timer + " seconds");
+      // Autosave interval slider
+      EditorGUILayout.Space();
+      EditorGUILayout.LabelField("Autosave Interval (seconds):");
+      int newInterval = EditorGUILayout.IntSlider(AutoSaveInterval, 30, 3600);
+      if (newInterval != AutoSaveInterval) {
+        AutoSaveInterval = newInterval;
+        _timeLeft = (float)(EditorApplication.timeSinceStartup + AutoSaveInterval);
+      }
 
+      // Time to next save
       var timeToSave = (int)(_timeLeft - EditorApplication.timeSinceStartup);
-
       EditorGUILayout.LabelField("Time to next save:", timeToSave + " seconds");
+      EditorGUILayout.Space(10);
 
       Repaint();
 
-      if (EditorApplication.timeSinceStartup > _timeLeft) {
+      if (EditorApplication.timeSinceStartup > _timeLeft && EditorPrefs.GetBool(AUTOSAVE_ENABLED_KEY)) {
         var path = EditorApplication.currentScene.Split(char.Parse("/"));
-        path[ ^ 1] = "AutoSave_" + path[ ^ 1];
+        path[^1] = "AutoSave_" + path[^1];
         EditorApplication.SaveScene(string.Join("/", path), true);
-        _timeLeft = (int)(EditorApplication.timeSinceStartup + Timer);
+        _timeLeft = (float)(EditorApplication.timeSinceStartup + AutoSaveInterval);
       }
 
+      // Buttons
       GUILayout.BeginHorizontal();
       GUI.backgroundColor = Color.cyan;
       
-      // TODO: remove these?
-      if (GUILayout.Button("Trigon")) {
+      if (GUILayout.Button("AL.Pro")) {
         Application.OpenURL("https://arch-linux.pro/");
       }
 
@@ -115,10 +145,9 @@ namespace Redline.Scripts.Editor {
       GUILayout.FlexibleSpace();
 
       GUILayout.BeginHorizontal();
-
       GUILayout.FlexibleSpace();
-      EditorPrefs.SetBool("ShowSplashScreen",
-        GUILayout.Toggle(EditorPrefs.GetBool("ShowSplashScreen"), "Toggle AutoSave"));
+      EditorPrefs.SetBool(AUTOSAVE_ENABLED_KEY,
+        GUILayout.Toggle(EditorPrefs.GetBool(AUTOSAVE_ENABLED_KEY), "Enable AutoSave"));
       GUILayout.EndHorizontal();
     }
   }
