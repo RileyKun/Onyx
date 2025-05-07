@@ -1,32 +1,87 @@
-<div align='center'>  
+<div align="center">
+
+<img src="https://redline.arch-linux.pro/animated.svg" width="500" alt="Redline Package Manager">
+
+<img src="Screenshot.webp" width="650" />
+
+### A proper in-engine alternative to the VRChat Creator Companion
 
 [![Website](https://img.shields.io/website?down_color=red&down_message=Offline&label=arch-linux.pro&style=for-the-badge&up_color=cyan&up_message=Online&url=https%3A%2F%2Farch-linux.pro)](https://arch-linux.pro)
-[![Website](https://img.shields.io/website?down_color=red&down_message=Offline&label=C0deRa.in&style=for-the-badge&up_color=cyan&up_message=Online&url=https%3A%2F%2Fc0dera.in)](https://c0dera.in)
-[![Patreon](https://img.shields.io/badge/Patreon-Donate-pink?style=for-the-badge)](https://www.patreon.com/PhoenixAceVFX)
-[![GitHub all releases](https://img.shields.io/github/downloads/Redline-Team/RPM/total?color=red&label=Total%20Downloads&logo=github&logoColor=red&style=for-the-badge)](https://github.com/Redline-Team/RPM/releases/latest)  
-[![Rider](https://img.shields.io/badge/Rider-000000.svg?style=for-the-badge&logo=Rider&logoColor=white&color=black&labelColor=crimson)](https://www.jetbrains.com/rider/)  
-[![Arch-Linux.Pro](https://uptime.betterstack.com/status-badges/v3/monitor/1psjj.svg)](https://status.arch-linux.pro)
-[![Miku.Baby](https://uptime.betterstack.com/status-badges/v3/monitor/1psjl.svg)](https://status.arch-linux.pro)
-[![C0deRa.in](https://uptime.betterstack.com/status-badges/v3/monitor/1htdf.svg)](https://status.arch-linux.pro)
-[![HyprUpld.Space](https://uptime.betterstack.com/status-badges/v3/monitor/1tg12.svg)](https://status.arch-linux.pro)
-[![Redline API](https://uptime.betterstack.com/status-badges/v3/monitor/1jo77.svg)](https://status.arch-linux.pro)
-[![NewGenKillers.lol](https://uptime.betterstack.com/status-badges/v3/monitor/1pt55.svg)](https://status.arch-linux.pro)
-# Redline Package Manager  
-An attempt at replacing the VRChat Creator Companion with something directly in Unity  
-This came as I got tired of tabbing out of Unity to import things so I decided to make this  
-Currently as it stands Redline is a Curated Package Manager developed and curated by me  
-Curation requests have been opened in the discord if you wish to request a pacakge be added  
+[![GitHub all releases](https://img.shields.io/github/downloads/Redline-Team/RPM/total?color=red&label=Total%20Downloads&logo=github&logoColor=red&style=for-the-badge)](https://github.com/Redline-Team/RPM/releases/latest)
+[![License](https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge)](LICENSE)
+[![Patreon](https://img.shields.io/badge/Patreon-Support-pink?style=for-the-badge)](https://www.patreon.com/PhoenixAceVFX)
+[![Rider](https://img.shields.io/badge/Developed%20with-Rider-DD1265?style=for-the-badge&logo=rider&logoColor=white)](https://www.jetbrains.com/rider/)
 
-# Installation  
-## Traditional Package  
-Download the [latest release](https://github.com/Redline-Team/RPM/releases/latest) and import it into unity  
-You can import by drag and dropping into assets or double clicking the package while unity is open  
-## VRChat Creator Companion/ALCOM  
-You can add our VCC Repository to ALCOM/VCC  
-[Main Redline Repo URL](https://rpmrepo.arch-linux.pro)  
-[Backup Redline Repo URL](https://redline-team.github.io/RedlineVCC/)  
-## BLEEDING EDGE BUILDS  
-This repository auto builds BLEEDING EDGE packages  
-Using these can have unexpected issues  
-<img src="Screenshot.webp" />  
+</div>
+
+## 🚀 Overview
+
+Redline Package Manager (RPM) is a powerful Unity editor extension designed to streamline your VRChat content creation workflow. Built with creators in mind, RPM eliminates the need to constantly switch between applications by bringing package management directly into the Unity editor.
+
+### ✨ Key Features
+
+- **In-Engine Package Management** - Browse, download, and manage packages without leaving Unity
+- **Autosave System** - Configurable automatic saving to prevent work loss
+- **Memory Management** - Multiple presets to optimize Unity's memory usage with custom limit support
+- **Editor Theming** - Personalize Unity's appearance with custom themes
+- **Automatic Updates** - Built-in update checker to keep your tools current
+- **Open Source** - Full source code available under GPL-3.0 license
+
+## 📥 Installation
+
+### Direct Unity Package
+
+1. Download the [latest release](https://github.com/Redline-Team/RPM/releases/latest)
+2. Import it into Unity by either:
+   - Drag and dropping the package into your Assets folder
+   - Double-clicking the package while Unity is open
+
+### VRChat Creator Companion / ALCOM
+
+Add our repository to VCC or ALCOM using this URL:
+- `https://rlist.arch-linux.pro`
+
+### Development Builds
+
+We offer automatically built bleeding-edge packages for testing new features:
+> ⚠️ **Warning**: Development builds may contain bugs or unstable features
+
+
+
+## 🔧 System Requirements
+
+- Unity Versions:
+  - Unity 2019.4.31f1 (VRChat supported)
+  - Unity 2022.3.22f1 (VRChat supported)
+- Operating Systems:
+  - Windows 10/11
+  - macOS
+  - Linux
+
+## 🤝 Contributing
+
+Contributions are welcome! See our [contributing guidelines](CONTRIBUTING.md) for more information.
+
+## 📊 Status
+
+<div align="center">
+
+[![Arch-Linux.Pro](https://uptime.betterstack.com/status-badges/v3/monitor/1psjj.svg)](https://status.arch-linux.pro)
+[![Redline API](https://uptime.betterstack.com/status-badges/v3/monitor/1jo77.svg)](https://status.arch-linux.pro)
+
+</div>
+
+## 📜 License
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+
+## 🔗 Links
+
+- [Discord Community](https://discord.com/invite/PPTyhTAb6r)
+- [Bug Reports](https://github.com/Redline-Team/RPM/issues)
+
+---
+
+<div align="center">
+  <sub>Made with ❤️ by the Redline Team</sub>
 </div>
