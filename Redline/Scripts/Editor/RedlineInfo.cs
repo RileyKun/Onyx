@@ -4,9 +4,9 @@ using UnityEngine;
 namespace Redline.Scripts.Editor {
     [InitializeOnLoad]
     public class RedlineInfo : EditorWindow {
-        private const string Url = "https://github.com/Redline/Redline/";
-        private const string Url1 = "https://trigon.systems/";
-        private const string Link1 = "https://status.trigon.systems";
+        private const string Url = "https://github.com/Redline-Team";
+        private const string Url1 = "https://arch-linux.pro/";
+        private const string Link1 = "https://status.arch-linux.pro";
         private static Vector2 _changeLogScroll;
         private static GUIStyle _toolkitHeader;
         private static GUIStyle _redlineBottomHeader;
@@ -52,12 +52,12 @@ namespace Redline.Scripts.Editor {
             SetupButtonStyle();
 
             // Displaying URLs
-            DisplayLinkButton("The Black Arms Ultimate Development Kit", Url);
-            DisplayLinkButton("Trigon.Systems", Url1);
+            DisplayLinkButton("Redline Ultimate Toolbox", Url);
+            DisplayLinkButton("Arch-Linux.Pro", Url1);
             DisplayLinkButton("Status", Link1);
 
             GUILayout.Space(4);
-            GUILayout.Label("Redline Version 1.0.1");
+            GUILayout.Label("Redline Version 2.1.0");
             GUILayout.Label("Redline imported correctly if you are seeing this");
 
             // Changelog ScrollView
@@ -66,9 +66,7 @@ namespace Redline.Scripts.Editor {
                 @"
 == Redline Package Manager ==
 
-This Unity Kit is hopefully providing everything you need
-I shot the update prompt for annoying up-to-date users
-DOCKABLE WINDOWS ARE HERE!
+Holy crap we're back!
 
 ---------------------------------------------------------
 ∞∞∞∞∞∞∞∞∞∞∞∞Information∞∞∞∞∞∞∞∞∞∞∞∞
@@ -78,8 +76,6 @@ The goal is to become the main package anyone needs
 If you have issues visit the github repository issues tab
 Updates can be done from within unity itself (or manually)
 Bugs/Issues can be reported via github issues
-You can join our discord now :D
-https://rpm.c0dera.in/discord
 
 ---------------------------------------------------------
 ∞∞∞∞Contributors to Redline Unity Kit∞∞∞∞

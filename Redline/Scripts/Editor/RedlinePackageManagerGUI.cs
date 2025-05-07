@@ -7,8 +7,8 @@ using UnityEngine;
 
 namespace Redline.Scripts.Editor {
     public class RedlinePackageManager : EditorWindow {
-        private const string Url = "https://github.com/Redline/Redline/";
-        private const string Url1 = "https://trigon.systems/";
+        private const string Url = "https://github.com/Redline";
+        private const string Url1 = "https://arch-linux.pro/";
 
         private static GUIStyle _redlineHeader;
         private static readonly Dictionary<string, string> Assets = new();
@@ -79,7 +79,7 @@ namespace Redline.Scripts.Editor {
             // Buttons for various actions
             CreateButton("Check for Updates", RedlineAutomaticUpdateAndInstall.AutomaticRedlineInstaller);
             CreateButton("Redline", () => Application.OpenURL(Url));
-            CreateButton("Trigon.Systems", () => Application.OpenURL(Url1));
+            CreateButton("arch-linux.pro", () => Application.OpenURL(Url1));
 
             GUILayout.Space(4);
             CreateButton("Update Config", RedlineImportManager.UpdateConfig);

@@ -65,7 +65,7 @@ namespace Redline.Scripts.Editor {
       
       // TODO: remove these?
       if (GUILayout.Button("Trigon")) {
-        Application.OpenURL("https://trigon.systems/");
+        Application.OpenURL("https://arch-linux.pro/");
       }
 
       GUI.backgroundColor = Color.red;
@@ -91,7 +91,7 @@ namespace Redline.Scripts.Editor {
       GUI.backgroundColor = Color.gray;
 
       if (GUILayout.Button("Status")) {
-        Application.OpenURL("https://status.trigon.systems");
+        Application.OpenURL("https://status.arch-linux.pro");
       }
 
       GUI.backgroundColor = Color.white;

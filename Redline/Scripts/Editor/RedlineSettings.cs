@@ -7,7 +7,7 @@ using UnityEngine.Serialization;
 namespace Redline.Scripts.Editor {
     public class RedlineSettings : EditorWindow {
         private const string Url = "https://github.com/Redline-Team/RPM/";
-        private const string Url1 = "https://trigon.systems/";
+        private const string Url1 = "https://arch-linux.pro/";
 
         public const string ProjectConfigPath = "Packages/dev.runaxr.Redline/Redline/Configs/";
         private const string BackgroundConfig = "BackgroundVideo.txt";
@@ -91,7 +91,7 @@ namespace Redline.Scripts.Editor {
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Trigon.Systems")) {
+            if (GUILayout.Button("arch-linux.pro")) {
                 Application.OpenURL(Url1);
             }
             GUILayout.EndHorizontal();

@@ -1,6 +1,6 @@
 {
     "config": {
-        "serverUrl": "https://c0dera.in/Redline/api/assets/",
+        "serverUrl": "https://c0dera.in/Redline/api/assets/"
     },
     
     "assets": {
@@ -21,167 +21,12 @@
         "Announcement5": {
             "name": "Del then download to update packages"
         },
-        "Announcement6": {
-            "name": "VRCSDK Packages are now on 3.7.3"
-        },
-        "announcement7": {
-            "name": "Latest Package List Edit: 11/15/24 at 12:14am EST"
+        "announcement6": {
+            "name": "Latest Package List Edit: 5/6/25 at 10:55pm EST"
         },
 
-        "Redline Files": {
-            "name": "\nExclusives"
-        },
-        "Redline": {
-            "name": "Redline Package Manager",
-            "file": "Redline.unitypackage"
-        },
-
-        "Cool Stuff": {
-            "name": "\nUnity Editor Additions"
-        },
-        "PlayModeSaver": {
-            "name": "PLAY MODE SAVER",
-            "file": "PMS.unitypackage"
-        },
-        "MyHierarchy": {
-            "name": "My Hierarchy by INF Dev",
-            "file": "MyHierarchy.unitypackage"
-        },
-        "HierarchyPlus": {
-            "name": "HierarchyPlus",
-            "file": "HierarchyPlus.unitypackage"
-        },
-        "RiderFlow": {
-            "name": "RiderFlow",
-            "file": "RiderFlow.unitypackage"
-        },
-
-        "VRCSDK Packages": {
-            "name": "\nOfficial VRCSDK Packages"
-        },
-        "SDK3Avatars": {
-            "name": "VRCSDK Avatars",
-            "file": "SDK3Avatar.unitypackage"
-        },
-        "SDK3Worlds": {
-            "name": "VRCSDK Worlds",
-            "file": "SDK3World.unitypackage"
-        },
-
-        "Shaders": {
-            "name": "\nShaders"
-        },
-        "LilToon": {
-            "name": "lilToon",
-            "file": "lilToon.unitypackage"
-        },
-        "Poiyomi Toon": {
-            "name": "Poiyomi Toon (VRCSDK)",
-            "file": "Poiyomi.unitypackage"
-        },
-        "Leviant": {
-            "name": "Leviant Uberspace [OVERCLOCKED]",
-            "file": "Levi.unitypackage"
-        },
-        "Mochie": {
-            "name": "Mochie Free Shaders",
-            "file": "Mochie.unitypackage"
-        },
-        "QStatic": {
-            "name": "Quest Static",
-            "file": "QStatic.unitypackage"
-        },
-        "Fusion3": {
-            "name": "Fruity Fusion",
-            "file": "Fusion3.unitypackage"
-        },
-
-        "EditorTools": {
-            "name": "\nEditor Tools"
-        },
-        "FACS": {
-            "name": "FACS Utils (VRCSDK)",
-            "file": "FACS.unitypackage"
-        },
-        "VRCQuestTools": {
-            "name": "VRCQuestTools (VRCSDK)",
-            "file": "VRCQuestTools.unitypackage"
-        },
-        "GestureManager": {
-            "name": "Gesture Manager (VRCSDK)",
-            "file": "GestureManager.unitypackage"
-        },
-        "VRCSDKP": {
-            "name": "VRCSDKP (VRCSDK)",
-            "file": "vrcsdkp.unitypackage"
-        },
-        "BlendTreeBuilder": {
-            "name": "BlendTreeBuilder (VRCSDK)",
-            "file": "BlendTreeBuilder.unitypackage"
-        },
-        "WFT": {
-            "name": "Workflow Tools (VRCSDK)",
-            "file": "wft.unitypackage"
-        },
-        "UniVRM": {
-            "name": "UniVRM",
-            "file": "UniVRM.unitypackage"
-        },
-        "vrcfury": {
-            "name": "VRCFury (VRCSDK)",
-            "file": "VRCFury.unitypackage"
-        },
-        "pumpkins": {
-            "name": "Pumpkins Avatar Tools (VRCSDK)",
-            "file": "Pumpkin.unitypackage"
-        },
-        "RATS": {
-            "name": "Raz's Animator Tweaks n Stuff",
-            "file": "RATS.unitypackage"
-        },
-        "BitAnimator": {
-            "name": "Bit Animator",
-            "file": "BitAnimator.unitypackage"
-        },
-
-        "AvatarAddons": {
-            "name": "\nAvatar Addons"
-        },
-        "LemoneMenu": {
-            "name": "LemoneMenu (VRCFURY)",
-            "file": "LemoneMenu.unitypackage"
-        },
-        "gogo": {
-            "name": "GogoLoco (VRCFURY)",
-            "file": "Gogo.unitypackage"
-        },
-        "NVGTech System": {
-            "name": "NVGTech System (VRCFURY)",
-            "file": "NVGTech.unitypackage"
-        },
-        "BPose": {
-            "name": "BUDDYWORKS Poses (VRCFURY/GOGO)",
-            "file": "BPoseExtension.unitypackage"
-        },
-        "BExpression": {
-            "name": "BUDDYWORKS Expressions (VRCFURY)",
-            "file": "BExpressions.unitypackage"
-        },
-
-        "WorldAddons": {
-            "name": "\nWorld Addons"
-        },
-        "EQS": {
-            "name": "Easy Quest Switch (VRCSDK)",
-            "file": "EQS.unitypackage"
-        },
-
-        "Fixes": {
-            "name": "\nBugfixes for VRC/Unity"
-        },
-        "SFX": {
-            "name": "Standard Lite Emissions Fix (VRCSDK)",
-            "file": "SFX.unitypackage"
+        "Notice": {
+            "name": "Redline Packages are OFFLINE for now\nWe will be back soon when it's finished"
         },
         
         "Footer": {
