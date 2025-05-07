@@ -27,12 +27,16 @@ namespace Redline.Scripts.Editor {
                 return ProjectDownloadPath;
             }
 
-            string assetPath = EditorPrefs.GetString("Redline_customAssetPath", "%appdata%/Redline/")
-                .Replace("%appdata%", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData))
-                .Replace("/", "\\");
-
-            if (!assetPath.EndsWith("\\")) {
-                assetPath += "\\";
+            string defaultPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "Redline"
+            );
+            
+            string assetPath = EditorPrefs.GetString("Redline_customAssetPath", defaultPath);
+            
+            // Ensure the path ends with a directory separator
+            if (!assetPath.EndsWith(Path.DirectorySeparatorChar.ToString())) {
+                assetPath += Path.DirectorySeparatorChar;
             }
 
             Directory.CreateDirectory(assetPath);
@@ -172,9 +176,13 @@ namespace Redline.Scripts.Editor {
             GUILayout.Space(4);
             GUILayout.Label("Asset path:");
             GUILayout.BeginHorizontal();
+            string defaultPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "Redline"
+            );
             string customAssetPath = EditorGUILayout.TextField(
                 "",
-                EditorPrefs.GetString("Redline_customAssetPath", "%appdata%/Redline/")
+                EditorPrefs.GetString("Redline_customAssetPath", defaultPath)
             );
 
             if (GUILayout.Button("Choose", GUILayout.Width(60))) {
@@ -186,10 +194,10 @@ namespace Redline.Scripts.Editor {
             }
 
             if (GUILayout.Button("Reset", GUILayout.Width(50))) {
-                customAssetPath = "%appdata%/Redline/";
+                customAssetPath = defaultPath;
             }
 
-            if (EditorPrefs.GetString("Redline_customAssetPath", "%appdata%/Redline/") != customAssetPath) {
+            if (EditorPrefs.GetString("Redline_customAssetPath", defaultPath) != customAssetPath) {
                 EditorPrefs.SetString("Redline_customAssetPath", customAssetPath);
             }
             GUILayout.EndHorizontal();

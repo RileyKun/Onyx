@@ -19,13 +19,16 @@ namespace RedlineUpdater.Editor{
     private const string UnitypackageUrl = "https://c0dera.in/Redline/api/assets/latest/Redline.unitypackage";
 
     //GetVersion
-    private static readonly string CurrentVersion = File.ReadAllText("Packages/dev.runaxr.Redline/RedlineUpdater/editor/RedlineVersion.txt");
+    private static readonly string CurrentVersion = File.ReadAllText("Packages/dev.runaxr.redline/RedlineUpdater/Editor/RedlineVersion.txt");
+
+    //EditorPrefs key for storing last declined version
+    private const string LastDeclinedVersionKey = "Redline_LastDeclinedVersion";
 
     //Custom name for downloaded unitypackage
     private const string AssetName = "Redline.unitypackage";
 
     //gets Toolkit Directory Path
-    private const string ToolkitPath = @"Packages\dev.runaxr.redline";
+    private const string ToolkitPath = "Packages/dev.runaxr.redline";
 
     // ReSharper disable Unity.PerformanceAnalysis
     public static async void AutomaticRedlineInstaller(){
@@ -42,6 +45,8 @@ namespace RedlineUpdater.Editor{
         //Checking if Uptodate or not
         if(CurrentVersion == szServerVersion){
           RedlineLog("Alright we're up to date!"); //I finally shot the fucking prompt for annoying people, this is much better
+          // Clear the last declined version since we're up to date
+          EditorPrefs.DeleteKey(LastDeclinedVersionKey);
         }
         else{
           //not up to date
@@ -57,6 +62,13 @@ namespace RedlineUpdater.Editor{
 
     // ReSharper disable Unity.PerformanceAnalysis
     private static async Task DownloadRedline(){
+      // Check if this version was previously declined
+      var lastDeclinedVersion = EditorPrefs.GetString(LastDeclinedVersionKey, string.Empty);
+      if (lastDeclinedVersion == CurrentVersion) {
+        RedlineLog("Update was previously declined for this version");
+        return;
+      }
+
       RedlineLog("Asking for Approval..");
       if(EditorUtility.DisplayDialog("Redline Updater",
            "Your version (V" + CurrentVersion + ") is outdated from the repo!" + " Do you wish to update?", "Yes", "No")){
@@ -66,6 +78,8 @@ namespace RedlineUpdater.Editor{
       else{
         //canceling the whole process
         RedlineLog("Update cancelled...");
+        // Store the declined version
+        EditorPrefs.SetString(LastDeclinedVersionKey, CurrentVersion);
       }
     }
 

@@ -14,7 +14,7 @@ namespace Redline.Scripts.Editor {
 
         // Starts the download and import process
         public static async void DownloadAndImportAssetFromServer(string assetName) {
-            string assetPath = RedlineSettings.GetAssetPath() + assetName;
+            string assetPath = Path.Combine(RedlineSettings.GetAssetPath(), assetName);
             if (File.Exists(assetPath)) {
                 RedlineLog($"{assetName} exists. Importing it..");
                 ImportDownloadedAsset(assetPath);
@@ -27,7 +27,7 @@ namespace Redline.Scripts.Editor {
         // Download the asset file asynchronously
         private static async Task DownloadFile(string assetName) {
             string url = ServerUrl + assetName;
-            string downloadPath = RedlineSettings.GetAssetPath() + assetName;
+            string downloadPath = Path.Combine(RedlineSettings.GetAssetPath(), assetName);
 
             using (UnityWebRequest webRequest = UnityWebRequest.Get(url)) {
                 webRequest.SetRequestHeader("User-Agent", "Webkit Gecko wHTTPS (Keep Alive 55)");
@@ -44,6 +44,8 @@ namespace Redline.Scripts.Editor {
                 }
 
                 if (webRequest.result == UnityWebRequest.Result.Success) {
+                    // Ensure directory exists before writing
+                    Directory.CreateDirectory(Path.GetDirectoryName(downloadPath));
                     File.WriteAllBytes(downloadPath, webRequest.downloadHandler.data);
                     RedlineLog($"Download of {assetName} completed!");
                     ImportDownloadedAsset(downloadPath);
@@ -57,7 +59,7 @@ namespace Redline.Scripts.Editor {
 
         // Delete the asset from the system
         public static void DeleteAsset(string assetName) {
-            string assetPath = RedlineSettings.GetAssetPath() + assetName;
+            string assetPath = Path.Combine(RedlineSettings.GetAssetPath(), assetName);
             if (File.Exists(assetPath)) {
                 File.Delete(assetPath);
                 RedlineLog($"{assetName} deleted.");
@@ -67,7 +69,7 @@ namespace Redline.Scripts.Editor {
         // Update the configuration file
         public static async void UpdateConfig() {
             string url = InternalServerUrl + ConfigName;
-            string updatePath = RedlineSettings.ProjectConfigPath + "update_" + ConfigName;
+            string updatePath = Path.Combine(RedlineSettings.ProjectConfigPath, "update_" + ConfigName);
 
             using (UnityWebRequest webRequest = UnityWebRequest.Get(url)) {
                 webRequest.SetRequestHeader("User-Agent", "Webkit Gecko wHTTPS (Keep Alive 55)");
@@ -82,16 +84,18 @@ namespace Redline.Scripts.Editor {
                 }
 
                 if (webRequest.result == UnityWebRequest.Result.Success) {
+                    // Ensure directory exists before writing
+                    Directory.CreateDirectory(Path.GetDirectoryName(updatePath));
                     File.WriteAllBytes(updatePath, webRequest.downloadHandler.data);
                     RedlineLog("Config download completed!");
 
                     // Replace old config file
-                    string oldConfigPath = RedlineSettings.ProjectConfigPath + ConfigName;
+                    string oldConfigPath = Path.Combine(RedlineSettings.ProjectConfigPath, ConfigName);
                     if (File.Exists(oldConfigPath)) {
                         File.Delete(oldConfigPath);
                     }
 
-                    File.Move(updatePath, RedlineSettings.ProjectConfigPath + ConfigName);
+                    File.Move(updatePath, oldConfigPath);
                     RedlinePackageManager.LoadJson();
                     EditorPrefs.SetInt("Redline_configImportLastUpdated", (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
                 } else {

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using RedlineUpdater.Editor;
@@ -42,23 +43,34 @@ namespace Redline.Scripts.Editor {
         public static void LoadJson() {
             Assets.Clear();
 
-            // Read and parse the configuration JSON file
-            dynamic configJson = JObject.Parse(File.ReadAllText(RedlineSettings.ProjectConfigPath + RedlineImportManager.ConfigName));
-            Debug.Log("Server Asset Url is: " + configJson["config"]["serverUrl"]);
-            RedlineImportManager.ServerUrl = configJson["config"]["serverUrl"].ToString();
+            string configPath = Path.Combine(RedlineSettings.ProjectConfigPath, RedlineImportManager.ConfigName);
+            if (!File.Exists(configPath)) {
+                Debug.LogError($"[Redline] Config file not found at: {configPath}");
+                return;
+            }
 
-            // Populate the assets dictionary from the JSON
-            foreach (JProperty assetProperty in configJson["assets"]) {
-                string buttonName = "";
-                string file = "";
+            try {
+                // Read and parse the configuration JSON file
+                dynamic configJson = JObject.Parse(File.ReadAllText(configPath));
+                Debug.Log("Server Asset Url is: " + configJson["config"]["serverUrl"]);
+                RedlineImportManager.ServerUrl = configJson["config"]["serverUrl"].ToString();
 
-                foreach (var assetDetail in assetProperty.Value) {
-                    var detail = (JProperty)assetDetail;
-                    if (detail.Name == "name") buttonName = detail.Value.ToString();
-                    if (detail.Name == "file") file = detail.Value.ToString();
+                // Populate the assets dictionary from the JSON
+                foreach (JProperty assetProperty in configJson["assets"]) {
+                    string buttonName = "";
+                    string file = "";
+
+                    foreach (var assetDetail in assetProperty.Value) {
+                        var detail = (JProperty)assetDetail;
+                        if (detail.Name == "name") buttonName = detail.Value.ToString();
+                        if (detail.Name == "file") file = detail.Value.ToString();
+                    }
+
+                    Assets[buttonName] = file;
                 }
-
-                Assets[buttonName] = file;
+            }
+            catch (Exception ex) {
+                Debug.LogError($"[Redline] Error loading config file: {ex.Message}");
             }
         }
 
@@ -108,7 +120,7 @@ namespace Redline.Scripts.Editor {
         // Displays asset buttons with their corresponding actions (Download/Import and Delete)
         private void DisplayAsset(KeyValuePair<string, string> asset) {
             GUILayout.BeginHorizontal();
-            string assetPath = RedlineSettings.GetAssetPath() + asset.Value;
+            string assetPath = Path.Combine(RedlineSettings.GetAssetPath(), asset.Value);
 
             if (asset.Value == "") {
                 GUILayout.FlexibleSpace();
