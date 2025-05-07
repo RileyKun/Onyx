@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Redline.Scripts.Editor {
     public abstract class RedlineImportManager {
-        private const string V = "https://c0dera.in/Redline/api/assets/";
+        private const string V = "https://redline.arch-linux.pro/API/assets/";
         public const string ConfigName = "importConfig.json";
         public static string ServerUrl = V;
         private const string InternalServerUrl = V;

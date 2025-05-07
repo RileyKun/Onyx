@@ -13,10 +13,10 @@ using Debug = UnityEngine.Debug;
 namespace RedlineUpdater.Editor{
   public class RedlineAutomaticUpdateAndInstall : MonoBehaviour{
     //get version from server
-    private const string VersionURL = "https://c0dera.in/Redline/api/version.txt";
+    private const string VersionURL = "https://redline.arch-linux.pro/API/version.txt";
 
     //get download url
-    private const string UnitypackageUrl = "https://c0dera.in/Redline/api/assets/latest/Redline.unitypackage";
+    private const string UnitypackageUrl = "https://redline.arch-linux.pro/API/assets/latest/Redline.unitypackage";
 
     //GetVersion
     private static readonly string CurrentVersion = File.ReadAllText("Packages/dev.runaxr.redline/RedlineUpdater/Editor/RedlineVersion.txt");

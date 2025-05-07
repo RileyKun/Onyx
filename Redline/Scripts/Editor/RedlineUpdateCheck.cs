@@ -9,7 +9,7 @@ namespace Redline.Scripts.Editor {
         [InitializeOnLoad]
         public class Startup {
             private
-                const string VersionURL = "https://c0dera.in/Redline/api/version.txt";
+                const string VersionURL = "https://redline.arch-linux.pro/API/version.txt";
 
             private static readonly string CurrentVersion =
                 File.ReadAllText("Packages/dev.runaxr.Redline/RedlineUpdater/Editor/Redlineversion.txt");
