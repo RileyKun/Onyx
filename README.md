@@ -39,7 +39,7 @@ Redline Package Manager (RPM) is a powerful Unity editor extension designed to s
 ### VRChat Creator Companion / ALCOM
 
 Add our repository to VCC or ALCOM using this URL:
-- `https://rlist.arch-linux.pro`
+- `https://rlist.arch-linux.pro/index.json`
 
 ### Development Builds
 
