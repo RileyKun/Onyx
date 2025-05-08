@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine.SceneManagement;
 
-namespace Redline.DiscordRPC.Editor {
+namespace Redline.Scripts.Editor.DiscordRPC.Editor {
     [InitializeOnLoad]
     public static class RedlineDiscordRpcRuntimeHelper {
         // register an event handler when the class is initialized

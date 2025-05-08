@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using AOT;
 
-namespace Redline.DiscordRPC {
+namespace Redline.Scripts.Editor.DiscordRPC {
   public abstract class DiscordRpc {
     [MonoPInvokeCallback(typeof (OnReadyInfo))]
     public static void ReadyCallback(ref DiscordUser connectedUser) {

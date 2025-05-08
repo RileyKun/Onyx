@@ -1,4 +1,4 @@
-﻿namespace Redline.DiscordRPC {
+﻿namespace Redline.Scripts.Editor.DiscordRPC {
     public static class RpcStateInfo {
         public static string StateName(this RpcState state) {
             return state

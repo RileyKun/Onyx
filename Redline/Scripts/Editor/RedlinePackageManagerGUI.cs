@@ -30,7 +30,8 @@ namespace Redline.Scripts.Editor {
             LoadJson();
 
             // Header style setup
-            _redlineHeader = new GUIStyle {
+            _redlineHeader = new GUIStyle
+            {
                 normal = {
                     background = Resources.Load<Texture2D>("RedlinePMHeader"),
                     textColor = Color.white
@@ -43,7 +44,7 @@ namespace Redline.Scripts.Editor {
         public static void LoadJson() {
             Assets.Clear();
 
-            string configPath = Path.Combine(RedlineSettings.ProjectConfigPath, RedlineImportManager.ConfigName);
+            var configPath = Path.Combine(RedlineSettings.ProjectConfigPath, RedlineImportManager.ConfigName);
             if (!File.Exists(configPath)) {
                 Debug.LogError($"[Redline] Config file not found at: {configPath}");
                 return;
@@ -57,13 +58,20 @@ namespace Redline.Scripts.Editor {
 
                 // Populate the assets dictionary from the JSON
                 foreach (JProperty assetProperty in configJson["assets"]) {
-                    string buttonName = "";
-                    string file = "";
+                    var buttonName = "";
+                    var file = "";
 
                     foreach (var assetDetail in assetProperty.Value) {
                         var detail = (JProperty)assetDetail;
-                        if (detail.Name == "name") buttonName = detail.Value.ToString();
-                        if (detail.Name == "file") file = detail.Value.ToString();
+                        switch (detail.Name)
+                        {
+	                        case "name":
+		                        buttonName = detail.Value.ToString();
+		                        break;
+	                        case "file":
+		                        file = detail.Value.ToString();
+		                        break;
+                        }
                     }
 
                     Assets[buttonName] = file;
@@ -109,7 +117,7 @@ namespace Redline.Scripts.Editor {
         }
 
         // Helper method to create a button with a specific action
-        private void CreateButton(string label, System.Action action) {
+        private static void CreateButton(string label, Action action) {
             GUILayout.BeginHorizontal();
             if (GUILayout.Button(label)) {
                 action();
@@ -118,16 +126,16 @@ namespace Redline.Scripts.Editor {
         }
 
         // Displays asset buttons with their corresponding actions (Download/Import and Delete)
-        private void DisplayAsset(KeyValuePair<string, string> asset) {
+        private static void DisplayAsset(KeyValuePair<string, string> asset) {
             GUILayout.BeginHorizontal();
-            string assetPath = Path.Combine(RedlineSettings.GetAssetPath(), asset.Value);
+            var assetPath = Path.Combine(RedlineSettings.GetAssetPath(), asset.Value);
 
             if (asset.Value == "") {
                 GUILayout.FlexibleSpace();
                 GUILayout.Label(asset.Key);
                 GUILayout.FlexibleSpace();
             } else {
-                string buttonLabel = File.Exists(assetPath) ? "Import" : "Download";
+                var buttonLabel = File.Exists(assetPath) ? "Import" : "Download";
                 if (GUILayout.Button($"{buttonLabel} {asset.Key}")) {
                     RedlineImportManager.DownloadAndImportAssetFromServer(asset.Value);
                 }

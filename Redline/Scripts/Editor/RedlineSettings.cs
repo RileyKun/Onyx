@@ -27,13 +27,13 @@ namespace Redline.Scripts.Editor {
                 return ProjectDownloadPath;
             }
 
-            string defaultPath = Path.Combine(
+            var defaultPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "Redline"
             );
-            
-            string assetPath = EditorPrefs.GetString("Redline_customAssetPath", defaultPath);
-            
+
+            var assetPath = EditorPrefs.GetString("Redline_customAssetPath", defaultPath);
+
             // Ensure the path ends with a directory separator
             if (!assetPath.EndsWith(Path.DirectorySeparatorChar.ToString())) {
                 assetPath += Path.DirectorySeparatorChar;
@@ -47,7 +47,8 @@ namespace Redline.Scripts.Editor {
             titleContent = new GUIContent("Redline Settings");
             minSize = new Vector2(400, 600);
 
-            _toolkitHeader = new GUIStyle {
+            _toolkitHeader = new GUIStyle
+            {
                 normal = {
                     background = Resources.Load<Texture2D>("RedlinePMHeader"),
                     textColor = Color.white
@@ -60,10 +61,9 @@ namespace Redline.Scripts.Editor {
                 EditorPrefs.SetBool("RedlineDiscordRPC", true);
             }
 
-            if (File.Exists(ProjectConfigPath + BackgroundConfig) && !EditorPrefs.HasKey("Redline_background")) {
-                EditorPrefs.SetBool("Redline_background", false);
-                File.WriteAllText(ProjectConfigPath + BackgroundConfig, "False");
-            }
+            if (!File.Exists(ProjectConfigPath + BackgroundConfig) || EditorPrefs.HasKey("Redline_background")) return;
+            EditorPrefs.SetBool("Redline_background", false);
+            File.WriteAllText(ProjectConfigPath + BackgroundConfig, "False");
         }
 
         public void OnGUI() {
@@ -87,7 +87,7 @@ namespace Redline.Scripts.Editor {
             );
         }
 
-        private void DisplayLinks() {
+        private static void DisplayLinks() {
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Redline")) {
                 Application.OpenURL(Url);
@@ -134,12 +134,12 @@ namespace Redline.Scripts.Editor {
             SaveRedlineColor(defaultColor);
         }
 
-        private void DisplayConsoleSettings() {
+        private static void DisplayConsoleSettings() {
             GUILayout.Label("Overall:");
             GUILayout.Space(4);
             GUILayout.BeginHorizontal();
-            bool isHiddenConsole = EditorPrefs.GetBool("Redline_HideConsole");
-            bool enableConsoleHide = EditorGUILayout.ToggleLeft("Hide Console Errors", isHiddenConsole);
+            var isHiddenConsole = EditorPrefs.GetBool("Redline_HideConsole");
+            var enableConsoleHide = EditorGUILayout.ToggleLeft("Hide Console Errors", isHiddenConsole);
 
             if (enableConsoleHide != isHiddenConsole) {
                 EditorPrefs.SetBool("Redline_HideConsole", enableConsoleHide);
@@ -149,12 +149,12 @@ namespace Redline.Scripts.Editor {
             GUILayout.EndHorizontal();
         }
 
-        private void DisplayBackgroundSettings() {
+        private static void DisplayBackgroundSettings() {
             GUILayout.Space(4);
             GUILayout.Label("Upload panel:");
             GUILayout.BeginHorizontal();
-            bool isBackgroundEnabled = EditorPrefs.GetBool("Redline_background", false);
-            bool enableBackground = EditorGUILayout.ToggleLeft("Custom background", isBackgroundEnabled);
+            var isBackgroundEnabled = EditorPrefs.GetBool("Redline_background", false);
+            var enableBackground = EditorGUILayout.ToggleLeft("Custom background", isBackgroundEnabled);
             if (enableBackground != isBackgroundEnabled) {
                 EditorPrefs.SetBool("Redline_background", enableBackground);
                 File.WriteAllText(ProjectConfigPath + BackgroundConfig, enableBackground.ToString());
@@ -162,12 +162,12 @@ namespace Redline.Scripts.Editor {
             GUILayout.EndHorizontal();
         }
 
-        private void DisplayAssetPathSettings() {
+        private static void DisplayAssetPathSettings() {
             GUILayout.Space(4);
             GUILayout.Label("Import panel:");
             GUILayout.BeginHorizontal();
-            bool isOnlyProjectEnabled = EditorPrefs.GetBool("Redline_onlyProject", false);
-            bool enableOnlyProject = EditorGUILayout.ToggleLeft("Save files only in project", isOnlyProjectEnabled);
+            var isOnlyProjectEnabled = EditorPrefs.GetBool("Redline_onlyProject", false);
+            var enableOnlyProject = EditorGUILayout.ToggleLeft("Save files only in project", isOnlyProjectEnabled);
             if (enableOnlyProject != isOnlyProjectEnabled) {
                 EditorPrefs.SetBool("Redline_onlyProject", enableOnlyProject);
             }
@@ -176,17 +176,17 @@ namespace Redline.Scripts.Editor {
             GUILayout.Space(4);
             GUILayout.Label("Asset path:");
             GUILayout.BeginHorizontal();
-            string defaultPath = Path.Combine(
+            var defaultPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "Redline"
             );
-            string customAssetPath = EditorGUILayout.TextField(
+            var customAssetPath = EditorGUILayout.TextField(
                 "",
                 EditorPrefs.GetString("Redline_customAssetPath", defaultPath)
             );
 
             if (GUILayout.Button("Choose", GUILayout.Width(60))) {
-                string path = EditorUtility.OpenFolderPanel("Asset download folder", 
+                var path = EditorUtility.OpenFolderPanel("Asset download folder",
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Redline");
                 if (!string.IsNullOrEmpty(path)) {
                     customAssetPath = path;

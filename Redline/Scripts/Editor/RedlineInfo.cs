@@ -29,7 +29,7 @@ namespace Redline.Scripts.Editor {
 
         [MenuItem("Redline/Info", false, 500)]
         private static void Init() {
-            var window = (RedlineInfo)EditorWindow.GetWindow(typeof(RedlineInfo));
+            var window = (RedlineInfo)GetWindow(typeof(RedlineInfo));
             window.Show();
         }
 
@@ -38,7 +38,8 @@ namespace Redline.Scripts.Editor {
             minSize = new Vector2(400, 720);
 
             _redlineBottomHeader = new GUIStyle();
-            _toolkitHeader = new GUIStyle {
+            _toolkitHeader = new GUIStyle
+            {
                 normal = {
                     background = Resources.Load("RedlinePMHeader") as Texture2D,
                     textColor = Color.white
@@ -57,7 +58,7 @@ namespace Redline.Scripts.Editor {
             DisplayLinkButton("Status", Link1);
 
             GUILayout.Space(4);
-            GUILayout.Label("Redline Version 2.2.0");
+            GUILayout.Label("Redline Version 2.2.1");
             GUILayout.Label("Redline imported correctly if you are seeing this");
 
             // Changelog ScrollView
@@ -107,7 +108,7 @@ Bugs/Issues can be reported via github issues
         }
 
         // Helper method to display buttons that open URLs
-        private void DisplayLinkButton(string label, string url) {
+        private static void DisplayLinkButton(string label, string url) {
             GUILayout.BeginHorizontal();
             if (GUILayout.Button(label)) {
                 Application.OpenURL(url);

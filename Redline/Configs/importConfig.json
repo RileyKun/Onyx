@@ -26,7 +26,12 @@
         },
 
         "Notice": {
-            "name": "Redline Packages are OFFLINE for now\nWe will be back soon when it's finished"
+            "name": "\nRedline Packages are OFFLINE for now\nWe will be back soon when it's finished\n"
+        },
+
+        "Redline": {
+            "name": "Redline Package Manager",
+            "file": "Redline.unitypackage"
         },
         
         "Footer": {

@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Redline.DiscordRPC.Editor {
+namespace Redline.Scripts.Editor.DiscordRPC.Editor {
   [InitializeOnLoad]
   public class RedlineDiscordRPC {
     private static readonly DiscordRpc.RichPresence Presence = new();
