@@ -58,6 +58,24 @@ We offer automatically built bleeding-edge packages for testing new features:
   - macOS
   - Linux
 
+## 👥 Contributors
+
+<div align="center">
+
+### Core Team
+
+| <img src="https://github.com/PhoenixAceVFX.png" width="100" height="100" alt="PhoenixAceVFX"><br>[PhoenixAceVFX](https://github.com/PhoenixAceVFX) | <img src="https://github.com/Redline-Team.png" width="100" height="100" alt="Redline Team"><br>[Redline Team](https://github.com/Redline-Team) |
+|:---:|:---:|
+| Lead Developer | Organization |
+
+### Project Contributors
+
+We want to thank all the amazing people who have contributed to making RPM better:
+
+[![Contributors](https://contrib.rocks/image?repo=Redline-Team/RPM)](https://github.com/Redline-Team/RPM/graphs/contributors)
+
+</div>
+
 ## 🤝 Contributing
 
 Contributions are welcome! See our [contributing guidelines](CONTRIBUTING.md) for more information.
