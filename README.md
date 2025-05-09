@@ -66,8 +66,9 @@ Contributions are welcome! See our [contributing guidelines](CONTRIBUTING.md) fo
 
 <div align="center">
 
-[![Arch-Linux.Pro](https://uptime.betterstack.com/status-badges/v3/monitor/1psjj.svg)](https://status.arch-linux.pro)
-[![Redline API](https://uptime.betterstack.com/status-badges/v3/monitor/1jo77.svg)](https://status.arch-linux.pro)
+| Arch-Linux.Pro | Redline API |
+|---------|---------|
+| [![Arch-Linux.Pro](https://uptime.betterstack.com/status-badges/v3/monitor/1psjj.svg)](https://status.arch-linux.pro) | [![Redline API](https://uptime.betterstack.com/status-badges/v3/monitor/1jo77.svg)](https://status.arch-linux.pro) |
 
 </div>
 
