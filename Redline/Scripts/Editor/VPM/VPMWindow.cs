@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEditor;
@@ -15,7 +16,8 @@ namespace Redline.Editor.VPM
         private enum Tab
         {
             Repositories,
-            Packages
+            Packages,
+            Installed
         }
         
         // Banner style
@@ -24,6 +26,7 @@ namespace Redline.Editor.VPM
         private Tab _currentTab = Tab.Repositories;
         private Vector2 _repositoriesScrollPosition;
         private Vector2 _packagesScrollPosition;
+        private Vector2 _installedScrollPosition;
         private string _newRepositoryUrl = "";
         private bool _isAddingRepository = false;
         private float _installProgress = 0f;
@@ -31,6 +34,14 @@ namespace Redline.Editor.VPM
         private string _currentInstallingPackage = "";
         private string _searchFilter = "";
         private Dictionary<string, bool> _repositoryFoldouts = new Dictionary<string, bool>();
+        
+        // Dictionary to track selected version for each package
+        private Dictionary<string, string> _selectedVersions = new Dictionary<string, string>();
+        
+        // List of installed packages
+        private List<InstalledPackageInfo> _installedPackages = new List<InstalledPackageInfo>();
+        private bool _isRemovingPackage = false;
+        private string _currentRemovingPackage = "";
         
         // Options
         private bool _showUnstableReleases = false;
@@ -60,6 +71,7 @@ namespace Redline.Editor.VPM
             VPMManager.Initialize();
             RefreshRepositories();
             RefreshPackages();
+            RefreshInstalledPackages();
             
             // Initialize the banner style
             _bannerStyle = new GUIStyle
@@ -89,6 +101,9 @@ namespace Redline.Editor.VPM
                     case Tab.Packages:
                         DrawPackagesTab();
                         break;
+                    case Tab.Installed:
+                        DrawInstalledTab();
+                        break;
                 }
             }
             catch (System.Exception e)
@@ -104,6 +119,13 @@ namespace Redline.Editor.VPM
                 EditorGUILayout.LabelField($"Installing {_currentInstallingPackage}...");
                 Rect progressRect = EditorGUILayout.GetControlRect(false, 20);
                 EditorGUI.ProgressBar(progressRect, _installProgress, $"{Mathf.Round(_installProgress * 100)}%");
+            }
+            
+            // Draw removal progress if a package is being removed
+            if (_isRemovingPackage)
+            {
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField($"Removing {_currentRemovingPackage}...");
             }
         }
 
@@ -126,6 +148,12 @@ namespace Redline.Editor.VPM
             if (GUILayout.Toggle(_currentTab == Tab.Packages, "Packages", EditorStyles.toolbarButton, GUILayout.Width(100)))
             {
                 _currentTab = Tab.Packages;
+            }
+            
+            if (GUILayout.Toggle(_currentTab == Tab.Installed, "Installed", EditorStyles.toolbarButton, GUILayout.Width(100)))
+            {
+                _currentTab = Tab.Installed;
+                RefreshInstalledPackages(); // Refresh the list when switching to this tab
             }
 
             GUILayout.FlexibleSpace();
@@ -315,35 +343,95 @@ namespace Redline.Editor.VPM
             }
         }
 
-        private void DrawPackageItem(VPMRepository repository, VPMPackage package, VPMPackageVersion version)
+        private void DrawPackageItem(VPMRepository repository, VPMPackage package, VPMPackageVersion latestVersion)
         {
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             
+            // Get unique package identifier
+            string packageKey = package.Id;
+            
+            // Initialize selected version if not already set
+            if (!_selectedVersions.ContainsKey(packageKey))
+            {
+                _selectedVersions[packageKey] = latestVersion.Version; // Default to latest version
+            }
+            
+            // Get the currently selected version
+            string selectedVersionString = _selectedVersions[packageKey];
+            
+            // Make sure the selected version exists in the package
+            if (!package.Versions.ContainsKey(selectedVersionString))
+            {
+                selectedVersionString = latestVersion.Version;
+                _selectedVersions[packageKey] = selectedVersionString;
+            }
+            
+            // Get the selected version object
+            VPMPackageVersion selectedVersion = package.Versions[selectedVersionString];
+            
+            // Package name and version selection UI
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(package.GetDisplayName(), EditorStyles.boldLabel);
             
             EditorGUI.BeginDisabledGroup(_isInstallingPackage);
+            
+            // Create a list of available versions
+            List<string> versionOptions = package.Versions.Keys.ToList();
+            
+            // Sort versions in descending order (newest first)
+            versionOptions.Sort((a, b) => {
+                try {
+                    // Try to parse as Version objects for proper comparison
+                    Version vA = new Version(a.Split('-')[0]);
+                    Version vB = new Version(b.Split('-')[0]);
+                    return vB.CompareTo(vA); // Descending order
+                }
+                catch {
+                    // Fallback to string comparison if parsing fails
+                    return string.Compare(b, a);
+                }
+            });
+            
+            // Find the index of the currently selected version
+            int selectedIndex = versionOptions.IndexOf(selectedVersionString);
+            if (selectedIndex < 0) selectedIndex = 0; // Default to first version if not found
+            
+            // Draw the dropdown
+            int newSelectedIndex = EditorGUILayout.Popup(selectedIndex, versionOptions.ToArray(), GUILayout.Width(100));
+            
+            // Update selected version if changed
+            if (newSelectedIndex != selectedIndex)
+            {
+                _selectedVersions[packageKey] = versionOptions[newSelectedIndex];
+                // Update the selected version object
+                selectedVersionString = versionOptions[newSelectedIndex];
+                selectedVersion = package.Versions[selectedVersionString];
+            }
+            
+            // Install button
             if (GUILayout.Button("Install", GUILayout.Width(60)))
             {
-                InstallPackageAsync(version);
+                InstallPackageAsync(selectedVersion);
             }
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
             
+            // Display package details
             EditorGUILayout.LabelField("Repository", repository.Name ?? "Unknown Repository");
-            EditorGUILayout.LabelField("Version", version.Version ?? "Unknown Version");
-            EditorGUILayout.LabelField("Unity", version.Unity ?? "Any Unity Version");
+            EditorGUILayout.LabelField("Version", selectedVersion.Version ?? "Unknown Version");
+            EditorGUILayout.LabelField("Unity", selectedVersion.Unity ?? "Any Unity Version");
             
-            if (!string.IsNullOrEmpty(version.Description))
+            // Show description and author from the selected version
+            if (!string.IsNullOrEmpty(selectedVersion.Description))
             {
-                EditorGUILayout.LabelField("Description", version.Description);
+                EditorGUILayout.LabelField("Description", selectedVersion.Description);
             }
             
-            if (!string.IsNullOrEmpty(version.AuthorName))
+            if (!string.IsNullOrEmpty(selectedVersion.AuthorName))
             {
-                EditorGUILayout.LabelField("Author", version.AuthorName);
+                EditorGUILayout.LabelField("Author", selectedVersion.AuthorName);
             }
             
             EditorGUILayout.EndVertical();
@@ -397,15 +485,18 @@ namespace Redline.Editor.VPM
             VPMManager.LoadAllRepositories();
             RefreshRepositories();
             RefreshPackages();
+            RefreshInstalledPackages(); // Also refresh installed packages
 
             if (success)
             {
-                EditorUtility.DisplayDialog("Success", $"{_currentInstallingPackage} has been installed successfully.", "OK");
+                Debug.Log($"Successfully installed {packageVersion.Name} {packageVersion.Version}");
             }
             else
             {
-                EditorUtility.DisplayDialog("Error", $"Failed to install {_currentInstallingPackage}. See console for details.", "OK");
+                EditorUtility.DisplayDialog("Installation Failed", $"Failed to install {packageVersion.Name} {packageVersion.Version}. Check the console for details.", "OK");
             }
+
+            Repaint();
         }
 
         private void RefreshRepositories()
@@ -629,5 +720,232 @@ namespace Redline.Editor.VPM
                 Repaint();
             }
         }
+        /// <summary>
+        /// Refreshes the list of installed packages
+        /// </summary>
+        private void RefreshInstalledPackages()
+        {
+            _installedPackages.Clear();
+            
+            string packagesDir = VPMManager.GetPackagesDirectory();
+            if (!Directory.Exists(packagesDir))
+                return;
+                
+            // Get all directories in the Packages folder
+            string[] packageDirs = Directory.GetDirectories(packagesDir);
+            
+            foreach (string packageDir in packageDirs)
+            {
+                // Skip built-in Unity packages that start with "com.unity"
+                string dirName = Path.GetFileName(packageDir);
+                if (dirName.StartsWith("com.unity."))
+                    continue;
+                    
+                // Check for package.json file
+                string packageJsonPath = Path.Combine(packageDir, "package.json");
+                if (File.Exists(packageJsonPath))
+                {
+                    try
+                    {
+                        // Read and parse the package.json file
+                        string jsonContent = File.ReadAllText(packageJsonPath);
+                        InstalledPackageInfo packageInfo = JsonUtility.FromJson<InstalledPackageInfo>(jsonContent);
+                        
+                        // Set the directory path for later use
+                        packageInfo.DirectoryPath = packageDir;
+                        
+                        _installedPackages.Add(packageInfo);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"Error parsing package.json in {packageDir}: {e.Message}");
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Draws the installed packages tab
+        /// </summary>
+        private void DrawInstalledTab()
+        {
+            EditorGUILayout.LabelField("Installed Packages", EditorStyles.boldLabel);
+            EditorGUILayout.Space();
+            
+            // Button to refresh the list
+            if (GUILayout.Button("Refresh List", GUILayout.Width(100)))
+            {
+                RefreshInstalledPackages();
+            }
+            
+            EditorGUILayout.Space();
+            
+            // List of installed packages
+            _installedScrollPosition = EditorGUILayout.BeginScrollView(_installedScrollPosition);
+            
+            if (_installedPackages.Count == 0)
+            {
+                EditorGUILayout.HelpBox("No VPM packages are currently installed.", MessageType.Info);
+            }
+            else
+            {
+                foreach (InstalledPackageInfo package in _installedPackages)
+                {
+                    DrawInstalledPackageItem(package);
+                }
+            }
+            
+            EditorGUILayout.EndScrollView();
+        }
+        
+        /// <summary>
+        /// Draws an installed package item in the list
+        /// </summary>
+        private void DrawInstalledPackageItem(InstalledPackageInfo package)
+        {
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            
+            EditorGUILayout.BeginHorizontal();
+            string displayName = !string.IsNullOrEmpty(package.displayName) ? package.displayName : package.name;
+            EditorGUILayout.LabelField(displayName, EditorStyles.boldLabel);
+            
+            // Check if this is the VRChat base package and if we can remove it
+            bool canRemove = true;
+            string disabledReason = "";
+            
+            if (package.name == "com.vrchat.base")
+            {
+                // Check if any VRChat SDK packages are installed
+                bool avatarsInstalled = _installedPackages.Any(p => p.name == "com.vrchat.avatars");
+                bool worldsInstalled = _installedPackages.Any(p => p.name == "com.vrchat.worlds");
+                
+                if (avatarsInstalled || worldsInstalled)
+                {
+                    canRemove = false;
+                    disabledReason = $"Cannot remove VRChat Base while {(avatarsInstalled ? "Avatars" : "Worlds")} SDK is installed";
+                }
+            }
+            else if (package.name == "dev.redline-team.rpm")
+            {
+                // Prevent Redline Package Manager from removing itself
+                canRemove = false;
+                disabledReason = "Cannot remove Redline Package Manager (RPM) as it cannot uninstall itself";
+            }
+            
+            EditorGUI.BeginDisabledGroup(_isRemovingPackage || !canRemove);
+            if (GUILayout.Button("Remove", GUILayout.Width(60)))
+            {
+                if (EditorUtility.DisplayDialog("Remove Package", $"Are you sure you want to remove {displayName}?", "Yes", "No"))
+                {
+                    RemovePackageAsync(package);
+                }
+            }
+            EditorGUI.EndDisabledGroup();
+            EditorGUILayout.EndHorizontal();
+            
+            // Show warning if package cannot be removed
+            if (!canRemove)
+            {
+                EditorGUILayout.HelpBox(disabledReason, MessageType.Warning);
+            }
+            
+            EditorGUILayout.Space();
+            
+            EditorGUILayout.LabelField("Package ID", package.name);
+            EditorGUILayout.LabelField("Version", package.version);
+            
+            if (!string.IsNullOrEmpty(package.description))
+            {
+                EditorGUILayout.LabelField("Description", package.description);
+            }
+            
+            if (!string.IsNullOrEmpty(package.author))
+            {
+                EditorGUILayout.LabelField("Author", package.author);
+            }
+            
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.Space();
+        }
+        
+        /// <summary>
+        /// Removes an installed package
+        /// </summary>
+        private async void RemovePackageAsync(InstalledPackageInfo package)
+        {
+            if (package == null || string.IsNullOrEmpty(package.DirectoryPath))
+                return;
+            
+            // Double-check VRChat package dependencies before removal
+            if (package.name == "com.vrchat.base")
+            {
+                // Check if any VRChat SDK packages are installed
+                bool avatarsInstalled = _installedPackages.Any(p => p.name == "com.vrchat.avatars");
+                bool worldsInstalled = _installedPackages.Any(p => p.name == "com.vrchat.worlds");
+                
+                if (avatarsInstalled || worldsInstalled)
+                {
+                    string sdkName = avatarsInstalled ? "Avatars" : "Worlds";
+                    EditorUtility.DisplayDialog("Cannot Remove Package", 
+                        $"VRChat Base cannot be removed while the {sdkName} SDK is installed. Please remove the {sdkName} SDK first.", "OK");
+                    return;
+                }
+            }
+                
+            _isRemovingPackage = true;
+            _currentRemovingPackage = !string.IsNullOrEmpty(package.displayName) ? package.displayName : package.name;
+            
+            await Task.Run(() => {
+                try
+                {
+                    // Delete the package directory
+                    if (Directory.Exists(package.DirectoryPath))
+                    {
+                        Directory.Delete(package.DirectoryPath, true);
+                        
+                        // Also delete the .meta file if it exists
+                        string metaFilePath = package.DirectoryPath + ".meta";
+                        if (File.Exists(metaFilePath))
+                        {
+                            File.Delete(metaFilePath);
+                        }
+                    }
+                    
+                    Debug.Log($"Successfully removed package: {package.name}");
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Failed to remove package {package.name}: {e.Message}");
+                    EditorUtility.DisplayDialog("Error", $"Failed to remove package {package.name}. Check the console for details.", "OK");
+                }
+            });
+            
+            _isRemovingPackage = false;
+            
+            // Refresh AssetDatabase to detect the removed package
+            AssetDatabase.Refresh();
+            
+            // Refresh the list of installed packages
+            RefreshInstalledPackages();
+            
+            Repaint();
+        }
+    }
+    
+    /// <summary>
+    /// Represents information about an installed package from package.json
+    /// </summary>
+    [Serializable]
+    public class InstalledPackageInfo
+    {
+        public string name;
+        public string displayName;
+        public string version;
+        public string description;
+        public string author;
+        
+        // Not part of package.json, used to store the directory path
+        [NonSerialized]
+        public string DirectoryPath;
     }
 }
