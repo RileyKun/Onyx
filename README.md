@@ -11,7 +11,6 @@
 ### A proper in-engine alternative to the VRChat Creator Companion
 
 [![Website](https://img.shields.io/website?down_color=red&down_message=Offline&label=arch-linux.pro&style=for-the-badge&up_color=cyan&up_message=Online&url=https%3A%2F%2Farch-linux.pro)](https://arch-linux.pro)
-[![GitHub all releases](https://img.shields.io/github/downloads/Redline-Team/RPM/total?color=red&label=Total%20Downloads&logo=github&logoColor=red&style=for-the-badge)](https://github.com/Redline-Team/RPM/releases/latest)
 [![License](https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge)](LICENSE)
 [![Patreon](https://img.shields.io/badge/Patreon-Support-pink?style=for-the-badge)](https://www.patreon.com/PhoenixAceVFX)
 [![Rider](https://img.shields.io/badge/Developed%20with-Rider-DD1265?style=for-the-badge&logo=rider&logoColor=white)](https://www.jetbrains.com/rider/)
