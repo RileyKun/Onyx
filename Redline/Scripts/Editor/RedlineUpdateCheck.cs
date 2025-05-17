@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Net.Http;
 using RedlineUpdater.Editor;
 using UnityEditor;
@@ -12,7 +12,7 @@ namespace Redline.Scripts.Editor {
                 const string VersionURL = "https://redline.arch-linux.pro/API/version.txt";
 
             private static readonly string CurrentVersion =
-                File.ReadAllText("Packages/dev.redline-team.rpm/RedlineUpdater/Editor/Redlineversion.txt");
+                File.ReadAllText("Packages/dev.redline-team.rpm/RedlineUpdater/Editor/RedlineVersion.txt");
 
             static Startup() {
                 Check();
