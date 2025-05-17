@@ -14,7 +14,6 @@ namespace Redline.Scripts.Editor {
         private const string ProjectDownloadPath = "Packages/dev.redline-team.rpm/Redline/Assets/";
 
         private static GUIStyle _toolkitHeader;
-        [FormerlySerializedAs("RedlineColor")] public Color redlineColor = Color.red;
 
         [MenuItem("Redline/Settings", false, 501)]
         private static void Init() {
@@ -69,7 +68,6 @@ namespace Redline.Scripts.Editor {
         public void OnGUI() {
             GUILayout.Box("", _toolkitHeader);
             GUILayout.Space(4);
-            SetBackgroundColor();
 
             DisplayLinks();
             DisplayRedlineSettings();
@@ -78,14 +76,6 @@ namespace Redline.Scripts.Editor {
             DisplayAssetPathSettings();
         }
 
-        private void SetBackgroundColor() {
-            GUI.backgroundColor = new Color(
-                EditorPrefs.GetFloat("RedlineColor_R"),
-                EditorPrefs.GetFloat("RedlineColor_G"),
-                EditorPrefs.GetFloat("RedlineColor_B"),
-                EditorPrefs.GetFloat("RedlineColor_A")
-            );
-        }
 
         private static void DisplayLinks() {
             GUILayout.BeginHorizontal();
@@ -108,30 +98,24 @@ namespace Redline.Scripts.Editor {
             EditorGUILayout.Space(10);
 
             EditorGUI.BeginChangeCheck();
-            redlineColor = EditorGUI.ColorField(new Rect(3, 270, position.width - 6, 15), "Kit UI Color", redlineColor);
+            
+            // Discord RPC Toggle
+            GUILayout.BeginHorizontal();
+            var isDiscordRpcEnabled = EditorPrefs.GetBool("RedlineDiscordRPC", true);
+            var enableDiscordRpc = EditorGUILayout.ToggleLeft("Enable Discord Rich Presence", isDiscordRpcEnabled);
+            if (enableDiscordRpc != isDiscordRpcEnabled) {
+                EditorPrefs.SetBool("RedlineDiscordRPC", enableDiscordRpc);
+                EditorUtility.DisplayDialog("Discord RPC Setting Changed", 
+                    "The Discord Rich Presence setting has been changed. Please restart Unity for this change to take effect.", 
+                    "OK");
+            }
+            GUILayout.EndHorizontal();
+            
             if (EditorGUI.EndChangeCheck()) {
-                SaveRedlineColor(redlineColor);
+                // Handle changes if needed
             }
-
-            EditorGUILayout.Space();
-            if (GUILayout.Button("Reset Color")) {
-                ResetRedlineColor();
-            }
-
-            EditorGUILayout.Space(10);
+            
             EditorGUILayout.EndVertical();
-        }
-
-        private void SaveRedlineColor(Color color) {
-            EditorPrefs.SetFloat("RedlineColor_R", color.r);
-            EditorPrefs.SetFloat("RedlineColor_G", color.g);
-            EditorPrefs.SetFloat("RedlineColor_B", color.b);
-            EditorPrefs.SetFloat("RedlineColor_A", color.a);
-        }
-
-        private void ResetRedlineColor() {
-            var defaultColor = Color.red;
-            SaveRedlineColor(defaultColor);
         }
 
         private static void DisplayConsoleSettings() {
