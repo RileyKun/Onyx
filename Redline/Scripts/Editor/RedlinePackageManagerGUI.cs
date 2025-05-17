@@ -5,6 +5,7 @@ using RedlineUpdater.Editor;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
+using Redline.Editor.VPM;
 
 namespace Redline.Scripts.Editor {
     public class RedlinePackageManager : EditorWindow {
@@ -87,7 +88,22 @@ namespace Redline.Scripts.Editor {
             // Header UI
             GUILayout.Box("", style: _redlineHeader);
             GUILayout.Space(4);
-
+            
+            // DEPRECATION NOTICE
+            GUI.backgroundColor = new Color(0.9f, 0.4f, 0.4f); // Darker red for deprecation
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            GUILayout.Label("⚠️ DEPRECATION NOTICE ⚠️", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox("This Package Manager is deprecated and may be removed in a future update. " +
+                                  "Please use the New VPM Manager instead for all package management needs.", 
+                                  MessageType.Warning);
+            
+            // Button to open VPM Manager
+            if (GUILayout.Button("Open VPM Manager", GUILayout.Height(30))) {
+                VPM.OpenVPMManager();
+            }
+            EditorGUILayout.EndVertical();
+            GUILayout.Space(8);
+            
             // Version 3.0.0 Warning Banner
             GUI.backgroundColor = Color.red;
             EditorGUILayout.HelpBox("WARNING: Version 3.0.0 is not backwards compatible with 2.2.1. " +
@@ -95,14 +111,6 @@ namespace Redline.Scripts.Editor {
                                   "We have attempted to automate this process but cannot guarantee it will work in all cases.", 
                                   MessageType.Warning);
             GUILayout.Space(4);
-
-            // Set background color
-            GUI.backgroundColor = new Color(
-                EditorPrefs.GetFloat("RedlineColor_R"),
-                EditorPrefs.GetFloat("RedlineColor_G"),
-                EditorPrefs.GetFloat("RedlineColor_B"),
-                EditorPrefs.GetFloat("RedlineColor_A")
-            );
 
             // Buttons for various actions
             CreateButton("Check for Updates", RedlineAutomaticUpdateAndInstall.AutomaticRedlineInstaller);
