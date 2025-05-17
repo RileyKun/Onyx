@@ -1,6 +1,6 @@
 <div align="center">
 
-> **⚠️ WARNING: Version 3.0.0 is not backwards compatible with 2.2.1 ⚠️**  
+> **⚠️ WARNING: V3 is not backwards compatible with V2 ⚠️**  
 > You may have to manually remove the old package folder (`dev.runaxr.redline`) to import this update.  
 > We have attempted to automate this process but cannot guarantee it will work in all cases.
 
