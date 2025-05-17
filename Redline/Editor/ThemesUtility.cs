@@ -9,9 +9,9 @@ namespace Redline.Editor
 { 
     public static class ThemesUtility
     {
-        public const string CustomThemesPath = @"Packages\dev.runaxr.redline\Redline\Editor\Themes\";
-        private const string UssFilePath = @"Packages\dev.runaxr.redline\Redline\Editor\StyleSheets\Extensions\";
-        public const string PresetsPath = @"Packages\dev.runaxr.redline\Redline\Editor\CreatePresets\";
+        public const string CustomThemesPath = @"Packages\dev.redline-team.rpm\Redline\Editor\Themes\";
+        private const string UssFilePath = @"Packages\dev.redline-team.rpm\Redline\Editor\StyleSheets\Extensions\";
+        public const string PresetsPath = @"Packages\dev.redline-team.rpm\Redline\Editor\CreatePresets\";
         private const string Version = "v0.65";
         public const string Enc = ".json";
 
@@ -133,7 +133,7 @@ namespace Redline.Editor
             File.WriteAllText(path, ussText);
 
 
-            const string path2 = @"Packages\dev.runaxr.redline\Redline\Editor\StyleSheets\Extensions\light.uss";
+            const string path2 = @"Packages\dev.redline-team.rpm\Redline\Editor\StyleSheets\Extensions\light.uss";
             DeleteFileWithMeta(path2);
             
             File.WriteAllText(path2, ussText);

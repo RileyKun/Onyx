@@ -58,7 +58,7 @@ namespace Redline.Scripts.Editor {
             DisplayLinkButton("Status", Link1);
 
             GUILayout.Space(4);
-            GUILayout.Label("Redline Version 2.2.1");
+            GUILayout.Label("Redline Version 3.0.0");
             GUILayout.Label("Redline imported correctly if you are seeing this");
 
             // Changelog ScrollView
@@ -80,7 +80,7 @@ Bugs/Issues can be reported via github issues
 
 ---------------------------------------------------------
 ∞∞∞∞Contributors to Redline Unity Kit∞∞∞∞
-> Developer: PhoenixAceVFX
+> Developer: AromaXR (PhoenixAceVFX)
 > Contributor: RileyKun
 - Contributor: WTFBlaze - Made the import system
 ============================================

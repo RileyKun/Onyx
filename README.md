@@ -1,8 +1,12 @@
 <div align="center">
 
+> **⚠️ WARNING: Version 3.0.0 is not backwards compatible with 2.2.1 ⚠️**  
+> You may have to manually remove the old package folder (`dev.runaxr.redline`) to import this update.  
+> We have attempted to automate this process but cannot guarantee it will work in all cases.
+
 <img src="https://redline.arch-linux.pro/animated.svg" width="500" alt="Redline Package Manager">
 
-<img src="Screenshot.webp" width="650" />
+<img src="Preview.webp" width="650" />
 
 ### A proper in-engine alternative to the VRChat Creator Companion
 

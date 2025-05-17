@@ -68,7 +68,7 @@ namespace Redline.Editor
 
 
             if (!create) return;
-            var path = @"Packages\dev.runaxr.redline\Redline\Editor\StyleSheets\Extensions\CustomThemes\" + _name + ".json";
+            var path = @"Packages\dev.redline-team.rpm\Redline\Editor\StyleSheets\Extensions\CustomThemes\" + _name + ".json";
             if (File.Exists(path))
             {
                 if( EditorUtility.DisplayDialog("This Theme already exists", "Do you want to override the old Theme?", "Yes",  "Cancel") == false)

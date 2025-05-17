@@ -11,6 +11,12 @@
 /[Uu]ser[Ss]ettings/
 /website/
 
+LICENSE.meta
+README.md.meta
+CONTRIBUTING.md.meta
+CODE_OF_CONDUCT.md.meta
+Preview.webp.meta
+
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/

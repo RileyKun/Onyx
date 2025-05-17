@@ -19,7 +19,7 @@ namespace RedlineUpdater.Editor{
     private const string UnitypackageUrl = "https://redline.arch-linux.pro/API/assets/latest/Redline.unitypackage";
 
     //GetVersion
-    private static readonly string CurrentVersion = File.ReadAllText("Packages/dev.runaxr.redline/RedlineUpdater/Editor/RedlineVersion.txt");
+    private static readonly string CurrentVersion = File.ReadAllText("Packages/dev.redline-team.rpm/RedlineUpdater/Editor/RedlineVersion.txt");
 
     //EditorPrefs key for storing last declined version
     private const string LastDeclinedVersionKey = "Redline_LastDeclinedVersion";
@@ -28,7 +28,7 @@ namespace RedlineUpdater.Editor{
     private const string AssetName = "Redline.unitypackage";
 
     //gets Toolkit Directory Path
-    private const string ToolkitPath = "Packages/dev.runaxr.redline";
+    private const string ToolkitPath = "Packages/dev.redline-team.rpm";
 
     // ReSharper disable Unity.PerformanceAnalysis
     public static async void AutomaticRedlineInstaller(){

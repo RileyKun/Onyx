@@ -9,9 +9,9 @@ namespace Redline.Scripts.Editor {
         private const string Url = "https://github.com/Redline-Team/RPM/";
         private const string Url1 = "https://arch-linux.pro/";
 
-        public const string ProjectConfigPath = "Packages/dev.runaxr.Redline/Redline/Configs/";
+        public const string ProjectConfigPath = "Packages/dev.redline-team.rpm/Redline/Configs/";
         private const string BackgroundConfig = "BackgroundVideo.txt";
-        private const string ProjectDownloadPath = "Packages/dev.runaxr.Redline/Redline/Assets/";
+        private const string ProjectDownloadPath = "Packages/dev.redline-team.rpm/Redline/Assets/";
 
         private static GUIStyle _toolkitHeader;
         [FormerlySerializedAs("RedlineColor")] public Color redlineColor = Color.red;

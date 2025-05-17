@@ -88,6 +88,14 @@ namespace Redline.Scripts.Editor {
             GUILayout.Box("", style: _redlineHeader);
             GUILayout.Space(4);
 
+            // Version 3.0.0 Warning Banner
+            GUI.backgroundColor = Color.red;
+            EditorGUILayout.HelpBox("WARNING: Version 3.0.0 is not backwards compatible with 2.2.1. " +
+                                  "You may have to manually remove the old package folder (dev.runaxr.redline) to import this update. " +
+                                  "We have attempted to automate this process but cannot guarantee it will work in all cases.", 
+                                  MessageType.Warning);
+            GUILayout.Space(4);
+
             // Set background color
             GUI.backgroundColor = new Color(
                 EditorPrefs.GetFloat("RedlineColor_R"),

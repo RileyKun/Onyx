@@ -7,8 +7,8 @@ on:
     paths: package.json
 
 env:
-  packageName: "dev.runaxr.redline"
-  packagePath: "Packages/dev.runaxr.redline"
+  packageName: "dev.redline-team.rpm"
+  packagePath: "Packages/dev.redline-team.rpm"
   packageFileName: "Redline"
   packageReleaseName: "Bleeding Edge"
 
