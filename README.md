@@ -6,7 +6,7 @@
 
 <img src="https://redline.arch-linux.pro/animated.svg" width="500" alt="Redline Package Manager">
 
-<img src="Preview.png" width="650" />
+<img src="Current.png" width="650" />
 
 ### A proper in-engine alternative to the VRChat Creator Companion
 
