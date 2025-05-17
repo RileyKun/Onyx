@@ -55,7 +55,6 @@ We offer automatically built bleeding-edge packages for testing new features:
 ## 🔧 System Requirements
 
 - Unity Versions:
-  - Unity 2019.4.31f1 (VRChat supported)
   - Unity 2022.3.22f1 (VRChat supported)
 - Operating Systems:
   - Windows 10/11
