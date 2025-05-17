@@ -32,8 +32,8 @@ namespace Redline.Scripts.Editor.DiscordRPC.Editor {
       Presence.StartTimestamp = _timestamp;
       Presence.LargeImageKey = "rpm";
       Presence.LargeImageText = "Redline Package Manager";
-      Presence.SmallImageKey = "rxr";
-      Presence.SmallImageText = "By RunaXR";
+      Presence.SmallImageKey = "axr";
+      Presence.SmallImageText = "By AromaXR";
       DiscordRpc.UpdatePresence(Presence);
     }
 

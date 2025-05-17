@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -6,6 +6,12 @@ using AOT;
 
 namespace Redline.Scripts.Editor.DiscordRPC {
   public abstract class DiscordRpc {
+    // Static constructor to ensure the native library is loaded before any P/Invoke calls
+    static DiscordRpc() {
+      // Reference the loader to trigger its static constructor
+      var loaderType = typeof(DiscordRpcNativeLoader);
+      UnityEngine.Debug.Log("[Redline] DiscordRPC: Native library loader initialized");
+    }
     [MonoPInvokeCallback(typeof (OnReadyInfo))]
     public static void ReadyCallback(ref DiscordUser connectedUser) {
       Callbacks.ReadyCallback(ref connectedUser);
@@ -107,26 +113,68 @@ namespace Redline.Scripts.Editor.DiscordRPC {
       InitializeInternal(applicationId, ref staticEventHandlers, autoRegister, optionalSteamId);
     }
 
+    #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
     [DllImport("discord-rpc", EntryPoint = "Discord_Initialize", CallingConvention = CallingConvention.Cdecl)]
+    #elif UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
+    [DllImport("libdiscord-rpc", EntryPoint = "Discord_Initialize", CallingConvention = CallingConvention.Cdecl)]
+    #elif UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
+    [DllImport("discord-rpc", EntryPoint = "Discord_Initialize", CallingConvention = CallingConvention.Cdecl)]
+    #endif
     private static extern void InitializeInternal(string applicationId, ref EventHandlers handlers, bool autoRegister,
       string optionalSteamId);
 
+    #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
     [DllImport("discord-rpc", EntryPoint = "Discord_Shutdown", CallingConvention = CallingConvention.Cdecl)]
+    #elif UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
+    [DllImport("libdiscord-rpc", EntryPoint = "Discord_Shutdown", CallingConvention = CallingConvention.Cdecl)]
+    #elif UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
+    [DllImport("discord-rpc", EntryPoint = "Discord_Shutdown", CallingConvention = CallingConvention.Cdecl)]
+    #endif
     public static extern void Shutdown();
 
+    #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
     [DllImport("discord-rpc", EntryPoint = "Discord_RunCallbacks", CallingConvention = CallingConvention.Cdecl)]
+    #elif UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
+    [DllImport("libdiscord-rpc", EntryPoint = "Discord_RunCallbacks", CallingConvention = CallingConvention.Cdecl)]
+    #elif UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
+    [DllImport("discord-rpc", EntryPoint = "Discord_RunCallbacks", CallingConvention = CallingConvention.Cdecl)]
+    #endif
     public static extern void RunCallbacks();
 
+    #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
     [DllImport("discord-rpc", EntryPoint = "Discord_UpdatePresence", CallingConvention = CallingConvention.Cdecl)]
+    #elif UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
+    [DllImport("libdiscord-rpc", EntryPoint = "Discord_UpdatePresence", CallingConvention = CallingConvention.Cdecl)]
+    #elif UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
+    [DllImport("discord-rpc", EntryPoint = "Discord_UpdatePresence", CallingConvention = CallingConvention.Cdecl)]
+    #endif
     private static extern void UpdatePresenceNative(ref RichPresenceStruct presence);
 
+    #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
     [DllImport("discord-rpc", EntryPoint = "Discord_ClearPresence", CallingConvention = CallingConvention.Cdecl)]
+    #elif UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
+    [DllImport("libdiscord-rpc", EntryPoint = "Discord_ClearPresence", CallingConvention = CallingConvention.Cdecl)]
+    #elif UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
+    [DllImport("discord-rpc", EntryPoint = "Discord_ClearPresence", CallingConvention = CallingConvention.Cdecl)]
+    #endif
     public static extern void ClearPresence();
 
+    #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
     [DllImport("discord-rpc", EntryPoint = "Discord_Respond", CallingConvention = CallingConvention.Cdecl)]
+    #elif UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
+    [DllImport("libdiscord-rpc", EntryPoint = "Discord_Respond", CallingConvention = CallingConvention.Cdecl)]
+    #elif UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
+    [DllImport("discord-rpc", EntryPoint = "Discord_Respond", CallingConvention = CallingConvention.Cdecl)]
+    #endif
     public static extern void Respond(string userId, Reply reply);
 
+    #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
     [DllImport("discord-rpc", EntryPoint = "Discord_UpdateHandlers", CallingConvention = CallingConvention.Cdecl)]
+    #elif UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
+    [DllImport("libdiscord-rpc", EntryPoint = "Discord_UpdateHandlers", CallingConvention = CallingConvention.Cdecl)]
+    #elif UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
+    [DllImport("discord-rpc", EntryPoint = "Discord_UpdateHandlers", CallingConvention = CallingConvention.Cdecl)]
+    #endif
     public static extern void UpdateHandlers(ref EventHandlers handlers);
 
     public static void UpdatePresence(RichPresence presence) {
