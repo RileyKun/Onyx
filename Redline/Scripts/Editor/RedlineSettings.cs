@@ -3,6 +3,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Redline.Scripts.Editor.DiscordRPC.Editor;
 
 namespace Redline.Scripts.Editor {
     public class RedlineSettings : EditorWindow {
@@ -111,6 +112,102 @@ namespace Redline.Scripts.Editor {
             }
             GUILayout.EndHorizontal();
             
+            // Only show Discord RPC settings if it's enabled
+            if (enableDiscordRpc) {
+                EditorGUILayout.Space(5);
+                
+                // Idle timer (always visible)
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("Idle Timer (minutes):", GUILayout.Width(120));
+                var idleTimer = EditorGUILayout.IntField(
+                    EditorPrefs.GetInt(DiscordRPC.RpcStateInfo.IdleTimerKey, 5)
+                );
+                
+                // Ensure the timer is at least 1 minute
+                if (idleTimer < 1) idleTimer = 1;
+                
+                if (EditorPrefs.GetInt(DiscordRPC.RpcStateInfo.IdleTimerKey) != idleTimer) {
+                    EditorPrefs.SetInt(DiscordRPC.RpcStateInfo.IdleTimerKey, idleTimer);
+                    
+                    // Update the idle timer interval
+                    DiscordRPC.Editor.RedlineDiscordRPC.UpdateIdleTimerInterval();
+                }
+                GUILayout.EndHorizontal();
+                
+                // Store the foldout state in EditorPrefs
+                bool showStateNames = EditorPrefs.GetBool("RedlineDiscordRPC_ShowStateNames", false);
+                bool newShowStateNames = EditorGUILayout.Foldout(showStateNames, "Discord RPC State Names", true);
+                
+                if (newShowStateNames != showStateNames) {
+                    EditorPrefs.SetBool("RedlineDiscordRPC_ShowStateNames", newShowStateNames);
+                }
+                
+                // Show state name fields if foldout is expanded
+                if (newShowStateNames) {
+                    EditorGUI.indentLevel++;
+                    
+                    // Editmode state
+                    GUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField("Editmode State:", GUILayout.Width(120));
+                    var editmodeState = EditorGUILayout.TextField(
+                        EditorPrefs.GetString(DiscordRPC.RpcStateInfo.EditmodeStateKey, "Modifying")
+                    );
+                    if (EditorPrefs.GetString(DiscordRPC.RpcStateInfo.EditmodeStateKey) != editmodeState) {
+                        EditorPrefs.SetString(DiscordRPC.RpcStateInfo.EditmodeStateKey, editmodeState);
+                    }
+                    GUILayout.EndHorizontal();
+                    
+                    // Playmode state
+                    GUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField("Playmode State:", GUILayout.Width(120));
+                    var playmodeState = EditorGUILayout.TextField(
+                        EditorPrefs.GetString(DiscordRPC.RpcStateInfo.PlaymodeStateKey, "Testing")
+                    );
+                    if (EditorPrefs.GetString(DiscordRPC.RpcStateInfo.PlaymodeStateKey) != playmodeState) {
+                        EditorPrefs.SetString(DiscordRPC.RpcStateInfo.PlaymodeStateKey, playmodeState);
+                    }
+                    GUILayout.EndHorizontal();
+                    
+                    // Uploadpanel state
+                    GUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField("Uploadpanel State:", GUILayout.Width(120));
+                    var uploadpanelState = EditorGUILayout.TextField(
+                        EditorPrefs.GetString(DiscordRPC.RpcStateInfo.UploadpanelStateKey, "Updating content")
+                    );
+                    if (EditorPrefs.GetString(DiscordRPC.RpcStateInfo.UploadpanelStateKey) != uploadpanelState) {
+                        EditorPrefs.SetString(DiscordRPC.RpcStateInfo.UploadpanelStateKey, uploadpanelState);
+                    }
+                    GUILayout.EndHorizontal();
+                    
+                    // Idle state
+                    GUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField("Idle State:", GUILayout.Width(120));
+                    var idleState = EditorGUILayout.TextField(
+                        EditorPrefs.GetString(DiscordRPC.RpcStateInfo.IdleStateKey, "Idle")
+                    );
+                    if (EditorPrefs.GetString(DiscordRPC.RpcStateInfo.IdleStateKey) != idleState) {
+                        EditorPrefs.SetString(DiscordRPC.RpcStateInfo.IdleStateKey, idleState);
+                    }
+                    GUILayout.EndHorizontal();
+                    
+                    EditorGUI.indentLevel--;
+                }
+                
+                EditorGUILayout.Space(5);
+                
+                // Buttons for resetting and refreshing
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("Reset to Defaults", GUILayout.Width(120))) {
+                    DiscordRPC.RpcStateInfo.ResetToDefaults();
+                    RefreshDiscordRPC();
+                }
+                
+                if (GUILayout.Button("Refresh Discord RPC", GUILayout.Width(150))) {
+                    RefreshDiscordRPC();
+                }
+                GUILayout.EndHorizontal();
+            }
+            
             if (EditorGUI.EndChangeCheck()) {
                 // Handle changes if needed
             }
@@ -185,6 +282,22 @@ namespace Redline.Scripts.Editor {
                 EditorPrefs.SetString("Redline_customAssetPath", customAssetPath);
             }
             GUILayout.EndHorizontal();
+        }
+        
+        /// <summary>
+        /// Refreshes the Discord Rich Presence by calling UpdateDrpc method
+        /// </summary>
+        private static void RefreshDiscordRPC() {
+            if (EditorPrefs.GetBool("RedlineDiscordRPC", true)) {
+                // Use reflection to call the private UpdateDrpc method
+                var method = typeof(RedlineDiscordRPC).GetMethod("UpdateDrpc", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+                
+                if (method != null) {
+                    method.Invoke(null, null);
+                    Debug.Log("[Redline] Discord RPC refreshed");
+                }
+            }
         }
     }
 }

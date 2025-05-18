@@ -85,6 +85,10 @@ namespace Redline.Scripts.Editor.DiscordRPC {
       public IntPtr joinSecret; /* max 128 bytes */
       public IntPtr spectateSecret; /* max 128 bytes */
       public bool instance;
+      public IntPtr button1Label; /* max 32 bytes */
+      public IntPtr button1Url; /* max 512 bytes */
+      public IntPtr button2Label; /* max 32 bytes */
+      public IntPtr button2Url; /* max 512 bytes */
     }
 
     [Serializable]
@@ -202,6 +206,10 @@ namespace Redline.Scripts.Editor.DiscordRPC {
       public string JoinSecret; /* max 128 bytes */
       public string SpectateSecret; /* max 128 bytes */
       public bool Instance;
+      public string Button1Label; /* max 32 bytes */
+      public string Button1Url; /* max 512 bytes */
+      public string Button2Label; /* max 32 bytes */
+      public string Button2Url; /* max 512 bytes */
 
       /// <summary>
       /// Get the <see cref="RichPresenceStruct"/> reprensentation of this instance
@@ -227,6 +235,10 @@ namespace Redline.Scripts.Editor.DiscordRPC {
         _presence.joinSecret = StrToPtr(JoinSecret);
         _presence.spectateSecret = StrToPtr(SpectateSecret);
         _presence.instance = Instance;
+        _presence.button1Label = StrToPtr(Button1Label);
+        _presence.button1Url = StrToPtr(Button1Url);
+        _presence.button2Label = StrToPtr(Button2Label);
+        _presence.button2Url = StrToPtr(Button2Url);
 
         return _presence;
       }

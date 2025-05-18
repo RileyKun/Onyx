@@ -1,205 +1,249 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 
 namespace Redline.Editor
-{ 
+{
+    /// <summary>
+    /// Utility class for managing custom Unity Editor themes
+    /// </summary>
     public static class ThemesUtility
     {
-        public const string CustomThemesPath = @"Packages\dev.redline-team.rpm\Redline\Editor\Themes\";
-        private const string UssFilePath = @"Packages\dev.redline-team.rpm\Redline\Editor\StyleSheets\Extensions\";
-        public const string PresetsPath = @"Packages\dev.redline-team.rpm\Redline\Editor\CreatePresets\";
-        private const string Version = "v0.65";
+        // File paths
+        public const string CustomThemesPath = "Packages/dev.redline-team.rpm/Redline/Editor/Themes/";
+        private const string UssFilePath = "Packages/dev.redline-team.rpm/Redline/Editor/StyleSheets/Extensions/";
+        public const string PresetsPath = "Packages/dev.redline-team.rpm/Redline/Editor/CreatePresets/";
+        private const string Version = "v0.66"; // Updated version number
         public const string Enc = ".json";
 
+        // Currently active theme path
         public static string CurrentTheme;
         
-
-        public static Color HtmlToRgb(string s)
+        /// <summary>
+        /// Converts HTML color code to Unity Color
+        /// </summary>
+        public static Color HtmlToRgb(string htmlColor)
         {
-            ColorUtility.TryParseHtmlString(s, out var c);
-            return c;
+            ColorUtility.TryParseHtmlString(htmlColor, out var color);
+            return color;
         }
 
-        public static void OpenEditTheme(CustomTheme ct)
+        /// <summary>
+        /// Opens the Edit Theme window for a given theme
+        /// </summary>
+        public static void OpenEditTheme(CustomTheme theme)
         {
-            EditThemeWindow.Ct = ct;
-            var window = (EditThemeWindow)EditorWindow.GetWindow(typeof(EditThemeWindow), false, "Edit Theme");
-           
+            EditThemeWindow.Ct = theme;
+            var window = EditorWindow.GetWindow<EditThemeWindow>(false, "Edit Theme");
             window.Show();
         }
-        public static CustomTheme GetCustomThemeFromJson(string Path)
+        
+        /// <summary>
+        /// Loads a CustomTheme from a JSON file
+        /// </summary>
+        public static CustomTheme GetCustomThemeFromJson(string path)
         {
-            var json = File.ReadAllText(Path);
+            if (!File.Exists(path))
+            {
+                Debug.LogError($"Theme file not found at path: {path}");
+                return null;
+            }
             
+            var json = File.ReadAllText(path);
             return JsonUtility.FromJson<CustomTheme>(json);
         }
 
-        public static string GetPathForTheme(string Name)
+        /// <summary>
+        /// Gets the full path for a theme by name
+        /// </summary>
+        public static string GetPathForTheme(string themeName)
         {
-            return CustomThemesPath + Name + Enc;
+            return CustomThemesPath + themeName + Enc;
         }
-        public static void DeleteFileWithMeta(string Path)
+        
+        /// <summary>
+        /// Deletes a file and its .meta file if they exist
+        /// </summary>
+        public static void DeleteFileWithMeta(string path)
         {
-            if (File.Exists(Path))
+            if (File.Exists(path))
             {
-                File.Delete(Path);
-                File.Delete(Path + ".meta");
+                File.Delete(path);
+                
+                // Delete meta file if it exists
+                string metaPath = path + ".meta";
+                if (File.Exists(metaPath))
+                {
+                    File.Delete(metaPath);
+                }
             }
-            else Debug.LogWarning("Path: " + Path + " does not exist");
+            else 
+            {
+                Debug.LogWarning($"Path does not exist: {path}");
+            }
+        }
+
+        /// <summary>
+        /// Generates USS string from a CustomTheme
+        /// </summary>
+        private static string GenerateUssString(CustomTheme theme)
+        {
+            var ussText = new System.Text.StringBuilder();
+            ussText.AppendLine("/* ========== Editor Themes Plugin ==========*/");
+            ussText.AppendLine("/*            Auto Generated Code            */");
+            ussText.AppendLine("/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/");
+            ussText.AppendLine($"/* {Version} */");
+
+            foreach (var item in theme.Items)
+            {
+                ussText.Append(UssBlock(item.Name, item.Color));
+            }
             
+            return ussText.ToString();
         }
 
-        private static string GenerateUssString(CustomTheme c)
+        /// <summary>
+        /// Generates a USS block for a given UI element name and color
+        /// </summary>
+        private static string UssBlock(string name, Color color)
         {
-            var ussText = "";
-            ussText += "/* ========== Editor Themes Plugin ==========*/";
-            ussText += "\n";
-            ussText += "/*            Auto Generated Code            */";
-            ussText += "\n";
-            ussText += "/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/";
-            ussText += "\n";
-            ussText += "/*"+ Version + "*/";
+            Color32 color32 = color;
+            string alpha = color.a.ToString().Replace(",", ".");
 
-            return c.Items.Aggregate(ussText, (current, I) => current + UssBlock(I.Name, I.Color));
+            string colorValue = $"rgba({color32.r}, {color32.g}, {color32.b}, {alpha})";
+
+            return $"\n\n.{name}\n{{\n\tbackground-color: {colorValue};\n}}";
         }
 
-
-        private static string UssBlock(string Name, Color Color)
+        /// <summary>
+        /// Saves a CustomTheme to a JSON file and loads it
+        /// </summary>
+        public static void SaveJsonFileForTheme(CustomTheme theme)
         {
-            Color32 color32 = Color;
-            //Debug.Log(color32);
-            var a = Color.a + "";
-            a = a.Replace(",", ".");
+            theme.Version = Version;
+            string json = JsonUtility.ToJson(theme, true); // Pretty print for better readability
 
-            var Colors = "rgba(" + color32.r + ", " + color32.g + ", " + color32.b + ", " + a + ")";// Generate colors for later
-
-            var s = "\n" + "\n";//add two empty lines
-
-            s += "." + Name + "\n";//add name
-            s += "{" + "\n" + "\t" + "background-color: " + Colors + ";" + "\n" + "}";//add color
-
-            return s;
-        }
-
-        public static void SaveJsonFileForTheme(CustomTheme t)
-        {
-
-            t.Version = Version;
-            var newJson = JsonUtility.ToJson(t);
-
-
-            var Path = GetPathForTheme(t.Name);
-            if (File.Exists(Path))
+            string path = GetPathForTheme(theme.Name);
+            if (File.Exists(path))
             {
-                File.Delete(Path);
+                File.Delete(path);
             }
 
-            File.WriteAllText(Path, newJson);
-            LoadUssFileForTheme(t.Name);
-
+            File.WriteAllText(path, json);
+            LoadUssFileForTheme(theme.Name);
         }
-        public static void LoadUssFileForTheme(string Name)
+        
+        /// <summary>
+        /// Loads a theme by name
+        /// </summary>
+        public static void LoadUssFileForTheme(string themeName)
         {
-            LoadUssFileForThemeUsingPath(GetPathForTheme(Name));
+            LoadUssFileForThemeUsingPath(GetPathForTheme(themeName));
         }
 
-        private static void LoadUssFileForThemeUsingPath(string Path)
+        /// <summary>
+        /// Loads a theme from a specific path
+        /// </summary>
+        private static void LoadUssFileForThemeUsingPath(string path)
         {
+            var theme = GetCustomThemeFromJson(path);
+            if (theme == null) return;
 
-            var t = GetCustomThemeFromJson(Path);
-
-            if ((EditorGUIUtility.isProSkin && t.unityTheme == CustomTheme.UnityTheme.Light) || (!EditorGUIUtility.isProSkin && t.unityTheme == CustomTheme.UnityTheme.Dark))
+            // Switch between dark and light skin if needed
+            if ((EditorGUIUtility.isProSkin && theme.unityTheme == CustomTheme.UnityTheme.Light) || 
+                (!EditorGUIUtility.isProSkin && theme.unityTheme == CustomTheme.UnityTheme.Dark))
             {
                 InternalEditorUtility.SwitchSkinAndRepaintAllViews();
-
             }
 
-            var ussText = GenerateUssString(t);
+            string ussText = GenerateUssString(theme);
             WriteUss(ussText);
 
-            CurrentTheme = Path;
+            CurrentTheme = path;
         }
 
-
+        /// <summary>
+        /// Writes USS content to theme files and refreshes the AssetDatabase
+        /// </summary>
         private static void WriteUss(string ussText)
         {
-            const string path = UssFilePath + "/dark.uss";
-            DeleteFileWithMeta(path);
+            string darkPath = UssFilePath + "dark.uss";
+            DeleteFileWithMeta(darkPath);
+            File.WriteAllText(darkPath, ussText);
 
-            File.WriteAllText(path, ussText);
-
-
-            const string path2 = @"Packages\dev.redline-team.rpm\Redline\Editor\StyleSheets\Extensions\light.uss";
-            DeleteFileWithMeta(path2);
-            
-            File.WriteAllText(path2, ussText);
-
+            string lightPath = UssFilePath + "light.uss";
+            DeleteFileWithMeta(lightPath);
+            File.WriteAllText(lightPath, ussText);
 
             AssetDatabase.Refresh();
-
         }
 
-
-        public static List<string> GetColorListByInt(int i)
+        /// <summary>
+        /// Gets a list of UI element names by category index
+        /// </summary>
+        public static List<string> GetColorListByInt(int categoryIndex)
         {
             var colorList = new List<string>();
 
-
-            switch (i)
+            switch (categoryIndex)
             {
-                case 0://base
+                case 0: // Base
                     colorList.Add("TabWindowBackground");
                     colorList.Add("ScrollViewAlt");
                     colorList.Add("label");
                     colorList.Add("ProjectBrowserTopBarBg");
                     colorList.Add("ProjectBrowserBottomBarBg");
+                    colorList.Add("ScrollViewAlt");
+                    colorList.Add("label");
+                    colorList.Add("ProjectBrowserTopBarBg");
+                    colorList.Add("ProjectBrowserBottomBarBg");
                     break;
-                case 1://accent
+                    
+                case 1: // Accent
                     colorList.Add("dockHeader");
                     colorList.Add("TV LineBold");
-
                     break;
-                case 2://secondery
+                    
+                case 2: // Secondary
                     colorList.Add("ToolbarDropDownToogleRight");
                     colorList.Add("ToolbarPopupLeft");
                     colorList.Add("ToolbarPopup");
                     colorList.Add("toolbarbutton");
                     colorList.Add("PreToolbar");
-                    colorList.Add("AppToolbar");
                     colorList.Add("GameViewBackground");
                     colorList.Add("CN EntryInfoSmall");
                     colorList.Add("Toolbar");
                     colorList.Add("toolbarbutton");
                     colorList.Add("toolbarbuttonRight");
-
                     colorList.Add("ProjectBrowserIconAreaBg");
-
-                    //colorList.Add("dragTab");//this is the currently clicked tab  has to be a different color than the other tabs
+                    // Note: dragTab is the currently clicked tab, needs a different color than other tabs
                     break;
-                case 3://Tab
-                    //colorList.Add("dragtab first");
-                    colorList.Add("dragtab-label");//changing this color has overriden dragTab and dragtab first so removed
+                    
+                case 3: // Tab
+                    colorList.Add("dragtab-label"); // This overrides dragTab and dragtab first
                     break;
-                case 4://button
-
+                    
+                case 4: // Button
                     colorList.Add("AppCommandLeft");
                     colorList.Add("AppCommandMid");
                     colorList.Add("AppCommand");
                     colorList.Add("AppToolbarButtonLeft");
                     colorList.Add("AppToolbarButtonRight");
+                    colorList.Add("AppCommand");
+                    colorList.Add("AppToolbarButtonLeft");
+                    colorList.Add("AppToolbarButtonRight");
                     colorList.Add("DropDown");
                     break;
-                case 5:
+                    
+                case 5: // Additional UI Elements
                     colorList.Add("SceneTopBarBg");
                     colorList.Add("MiniPopup");
                     colorList.Add("TV Selection");
                     colorList.Add("ExposablePopupMenu");
                     colorList.Add("minibutton");
-                    colorList.Add(" ToolbarSearchTextField");
+                    colorList.Add("ToolbarSearchTextField");
                     break;
 
 
