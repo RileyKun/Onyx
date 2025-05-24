@@ -26,7 +26,6 @@ Redline Package Manager (RPM) is a powerful Unity editor extension designed to s
 - **In-Engine Package Management** - Browse, download, and manage packages without leaving Unity
 - **Autosave System** - Configurable automatic saving to prevent work loss
 - **Memory Management** - Multiple presets to optimize Unity's memory usage with custom limit support
-- **Editor Theming** - Personalize Unity's appearance with custom themes
 - **Automatic Updates** - Built-in update checker to keep your tools current
 - **Open Source** - Full source code available under GPL-3.0 license
 
