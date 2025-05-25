@@ -9,21 +9,6 @@
         "Announcement1": {
             "name": "Welcome To Redline!"
         },
-        "Announcement2": {
-            "name": "Anything in () is a REQUIREMENT for that package"
-        },
-        "Announcement3": {
-            "name": "Packages curated by the developer"
-        },
-        "Announcement4": {
-            "name": "Curation Requests available in Discord"
-        },
-        "Announcement5": {
-            "name": "Del then download to update packages"
-        },
-        "announcement6": {
-            "name": "Latest Package List Edit: 5/6/25 at 10:55pm EST"
-        },
 
         "Notice": {
             "name": "\nRedline Packages are OFFLINE for now\nWe will be back soon when it's finished\n"

@@ -80,7 +80,7 @@ namespace Redline.Editor.VPM
                     background = Resources.Load("RedlinePMHeader") as Texture2D,
                     textColor = Color.white
                 },
-                fixedHeight = 100 // Half the height of the info window banner
+                // No fixed height - will be calculated dynamically to maintain aspect ratio
             };
         }
 
@@ -131,10 +131,19 @@ namespace Redline.Editor.VPM
 
         private void DrawToolbar()
         {
-            // Draw the Redline banner at the top
+            // Draw the Redline banner at the top with dynamic height to maintain aspect ratio
             if (_bannerStyle != null && _bannerStyle.normal.background != null)
             {
-                GUILayout.Box("", _bannerStyle);
+                Texture2D headerTexture = _bannerStyle.normal.background;
+                // Original aspect ratio is 1024:217
+                float aspectRatio = 1024f / 217f;
+                // Calculate height based on current window width to maintain aspect ratio
+                float width = EditorGUIUtility.currentViewWidth;
+                float height = width / aspectRatio;
+                
+                // Draw the banner with calculated height
+                Rect bannerRect = GUILayoutUtility.GetRect(width, height);
+                GUI.Box(bannerRect, "", _bannerStyle);
                 EditorGUILayout.Space(5); // Add a small space after the banner
             }
             

@@ -36,8 +36,7 @@ namespace Redline.Scripts.Editor {
                 normal = {
                     background = Resources.Load<Texture2D>("RedlinePMHeader"),
                     textColor = Color.white
-                },
-                fixedHeight = 200
+                }
             };
         }
 
@@ -85,8 +84,20 @@ namespace Redline.Scripts.Editor {
 
         // OnGUI creates the editor window interface
         public void OnGUI() {
-            // Header UI
-            GUILayout.Box("", style: _redlineHeader);
+            // Header UI with dynamic height to maintain aspect ratio
+            if (_redlineHeader != null && _redlineHeader.normal.background != null)
+            {
+                Texture2D headerTexture = _redlineHeader.normal.background;
+                // Original aspect ratio is 1024:217
+                float aspectRatio = 1024f / 217f;
+                // Calculate height based on current window width to maintain aspect ratio
+                float width = EditorGUIUtility.currentViewWidth;
+                float height = width / aspectRatio;
+                
+                // Draw the banner with calculated height
+                Rect bannerRect = GUILayoutUtility.GetRect(width, height);
+                GUI.Box(bannerRect, "", _redlineHeader);
+            }
             GUILayout.Space(4);
             
             // DEPRECATION NOTICE

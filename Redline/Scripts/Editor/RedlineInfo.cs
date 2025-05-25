@@ -43,13 +43,26 @@ namespace Redline.Scripts.Editor {
                 normal = {
                     background = Resources.Load("RedlinePMHeader") as Texture2D,
                     textColor = Color.white
-                },
-                fixedHeight = 200
+                }
+                // No fixed height - will be calculated dynamically to maintain aspect ratio
             };
         }
 
         public void OnGUI() {
-            GUILayout.Box("", _toolkitHeader);
+            // Draw the banner with dynamic height to maintain aspect ratio
+            if (_toolkitHeader != null && _toolkitHeader.normal.background != null)
+            {
+                Texture2D headerTexture = _toolkitHeader.normal.background;
+                // Original aspect ratio is 1024:217
+                float aspectRatio = 1024f / 217f;
+                // Calculate height based on current window width to maintain aspect ratio
+                float width = EditorGUIUtility.currentViewWidth;
+                float height = width / aspectRatio;
+                
+                // Draw the banner with calculated height
+                Rect bannerRect = GUILayoutUtility.GetRect(width, height);
+                GUI.Box(bannerRect, "", _toolkitHeader);
+            }
             SetupButtonStyle();
 
             // Displaying URLs
@@ -58,7 +71,7 @@ namespace Redline.Scripts.Editor {
             DisplayLinkButton("Status", Link1);
 
             GUILayout.Space(4);
-            GUILayout.Label("Redline Version 3.2.0");
+            GUILayout.Label("Redline Version 3.2.1");
             GUILayout.Label("Redline imported correctly if you are seeing this");
 
             // Changelog ScrollView
