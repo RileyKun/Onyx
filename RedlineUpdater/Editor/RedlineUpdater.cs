@@ -20,12 +20,12 @@ namespace RedlineUpdater.Editor {
         private const string LAST_DECLINED_VERSION_KEY = "Redline_LastDeclinedVersion";
         private const string ASSET_NAME = "Redline.unitypackage";
         private const string TOOLKIT_PATH = "Packages/dev.redline-team.rpm";
-        private const string VERSION_FILE_PATH = "Packages/dev.redline-team.rpm/RedlineUpdater/Editor/RedlineVersion.txt";
+        // Version is now read from package.json via RedlineVersionUtility
         private const string LOG_PREFIX = "[Redline] AssetDownloadManager: ";
         #endregion
 
         #region Properties
-        private static readonly string CurrentVersion = File.ReadAllText(VERSION_FILE_PATH);
+        private static readonly string CurrentVersion = Redline.Scripts.Editor.RedlineVersionUtility.GetCurrentVersion();
         private static readonly HttpClient HttpClient = new HttpClient();
         #endregion
 
@@ -59,11 +59,26 @@ namespace RedlineUpdater.Editor {
         }
 
         private static bool IsUpToDate(string serverVersion) {
-            return CurrentVersion == serverVersion;
+            // Validate both versions
+            if (!Redline.Scripts.Editor.RedlineVersionUtility.IsValidSemanticVersion(CurrentVersion) || 
+                !Redline.Scripts.Editor.RedlineVersionUtility.IsValidSemanticVersion(serverVersion)) {
+                return false; // Invalid version format, consider as not up to date
+            }
+            
+            // Compare versions using the utility
+            int comparisonResult = Redline.Scripts.Editor.RedlineVersionUtility.CompareVersions(CurrentVersion, serverVersion);
+            
+            // Only consider equal or newer versions as up to date
+            return comparisonResult >= 0;
         }
 
         private static void HandleUpToDateVersion() {
-            Log("Alright we're up to date!");
+            if (Redline.Scripts.Editor.RedlineVersionUtility.CompareVersions(CurrentVersion, 
+                GetServerVersion().GetAwaiter().GetResult()) > 0) {
+                Log($"Development Build Version Assumed (Local: {CurrentVersion})");
+            } else {
+                Log("Alright we're up to date!");
+            }
             EditorPrefs.DeleteKey(LAST_DECLINED_VERSION_KEY);
         }
 

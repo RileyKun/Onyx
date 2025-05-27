@@ -7,6 +7,19 @@
     "com.vrchat.avatars": {
       "Id": "com.vrchat.avatars",
       "Versions": {
+        "3.8.1": {
+          "Name": "com.vrchat.avatars",
+          "DisplayName": "VRChat SDK - Avatars",
+          "Version": "3.8.1",
+          "Unity": "2022.3",
+          "Description": "Our powerful Avatars 3.0 System",
+          "ChangelogUrl": null,
+          "AuthorName": "VRChat",
+          "AuthorUrl": "https://github.com/vrchat/packages",
+          "License": null,
+          "ZipSHA256": "f318345584c653b6b9f3fdac8da145a9ac81b5bcddfaa8e23c6d42298a233d31",
+          "Url": "https://github.com/vrchat/packages/releases/download/3.8.1/com.vrchat.avatars-3.8.1.zip"
+        },
         "3.8.1-beta.4": {
           "Name": "com.vrchat.avatars",
           "DisplayName": "VRChat SDK - Avatars",
@@ -896,6 +909,19 @@
     "com.vrchat.base": {
       "Id": "com.vrchat.base",
       "Versions": {
+        "3.8.1": {
+          "Name": "com.vrchat.base",
+          "DisplayName": "VRChat SDK - Base",
+          "Version": "3.8.1",
+          "Unity": "2022.3",
+          "Description": "Base for VRChat SDK",
+          "ChangelogUrl": null,
+          "AuthorName": "VRChat",
+          "AuthorUrl": "https://github.com/vrchat/packages",
+          "License": null,
+          "ZipSHA256": "02a037e34cbd74af9fa3b86880020fd9bba5b70e01e8b59251692e5d215c0857",
+          "Url": "https://github.com/vrchat/packages/releases/download/3.8.1/com.vrchat.base-3.8.1.zip"
+        },
         "3.8.1-beta.4": {
           "Name": "com.vrchat.base",
           "DisplayName": "VRChat SDK - Base",
@@ -1811,6 +1837,19 @@
     "com.vrchat.worlds": {
       "Id": "com.vrchat.worlds",
       "Versions": {
+        "3.8.1": {
+          "Name": "com.vrchat.worlds",
+          "DisplayName": "VRChat SDK - Worlds",
+          "Version": "3.8.1",
+          "Unity": "2022.3",
+          "Description": "Tools for creating interactive VRChat worlds using Udon",
+          "ChangelogUrl": null,
+          "AuthorName": "VRChat",
+          "AuthorUrl": "https://github.com/vrchat/packages",
+          "License": null,
+          "ZipSHA256": "7c83f84299ba506a971e44c312cc5e8abe14c0b49074183a9b252ae34b831bda",
+          "Url": "https://github.com/vrchat/packages/releases/download/3.8.1/com.vrchat.worlds-3.8.1.zip"
+        },
         "3.8.1-beta.4": {
           "Name": "com.vrchat.worlds",
           "DisplayName": "VRChat SDK - Worlds",

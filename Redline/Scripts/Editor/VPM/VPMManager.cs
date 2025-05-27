@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
+using Newtonsoft.Json.Linq;
 
 namespace Redline.Editor.VPM
 {
@@ -91,6 +92,243 @@ namespace Redline.Editor.VPM
         }
 
         /// <summary>
+        /// Gets the path to the VCC/ALCOM repositories directory based on the current platform
+        /// </summary>
+        /// <returns>The path to the VCC/ALCOM repositories directory, or null if not found</returns>
+        public static string GetVCCRepositoriesPath()
+        {
+            // Try multiple possible repository paths and return the first one that exists
+            List<string> possiblePaths = new List<string>();
+
+            // Check platform and add possible paths accordingly
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                // Windows paths
+                string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                // VCC paths
+                possiblePaths.Add(Path.Combine(localAppData, "VRChatCreatorCompanion", "Repos"));
+                // ALCOM paths
+                possiblePaths.Add(Path.Combine(localAppData, "ALCOM", "Repos"));
+                possiblePaths.Add(Path.Combine(localAppData, "ALCOM", "Repositories"));
+            }
+            else if (Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.LinuxEditor)
+            {
+                // macOS/Linux paths
+                // Check XDG_DATA_HOME first
+                string dataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+                string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                
+                if (!string.IsNullOrEmpty(dataHome))
+                {
+                    // VCC paths
+                    possiblePaths.Add(Path.Combine(dataHome, "VRChatCreatorCompanion", "Repos"));
+                    // ALCOM paths
+                    possiblePaths.Add(Path.Combine(dataHome, "ALCOM", "Repos"));
+                    possiblePaths.Add(Path.Combine(dataHome, "ALCOM", "Repositories"));
+                }
+                
+                // Fallback to ~/.local/share
+                // VCC paths
+                // VCC path
+                possiblePaths.Add(Path.Combine(home, ".local", "share", "VRChatCreatorCompanion", "Repos"));
+                // ALCOM paths
+                possiblePaths.Add(Path.Combine(home, ".local", "share", "ALCOM", "Repos"));
+                possiblePaths.Add(Path.Combine(home, ".local", "share", "ALCOM", "Repositories"));
+                
+                // Additional common ALCOM paths
+                possiblePaths.Add(Path.Combine(home, "ALCOM", "Repos"));
+                possiblePaths.Add(Path.Combine(home, "ALCOM", "Repositories"));
+            }
+
+            // Log all paths we're checking
+            Debug.Log("Checking for VCC/ALCOM repositories in the following locations:");
+            foreach (string path in possiblePaths)
+            {
+                Debug.Log($"- {path}");
+            }
+
+            // Return the first path that exists
+            foreach (string path in possiblePaths)
+            {
+                if (Directory.Exists(path))
+                {
+                    Debug.Log($"Found VCC/ALCOM repositories at: {path}");
+                    return path;
+                }
+            }
+
+            Debug.Log("No VCC/ALCOM repositories directory found in any of the checked locations.");
+            return null;
+        }
+
+        /// <summary>
+        /// Imports repositories from VCC/ALCOM repositories directory
+        /// </summary>
+        /// <returns>Number of repositories successfully imported</returns>
+        public static async Task<int> ImportVCCRepositories()
+        {
+            string vccReposPath = GetVCCRepositoriesPath();
+            if (vccReposPath == null)
+            {
+                Debug.Log("VCC/ALCOM repositories directory not found. Make sure you have VCC or ALCOM installed and have added repositories to it.");
+                return 0;
+            }
+
+            Debug.Log($"Importing repositories from VCC/ALCOM directory: {vccReposPath}");
+            int importedCount = 0;
+
+            try
+            {
+                // Get all JSON files in the exact directory (don't scan subdirectories)
+                string[] jsonFiles = Directory.GetFiles(vccReposPath, "*.json", SearchOption.TopDirectoryOnly);
+                Debug.Log($"Found {jsonFiles.Length} JSON files in {vccReposPath}");
+
+                foreach (string jsonFile in jsonFiles)
+                {
+                    try
+                    {
+                        Debug.Log($"Processing JSON file: {Path.GetFileName(jsonFile)}");
+                        string json = File.ReadAllText(jsonFile);
+                        JObject repoJson = JObject.Parse(json);
+
+                        // Extract repository URL from various possible locations
+                        string url = null;
+                        string name = null;
+                        string id = null;
+
+                        // Try to find repository info under the "repo" key first (VCC format)
+                        JToken repoToken = repoJson["repo"];
+                        if (repoToken != null && repoToken.Type == JTokenType.Object)
+                        {
+                            Debug.Log("Found 'repo' section in JSON");
+                            url = repoToken["url"]?.ToString();
+                            name = repoToken["name"]?.ToString();
+                            id = repoToken["id"]?.ToString();
+                            
+                            if (!string.IsNullOrEmpty(url))
+                            {
+                                Debug.Log($"Found repository under 'repo' key - Name: {name}, Id: {id}, URL: {url}");
+                            }
+                        }
+
+                        // If not found under "repo", try the "repositories" format
+                        if (string.IsNullOrEmpty(url))
+                        {
+                            // Try to find repository URL in VCC repositories format
+                            // Format: { "repositories": { "<repo-id>": { "url": "<url>" } } }
+                            JToken repositories = repoJson["repositories"];
+                            if (repositories != null && repositories.Type == JTokenType.Object)
+                            {
+                                Debug.Log("Found 'repositories' section in JSON");
+                                
+                                // Loop through all repositories in the file (usually just one)
+                                foreach (JProperty repo in repositories.Children<JProperty>())
+                                {
+                                    string repoId = repo.Name;
+                                    JToken repoData = repo.Value;
+                                    
+                                    // Get the URL from the repository data
+                                    url = repoData["url"]?.ToString();
+                                    if (!string.IsNullOrEmpty(url))
+                                    {
+                                        // Try to get name and id
+                                        name = repoData["name"]?.ToString();
+                                        id = repoId; // Use the property name as the ID
+                                        
+                                        Debug.Log($"Found repository in repositories format - Name: {name}, Id: {id}, URL: {url}");
+                                        break; // Just take the first one with a URL
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // If still not found, try the standard format (direct properties)
+                        if (string.IsNullOrEmpty(url))
+                        {
+                            url = repoJson["url"]?.ToString();
+                            name = repoJson["name"]?.ToString() ?? repoJson["Name"]?.ToString();
+                            id = repoJson["id"]?.ToString() ?? repoJson["Id"]?.ToString();
+                            
+                            if (!string.IsNullOrEmpty(url))
+                            {
+                                Debug.Log($"Found repository in standard format - Name: {name}, Id: {id}, URL: {url}");
+                            }
+                        }
+
+                        // Skip if URL is missing
+                        if (string.IsNullOrEmpty(url))
+                        {
+                            Debug.LogWarning($"Skipping repository in {Path.GetFileName(jsonFile)} - could not find URL");
+                            continue;
+                        }
+
+                        // Check if we already have this repository by comparing Name AND Id
+                        bool alreadyExists = false;
+                        foreach (VPMRepository existingRepo in _repositories)
+                        {
+                            // Only consider it a match if BOTH Name AND Id match (when both are provided)
+                            bool nameMatches = !string.IsNullOrEmpty(name) && 
+                                              !string.IsNullOrEmpty(existingRepo.Name) && 
+                                              existingRepo.Name.Equals(name, StringComparison.OrdinalIgnoreCase);
+                            
+                            bool idMatches = !string.IsNullOrEmpty(id) && 
+                                            !string.IsNullOrEmpty(existingRepo.Id) && 
+                                            existingRepo.Id.Equals(id, StringComparison.OrdinalIgnoreCase);
+                            
+                            // If both name and id are provided and both match, it's the same repository
+                            if (nameMatches && idMatches)
+                            {
+                                Debug.Log($"Repository already exists with matching Name AND Id: {name}, {id}");
+                                alreadyExists = true;
+                                break;
+                            }
+                            
+                            // Also check URL as a fallback
+                            if (!string.IsNullOrEmpty(existingRepo.Url) && 
+                                existingRepo.Url.Equals(url, StringComparison.OrdinalIgnoreCase))
+                            {
+                                Debug.Log($"Repository already exists with matching URL: {url}");
+                                alreadyExists = true;
+                                break;
+                            }
+                        }
+
+                        if (!alreadyExists)
+                        {
+                            // Add the repository using its URL
+                            Debug.Log($"Importing repository: {url}");
+                            bool success = await AddRepositoryFromUrl(url);
+                            if (success)
+                            {
+                                Debug.Log($"Successfully imported repository from VCC/ALCOM: {url}");
+                                importedCount++;
+                            }
+                            else
+                            {
+                                Debug.LogError($"Failed to import repository: {url}");
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log($"Skipping repository as it already exists: {url}");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"Failed to process JSON file {jsonFile}: {e.Message}");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error scanning VCC/ALCOM directory: {e.Message}");
+            }
+
+            Debug.Log($"Imported {importedCount} repositories from VCC/ALCOM");
+            return importedCount;
+        }
+
+        /// <summary>
         /// Initializes the VPM manager by loading all repositories
         /// </summary>
         public static void Initialize()
@@ -145,15 +383,39 @@ namespace Redline.Editor.VPM
         }
 
         /// <summary>
-        /// Adds a new repository from a URL
+        /// Checks if a repository with the same Name and Id already exists
+        /// </summary>
+        /// <param name="name">Name of the repository to check</param>
+        /// <param name="id">Id of the repository to check</param>
+        /// <returns>True if a repository with the same Name and Id exists, false otherwise</returns>
+        public static bool RepositoryExists(string name, string id)
+        {
+            if (!_isInitialized)
+                Initialize();
+
+            return _repositories.Exists(r => 
+                !string.IsNullOrEmpty(r.Name) && !string.IsNullOrEmpty(r.Id) &&
+                r.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && 
+                r.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Adds a new repository from a URL if it doesn't already exist
         /// </summary>
         /// <param name="url">The URL to download the repository from</param>
-        /// <returns>True if the repository was added successfully</returns>
+        /// <returns>True if the repository was added successfully, false if it already exists or failed to add</returns>
         public static async Task<bool> AddRepositoryFromUrl(string url)
         {
             VPMRepository repo = await VPMRepository.DownloadFromUrl(url);
             if (repo != null)
             {
+                // Check if a repository with the same Name and Id already exists
+                if (RepositoryExists(repo.Name, repo.Id))
+                {
+                    Debug.LogWarning($"Repository '{repo.Name}' with ID '{repo.Id}' already exists. Not adding duplicate.");
+                    return false;
+                }
+
                 _repositories.Add(repo);
                 return true;
             }

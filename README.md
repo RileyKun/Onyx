@@ -4,9 +4,9 @@
 > You may have to manually remove the old package folder (`dev.runaxr.redline`) to import this update.  
 > We have attempted to automate this process but cannot guarantee it will work in all cases.
 
-<img src="RPMBanner.png" width="500" alt="Redline Package Manager">
+<img src="https://redline.arch-linux.pro/animated.svg" width="500" alt="Redline Package Manager">
 
-<img src="CurrentRelease.png" width="650" />
+<img src="Current.png" width="650" />
 
 ### A proper in-engine alternative to the VRChat Creator Companion and ALCOM
 
@@ -24,8 +24,10 @@ Redline Package Manager (RPM) is a powerful Unity editor extension designed to s
 ### ✨ Key Features
 
 - **In-Engine Package Management** - Browse, download, and manage packages without leaving Unity
+- **VCC/ALCOM Integration** - Seamlessly import your existing VRChat Creator Companion or ALCOM repositories with one click
 - **Autosave System** - Configurable automatic saving to prevent work loss
 - **Memory Management** - Multiple presets to optimize Unity's memory usage with custom limit support
+- **Editor Theming** - Personalize Unity's appearance with custom themes
 - **Automatic Updates** - Built-in update checker to keep your tools current
 - **Open Source** - Full source code available under GPL-3.0 license
 

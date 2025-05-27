@@ -1,12 +1,25 @@
 {
   "Name": "Redline List",
-  "Author": "RunaXR@arch-linux.pro",
+  "Author": "AromaXR@arch-linux.pro",
   "Url": "https://rlist.arch-linux.pro/index.json",
-  "Id": "dev.runaxr.redlinelist",
+  "Id": "dev.redline-team.redlinelist",
   "Packages": {
     "dev.redline-team.rpm": {
       "Id": "dev.redline-team.rpm",
       "Versions": {
+        "3.2.1": {
+          "Name": "dev.redline-team.rpm",
+          "DisplayName": "Redline Package Manager",
+          "Version": "3.2.1",
+          "Unity": "2022.3",
+          "Description": "The Unity3D Package Manager for VRChat",
+          "ChangelogUrl": "https://github.com/Redline-Team/RPM/releases",
+          "AuthorName": "The Redline Team",
+          "AuthorUrl": "https://github.com/Redline-Team",
+          "License": null,
+          "ZipSHA256": "2e7755669bb0703f702e09ff35b93eb54a4085596382d65a2bed414f1e6a7fe7",
+          "Url": "https://github.com/Redline-Team/RPM/releases/download/v3.2.1/Redline_v3.2.1_VPM.zip"
+        },
         "3.2.0": {
           "Name": "dev.redline-team.rpm",
           "DisplayName": "Redline Package Manager",
@@ -87,7 +100,7 @@
           "AuthorName": "The Redline Team",
           "AuthorUrl": "https://github.com/Redline-Team",
           "License": null,
-          "ZipSHA256": "7801d12b6c89b41b7c5baad222193cdb0b0db32d0787fe1e72281084013b7d1f",
+          "ZipSHA256": "248e3d23206a40b1accaa149560953dbbc5c8b255d6e7988e309102d87cd2052",
           "Url": "https://github.com/Redline-Team/RThemer/releases/download/v1.0.1/RedlineThemer_v1.0.1_VPM.zip"
         },
         "1.0.0": {
@@ -118,8 +131,26 @@
           "AuthorName": "The Redline Team",
           "AuthorUrl": "https://github.com/Redline-Team",
           "License": null,
-          "ZipSHA256": "54ebd52be78cbe6c9bcfa7e15f7133c4c1c379028ad3ebc911e83d9f84459bab",
+          "ZipSHA256": "53fdfa881b0471cabdfba8fe36c86106946700a592eafc9503d31cecab86f7a1",
           "Url": "https://github.com/Redline-Team/RHierarchy/releases/download/v1.0.0/RedlineHierarchy_v1.0.0_VPM.zip"
+        }
+      }
+    },
+    "dev.redline-team.musicontrol": {
+      "Id": "dev.redline-team.musicontrol",
+      "Versions": {
+        "1.0.0": {
+          "Name": "dev.redline-team.musicontrol",
+          "DisplayName": "Musicontrol",
+          "Version": "1.0.0",
+          "Unity": "2022.3",
+          "Description": "Musicontrol for Unity",
+          "ChangelogUrl": "https://github.com/Redline-Team/Musicontrol/releases",
+          "AuthorName": "The Redline Team",
+          "AuthorUrl": "https://github.com/Redline-Team",
+          "License": null,
+          "ZipSHA256": "d71e4c864d6b25ef070419bb6e906063f80f39dd5db32023580b938f7ff748dc",
+          "Url": "https://github.com/Redline-Team/Musicontrol/releases/download/v1.0.0/Musicontrol_v1.0.0_VPM.zip"
         }
       }
     },
@@ -1086,6 +1117,19 @@
     "com.github.kurotu.vrc-quest-tools": {
       "Id": "com.github.kurotu.vrc-quest-tools",
       "Versions": {
+        "2.10.0-beta.4": {
+          "Name": "com.github.kurotu.vrc-quest-tools",
+          "DisplayName": "VRCQuestTools",
+          "Version": "2.10.0-beta.4",
+          "Unity": "2019.4",
+          "Description": "Editor extension to support uploading VRChat Android avatars",
+          "ChangelogUrl": "https://kurotu.github.io/VRCQuestTools/docs/changelog?lang=auto",
+          "AuthorName": "kurotu",
+          "AuthorUrl": null,
+          "License": null,
+          "ZipSHA256": "f8272d4e0838d6aa1a3710233e2f97c59c0629730850c6450ce0276a1b07ad53",
+          "Url": "https://github.com/kurotu/VRCQuestTools/releases/download/v2.10.0-beta.4/com.github.kurotu.vrc-quest-tools-2.10.0-beta.4.zip"
+        },
         "2.10.0-beta.3": {
           "Name": "com.github.kurotu.vrc-quest-tools",
           "DisplayName": "VRCQuestTools",

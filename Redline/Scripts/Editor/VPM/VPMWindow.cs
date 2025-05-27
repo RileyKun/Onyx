@@ -196,6 +196,18 @@ namespace Redline.Editor.VPM
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndHorizontal();
             
+            // Add import from VCC/ALCOM button
+            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField("Import from VCC/ALCOM", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox("Import repositories from your VRChat Creator Companion or ALCOM installation.", MessageType.Info);
+            
+            EditorGUI.BeginDisabledGroup(_isAddingRepository);
+            if (GUILayout.Button("Import Repositories", GUILayout.Height(30)))
+            {
+                ImportVCCRepositoriesAsync();
+            }
+            EditorGUI.EndDisabledGroup();
+            
             EditorGUILayout.EndVertical();
 
             EditorGUILayout.Space();
@@ -471,6 +483,62 @@ namespace Redline.Editor.VPM
             Repaint();
         }
 
+        private async void RefreshRepositoriesFromUrlsAsync()
+        {
+            _isRefreshingRepositories = true;
+            int refreshedCount = await VPMManager.RefreshRepositoriesFromUrls();
+            _isRefreshingRepositories = false;
+            RefreshRepositories();
+            
+            if (refreshedCount > 0)
+            {
+                RefreshPackages();
+                EditorUtility.DisplayDialog("Refresh Complete", $"Successfully refreshed {refreshedCount} repositories.", "OK");
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("Refresh Complete", "No repositories were refreshed. Make sure your repositories are accessible.", "OK");
+            }
+        }
+        
+        private async void ImportVCCRepositoriesAsync()
+        {
+            try
+            {
+                _isAddingRepository = true;
+                Repaint(); // Refresh the UI to show loading state
+                
+                int importedCount = await VPMManager.ImportVCCRepositories();
+                
+                RefreshRepositories();
+                RefreshPackages();
+                
+                if (importedCount > 0)
+                {
+                    EditorUtility.DisplayDialog("Import Complete", $"Successfully imported {importedCount} repositories from VCC/ALCOM.", "OK");
+                }
+                else
+                {
+                    EditorUtility.DisplayDialog("Import Complete", 
+                        "No new repositories were found in your VCC/ALCOM installation or they already exist in RPM.\n\n" +
+                        "Make sure you have VCC or ALCOM installed and have added repositories to it.", 
+                        "OK");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error importing VCC/ALCOM repositories: {e}");
+                EditorUtility.DisplayDialog("Import Failed", 
+                    $"An error occurred while importing repositories: {e.Message}", 
+                    "OK");
+            }
+            finally
+            {
+                _isAddingRepository = false;
+                Repaint();
+            }
+        }
+
         private async void InstallPackageAsync(VPMPackageVersion packageVersion)
         {
             if (packageVersion == null)
@@ -689,46 +757,7 @@ namespace Redline.Editor.VPM
             _filteredPackages = _filteredPackages.OrderBy(p => p.Item2.GetDisplayNameWithVersion()).ToList();
         }
         
-        /// <summary>
-        /// Refreshes all repositories from their URLs asynchronously
-        /// </summary>
-        private async void RefreshRepositoriesFromUrlsAsync()
-        {
-            if (_isRefreshingRepositories)
-                return;
-                
-            _isRefreshingRepositories = true;
-            Repaint();
-            
-            try
-            {
-                int refreshedCount = await VPMManager.RefreshRepositoriesFromUrls();
-                RefreshRepositories();
-                RefreshPackages();
-                
-                if (refreshedCount > 0)
-                {
-                    EditorUtility.DisplayDialog("Repositories Refreshed", 
-                        $"Successfully refreshed {refreshedCount} repositories with the latest packages.", "OK");
-                }
-                else
-                {
-                    EditorUtility.DisplayDialog("No Updates", 
-                        "No repositories were updated. Either there were no updates available or the repositories don't have URLs for refreshing.", "OK");
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Error refreshing repositories: {e.Message}");
-                EditorUtility.DisplayDialog("Error", 
-                    "An error occurred while refreshing repositories. See console for details.", "OK");
-            }
-            finally
-            {
-                _isRefreshingRepositories = false;
-                Repaint();
-            }
-        }
+        // Removed duplicate RefreshRepositoriesFromUrlsAsync method
         /// <summary>
         /// Refreshes the list of installed packages
         /// </summary>

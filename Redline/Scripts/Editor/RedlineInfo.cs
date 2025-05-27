@@ -71,7 +71,7 @@ namespace Redline.Scripts.Editor {
             DisplayLinkButton("Status", Link1);
 
             GUILayout.Space(4);
-            GUILayout.Label("Redline Version 3.2.1");
+            GUILayout.Label($"Redline Version {RedlineVersionUtility.GetCurrentVersion()}");
             GUILayout.Label("Redline imported correctly if you are seeing this");
 
             // Changelog ScrollView
