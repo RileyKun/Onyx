@@ -8,7 +8,7 @@
 
 <img src="CurrentRelease.png" width="650" />
 
-### A proper in-engine alternative to the VRChat Creator Companion
+### A proper in-engine alternative to the VRChat Creator Companion and ALCOM
 
 [![Website](https://img.shields.io/website?down_color=red&down_message=Offline&label=arch-linux.pro&style=for-the-badge&up_color=cyan&up_message=Online&url=https%3A%2F%2Farch-linux.pro)](https://arch-linux.pro)
 [![License](https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge)](LICENSE)
