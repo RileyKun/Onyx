@@ -57,6 +57,26 @@ namespace Redline.Scripts.Editor
 		private const string PrefPeakMemory = "Redline_MemoryManager_PeakMemory";
 		private const string PrefCustomMemory = "Redline_MemoryManager_CustomMemory";
 
+		// GUI state persistence keys
+		private const string PrefShowSystemInfo = "Redline_MemoryManager_ShowSystemInfo";
+		private const string PrefShowMemoryGraph = "Redline_MemoryManager_ShowMemoryGraph";
+		private const string PrefShowMemoryLimits = "Redline_MemoryManager_ShowMemoryLimits";
+		private const string PrefShowAutoCleanup = "Redline_MemoryManager_ShowAutoCleanup";
+		private const string PrefShowPoolStats = "Redline_MemoryManager_ShowPoolStats";
+		private const string PrefShowTextureManagement = "Redline_MemoryManager_ShowTextureManagement";
+		private const string PrefShowGCCollection = "Redline_MemoryManager_ShowGCCollection";
+		private const string PrefShowAllocationPatterns = "Redline_MemoryManager_ShowAllocationPatterns";
+
+		// GUI state
+		private static bool _showSystemInfo = true;
+		private static bool _showMemoryGraph = true;
+		private static bool _showMemoryLimits = true;
+		private static bool _showAutoCleanup = true;
+		private static bool _showPoolStats = true;
+		private static bool _showTextureManagement = true;
+		private static bool _showGCCollection = true;
+		private static bool _showAllocationPatterns = true;
+
 		// Memory usage graph data
 		private static readonly List<float> MemoryHistory = new();
 		private const int MaxHistoryPoints = 60;
@@ -163,6 +183,16 @@ namespace Redline.Scripts.Editor
 			// Load last cleanup time and peak memory
 			_lastCleanupTime = EditorPrefs.GetFloat(PrefLastCleanupTime, 0f);
 			_peakMemoryUsageMb = EditorPrefs.GetFloat(PrefPeakMemory, 0f);
+
+			// Load GUI state
+			_showSystemInfo = EditorPrefs.GetBool(PrefShowSystemInfo, true);
+			_showMemoryGraph = EditorPrefs.GetBool(PrefShowMemoryGraph, true);
+			_showMemoryLimits = EditorPrefs.GetBool(PrefShowMemoryLimits, true);
+			_showAutoCleanup = EditorPrefs.GetBool(PrefShowAutoCleanup, true);
+			_showPoolStats = EditorPrefs.GetBool(PrefShowPoolStats, true);
+			_showTextureManagement = EditorPrefs.GetBool(PrefShowTextureManagement, true);
+			_showGCCollection = EditorPrefs.GetBool(PrefShowGCCollection, true);
+			_showAllocationPatterns = EditorPrefs.GetBool(PrefShowAllocationPatterns, true);
 		}
 
 		/// <summary>
@@ -181,6 +211,16 @@ namespace Redline.Scripts.Editor
 			EditorPrefs.SetBool(PrefShowGraph, _showGraph);
 			EditorPrefs.SetFloat(PrefLastCleanupTime, _lastCleanupTime);
 			EditorPrefs.SetFloat(PrefPeakMemory, _peakMemoryUsageMb);
+
+			// Save GUI state
+			EditorPrefs.SetBool(PrefShowSystemInfo, _showSystemInfo);
+			EditorPrefs.SetBool(PrefShowMemoryGraph, _showMemoryGraph);
+			EditorPrefs.SetBool(PrefShowMemoryLimits, _showMemoryLimits);
+			EditorPrefs.SetBool(PrefShowAutoCleanup, _showAutoCleanup);
+			EditorPrefs.SetBool(PrefShowPoolStats, _showPoolStats);
+			EditorPrefs.SetBool(PrefShowTextureManagement, _showTextureManagement);
+			EditorPrefs.SetBool(PrefShowGCCollection, _showGCCollection);
+			EditorPrefs.SetBool(PrefShowAllocationPatterns, _showAllocationPatterns);
 		}
 
 		/// <summary>
@@ -252,7 +292,7 @@ namespace Redline.Scripts.Editor
 		/// </summary>
 		private static void DetectWindowsMemory()
 		{
-			// Anyone ever heard of TotalPhysicalMemory or TotalVirtualMemory? This is a disgrace...
+			// Anyone ever heard of TotalPhysicallyInstalledSystemMemory or TotalVirtualMemory? This is a disgrace...
 			if (!GetPhysicallyInstalledSystemMemory(out var memoryKb)) return;
 			_totalPhysicalMemoryMb = memoryKb / 1024f;
 			_totalSystemMemoryMb = _totalPhysicalMemoryMb;
@@ -507,39 +547,43 @@ namespace Redline.Scripts.Editor
 
 			GUILayout.Label("Redline Memory Master", EditorStyles.boldLabel);
 
-			// System memory info
-			// TODO: Might be best to remove these if statements.
-			if (_totalPhysicalMemoryMb > 0)
+			// System Info Section
+			_showSystemInfo = EditorGUILayout.Foldout(_showSystemInfo, "System Information", true);
+			if (_showSystemInfo)
 			{
-				EditorGUILayout.LabelField($"Physical RAM: {_totalPhysicalMemoryMb:F0} MB");
-			}
-			if (_totalSwapMb > 0)
-			{
-				EditorGUILayout.LabelField($"Swap/Pagefile: {_totalSwapMb:F0} MB");
-			}
-			if (_totalSystemMemoryMb > 0)
-			{
-				EditorGUILayout.LabelField($"System RAM + Swap: {_totalSystemMemoryMb:F0} MB");
+				EditorGUI.indentLevel++;
+				if (_totalPhysicalMemoryMb > 0)
+				{
+					EditorGUILayout.LabelField($"Physical RAM: {_totalPhysicalMemoryMb:F0} MB");
+				}
+				if (_totalSwapMb > 0)
+				{
+					EditorGUILayout.LabelField($"Swap/Pagefile: {_totalSwapMb:F0} MB");
+				}
+				if (_totalSystemMemoryMb > 0)
+				{
+					EditorGUILayout.LabelField($"System RAM + Swap: {_totalSystemMemoryMb:F0} MB");
+				}
+				EditorGUI.indentLevel--;
 			}
 
-			// Display current memory usage
+			// Current Memory Usage Section
+			EditorGUILayout.Space();
 			EditorGUILayout.LabelField($"Current Unity Memory Usage: {_memoryUsageMb:F2} MB");
 			EditorGUILayout.LabelField($"Peak Memory Usage: {_peakMemoryUsageMb:F2} MB");
 
-			// Reset peak button
 			if (GUILayout.Button("Reset Peak"))
 			{
 				_peakMemoryUsageMb = _memoryUsageMb;
 				SaveSettings();
 			}
 
-			// Progress bar for memory usage
+			// Memory Usage Progress Bar
 			var memoryPercentage = _memoryUsageMb / _memoryThresholdMb;
 			EditorGUI.ProgressBar(EditorGUILayout.GetControlRect(false, 20),
 				Mathf.Clamp01(memoryPercentage),
 				$"{_memoryUsageMb:F0}/{_memoryThresholdMb:F0} MB ({(memoryPercentage * 100):F0}%)");
 
-			// Manual cleanup button
 			if (GUILayout.Button("Force Memory Cleanup"))
 			{
 				PerformCleanup();
@@ -547,101 +591,233 @@ namespace Redline.Scripts.Editor
 				SaveSettings();
 			}
 
-			EditorGUILayout.Space();
-
-			// Memory graph
-			var newShowGraph = EditorGUILayout.Foldout(_showGraph, "Memory Usage Graph", true);
-			if (newShowGraph != _showGraph)
+			// Memory Graph Section
+			_showMemoryGraph = EditorGUILayout.Foldout(_showMemoryGraph, "Memory Usage Graph", true);
+			if (_showMemoryGraph && MemoryHistory.Count > 0)
 			{
-				_showGraph = newShowGraph;
-				SaveSettings();
-			}
-			if (_showGraph && MemoryHistory.Count > 0)
-			{
+				EditorGUI.indentLevel++;
 				var graphRect = EditorGUILayout.GetControlRect(false, 100);
 				DrawMemoryGraph(graphRect);
+				EditorGUI.indentLevel--;
 			}
 
-			EditorGUILayout.Space();
-
-			// Memory limit settings
-			EditorGUILayout.LabelField("Memory Limit Settings", EditorStyles.boldLabel);
-
-			// Preset selection
-			var presetNames = new string[MemoryPresets.Count];
-			MemoryPresets.Keys.CopyTo(presetNames, 0);
-
-			var currentPresetIndex = Array.IndexOf(presetNames, _selectedPreset);
-			var newPresetIndex = EditorGUILayout.Popup("Memory Preset", currentPresetIndex, presetNames);
-
-			if (newPresetIndex != currentPresetIndex)
+			// Memory Limits Section
+			_showMemoryLimits = EditorGUILayout.Foldout(_showMemoryLimits, "Memory Limit Settings", true);
+			if (_showMemoryLimits)
 			{
-				_selectedPreset = presetNames[newPresetIndex];
-				if (_selectedPreset != "Custom")
+				EditorGUI.indentLevel++;
+				var presetNames = new string[MemoryPresets.Count];
+				MemoryPresets.Keys.CopyTo(presetNames, 0);
+
+				var currentPresetIndex = Array.IndexOf(presetNames, _selectedPreset);
+				var newPresetIndex = EditorGUILayout.Popup("Memory Preset", currentPresetIndex, presetNames);
+
+				if (newPresetIndex != currentPresetIndex)
 				{
-					_memoryThresholdMb = MemoryPresets[_selectedPreset];
-				}
-				SaveSettings();
-			}
-
-			// Custom memory input (only show when Custom is selected)
-			if (_selectedPreset == "Custom")
-			{
-				float minMemory = 1024; // 1GB minimum
-				var maxMemory = Mathf.Max(_totalSystemMemoryMb, 16384); // Use total system memory or 16GB as max
-
-				EditorGUILayout.BeginHorizontal();
-				var newThreshold = EditorGUILayout.Slider(_memoryThresholdMb, minMemory, maxMemory);
-				var thresholdStr = EditorGUILayout.TextField(newThreshold.ToString("F0"), GUILayout.Width(60));
-				EditorGUILayout.LabelField("MB", GUILayout.Width(30));
-				EditorGUILayout.EndHorizontal();
-
-				// Try to parse the text input
-				if (float.TryParse(thresholdStr, out var parsedThreshold))
-				{
-					newThreshold = Mathf.Clamp(parsedThreshold, minMemory, maxMemory);
-				}
-
-				if (!Mathf.Approximately(newThreshold, _memoryThresholdMb))
-				{
-					_memoryThresholdMb = newThreshold;
+					_selectedPreset = presetNames[newPresetIndex];
+					if (_selectedPreset != "Custom")
+					{
+						_memoryThresholdMb = MemoryPresets[_selectedPreset];
+					}
 					SaveSettings();
 				}
+
+				if (_selectedPreset == "Custom")
+				{
+					float minMemory = 1024;
+					var maxMemory = Mathf.Max(_totalSystemMemoryMb, 16384);
+
+					EditorGUILayout.BeginHorizontal();
+					var newThreshold = EditorGUILayout.Slider(_memoryThresholdMb, minMemory, maxMemory);
+					var thresholdStr = EditorGUILayout.TextField(newThreshold.ToString("F0"), GUILayout.Width(60));
+					EditorGUILayout.LabelField("MB", GUILayout.Width(30));
+					EditorGUILayout.EndHorizontal();
+
+					if (float.TryParse(thresholdStr, out var parsedThreshold))
+					{
+						newThreshold = Mathf.Clamp(parsedThreshold, minMemory, maxMemory);
+					}
+
+					if (!Mathf.Approximately(newThreshold, _memoryThresholdMb))
+					{
+						_memoryThresholdMb = newThreshold;
+						SaveSettings();
+					}
+				}
+				EditorGUI.indentLevel--;
 			}
 
-			// Auto cleanup settings
-			EditorGUILayout.Space();
-			EditorGUILayout.LabelField("Auto Cleanup Settings", EditorStyles.boldLabel);
-
-			EditorGUILayout.HelpBox("Memory threshold cleanup is always active. Timer-based cleanup can be enabled/disabled below.", MessageType.Info);
-
-			var newAutoCleanup = EditorGUILayout.Toggle("Enable Timer-Based Cleanup", _autoCleanupEnabled);
-			if (newAutoCleanup != _autoCleanupEnabled)
+			// Auto Cleanup Section
+			_showAutoCleanup = EditorGUILayout.Foldout(_showAutoCleanup, "Auto Cleanup Settings", true);
+			if (_showAutoCleanup)
 			{
-				_autoCleanupEnabled = newAutoCleanup;
-				SaveSettings();
+				EditorGUI.indentLevel++;
+				EditorGUILayout.HelpBox("Memory threshold cleanup is always active. Timer-based cleanup can be enabled/disabled below.", MessageType.Info);
+
+				var newAutoCleanup = EditorGUILayout.Toggle("Enable Timer-Based Cleanup", _autoCleanupEnabled);
+				if (newAutoCleanup != _autoCleanupEnabled)
+				{
+					_autoCleanupEnabled = newAutoCleanup;
+					SaveSettings();
+				}
+
+				var newInterval = EditorGUILayout.FloatField("Cleanup Interval (seconds)", _cleanupIntervalSeconds);
+				if (!Mathf.Approximately(newInterval, _cleanupIntervalSeconds))
+				{
+					_cleanupIntervalSeconds = newInterval;
+					SaveSettings();
+				}
+
+				if (_autoCleanupEnabled)
+				{
+					var timeUntilNextCleanup = _cleanupIntervalSeconds - ((float)EditorApplication.timeSinceStartup - _lastCleanupTime);
+					EditorGUILayout.LabelField(timeUntilNextCleanup > 0
+						? $"Time until next timer-based cleanup: {timeUntilNextCleanup:F0} seconds"
+						: "Timer-based cleanup will run when interval is reached");
+				}
+
+				EditorGUILayout.LabelField("Last Cleanup: " + (_lastCleanupTime > 0 ?
+					DateTime.Now.AddSeconds(-(EditorApplication.timeSinceStartup - _lastCleanupTime)).ToString("HH:mm:ss") :
+					"Never"));
+				EditorGUI.indentLevel--;
 			}
 
-			var newInterval = EditorGUILayout.FloatField("Cleanup Interval (seconds)", _cleanupIntervalSeconds);
-			if (!Mathf.Approximately(newInterval, _cleanupIntervalSeconds))
+			// Pool Statistics Section
+			_showPoolStats = EditorGUILayout.Foldout(_showPoolStats, "Object Pool Statistics", true);
+			if (_showPoolStats)
 			{
-				_cleanupIntervalSeconds = newInterval;
-				SaveSettings();
+				EditorGUI.indentLevel++;
+				foreach (var kvp in _poolStatistics)
+				{
+					var type = kvp.Key;
+					var stats = kvp.Value;
+					var reuseRate = stats.TotalCreated > 0 ? (float)stats.TotalReused / stats.TotalCreated : 0f;
+
+					EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+					EditorGUILayout.LabelField(type.Name, EditorStyles.boldLabel);
+					EditorGUILayout.LabelField($"Current Size: {stats.CurrentSize}");
+					EditorGUILayout.LabelField($"Peak Size: {stats.PeakSize}");
+					EditorGUILayout.LabelField($"Reuse Rate: {reuseRate:P2}");
+					EditorGUILayout.LabelField($"Total Created: {stats.TotalCreated}");
+					EditorGUILayout.LabelField($"Total Reused: {stats.TotalReused}");
+					EditorGUILayout.EndVertical();
+				}
+				EditorGUI.indentLevel--;
 			}
 
-			// Display time until next cleanup
-			if (_autoCleanupEnabled)
+			// Texture Management Section
+			_showTextureManagement = EditorGUILayout.Foldout(_showTextureManagement, "Texture Management", true);
+			if (_showTextureManagement)
 			{
-				var timeUntilNextCleanup = _cleanupIntervalSeconds - ((float)EditorApplication.timeSinceStartup - _lastCleanupTime);
-				EditorGUILayout.LabelField(timeUntilNextCleanup > 0
-					? $"Time until next timer-based cleanup: {timeUntilNextCleanup:F0} seconds"
-					: "Timer-based cleanup will run when interval is reached");
+				EditorGUI.indentLevel++;
+				EditorGUILayout.LabelField($"Total Texture Memory: {_totalTextureMemoryMb:F2} MB");
+				EditorGUILayout.LabelField($"Texture Memory Limit: {_memoryThresholdMb * TextureMemoryWarningThreshold:F2} MB");
+
+				var textureMemoryPercentage = _totalTextureMemoryMb / (_memoryThresholdMb * TextureMemoryWarningThreshold);
+				EditorGUI.ProgressBar(EditorGUILayout.GetControlRect(false, 20),
+					Mathf.Clamp01(textureMemoryPercentage),
+					$"{_totalTextureMemoryMb:F0}/{_memoryThresholdMb * TextureMemoryWarningThreshold:F0} MB ({(textureMemoryPercentage * 100):F0}%)");
+
+				EditorGUILayout.Space();
+				EditorGUILayout.LabelField("Texture Optimization Settings", EditorStyles.boldLabel);
+
+				EditorGUILayout.BeginHorizontal();
+				EditorGUILayout.LabelField("Enable Automatic Texture Optimization", GUILayout.Width(250));
+				var textureOptimizationEnabled = EditorGUILayout.Toggle(true);
+				EditorGUILayout.EndHorizontal();
+
+				if (textureOptimizationEnabled)
+				{
+					EditorGUILayout.HelpBox("Large textures will be automatically compressed and resized when memory usage is high.", MessageType.Info);
+				}
+
+				var largeTextures = _textureMemoryInfo
+					.Where(kvp => kvp.Value.MemorySizeMb > 1f)
+					.OrderByDescending(kvp => kvp.Value.MemorySizeMb)
+					.Take(5);
+
+				if (largeTextures.Any())
+				{
+					EditorGUILayout.Space();
+					EditorGUILayout.LabelField("Large Textures", EditorStyles.boldLabel);
+					foreach (var kvp in largeTextures)
+					{
+						var texture = kvp.Key;
+						var info = kvp.Value;
+						EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+						EditorGUILayout.LabelField(texture.name, EditorStyles.boldLabel);
+						EditorGUILayout.LabelField($"Size: {info.Width}x{info.Height}");
+						EditorGUILayout.LabelField($"Memory: {info.MemorySizeMb:F2} MB");
+						EditorGUILayout.LabelField($"Format: {info.Format}");
+						EditorGUILayout.LabelField($"Compressed: {info.IsCompressed}");
+						EditorGUILayout.EndVertical();
+					}
+				}
+				EditorGUI.indentLevel--;
 			}
 
-			EditorGUILayout.Space();
-			EditorGUILayout.LabelField("Last Cleanup: " + (_lastCleanupTime > 0 ?
-				DateTime.Now.AddSeconds(-(EditorApplication.timeSinceStartup - _lastCleanupTime)).ToString("HH:mm:ss") :
-				"Never"));
+			// GC Collection History Section
+			_showGCCollection = EditorGUILayout.Foldout(_showGCCollection, "GC Collection History", true);
+			if (_showGCCollection)
+			{
+				EditorGUI.indentLevel++;
+				if (_gcCollectionHistory.Count > 0)
+				{
+					var lastCollection = _gcCollectionHistory[_gcCollectionHistory.Count - 1];
+					EditorGUILayout.LabelField($"Last Collection: {lastCollection.Timestamp:HH:mm:ss}");
+					EditorGUILayout.LabelField($"Memory Before: {lastCollection.MemoryBefore / (1024f * 1024f):F2} MB");
+					EditorGUILayout.LabelField($"Memory After: {lastCollection.MemoryAfter / (1024f * 1024f):F2} MB");
+					EditorGUILayout.LabelField($"Collection Count: {lastCollection.CollectionCount}");
+
+					var gcGraphRect = EditorGUILayout.GetControlRect(false, 100);
+					DrawGCCollectionGraph(gcGraphRect);
+				}
+				EditorGUI.indentLevel--;
+			}
+
+			// Memory Allocation Patterns Section
+			_showAllocationPatterns = EditorGUILayout.Foldout(_showAllocationPatterns, "Memory Allocation Patterns", true);
+			if (_showAllocationPatterns)
+			{
+				EditorGUI.indentLevel++;
+				var typeAllocations = new Dictionary<Type, long>();
+				foreach (var info in _memoryAllocationHistory)
+				{
+					if (info.ObjectType != null)
+					{
+						if (!typeAllocations.ContainsKey(info.ObjectType))
+						{
+							typeAllocations[info.ObjectType] = 0;
+						}
+						typeAllocations[info.ObjectType] += info.AllocationSize;
+					}
+				}
+
+				var topAllocations = typeAllocations
+					.OrderByDescending(kvp => kvp.Value)
+					.Take(5);
+
+				if (topAllocations.Any())
+				{
+					EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+					foreach (var (type, size) in topAllocations)
+					{
+						EditorGUILayout.BeginHorizontal();
+						EditorGUILayout.LabelField(type.Name, GUILayout.Width(200));
+						EditorGUILayout.LabelField($"{size / (1024f * 1024f):F2} MB", GUILayout.Width(100));
+						EditorGUILayout.EndHorizontal();
+					}
+					EditorGUILayout.EndVertical();
+				}
+				else
+				{
+					EditorGUILayout.HelpBox("No memory allocation data available yet. This will populate as objects are created.", MessageType.Info);
+				}
+				EditorGUI.indentLevel--;
+			}
+
+			// Add some padding at the bottom
+			EditorGUILayout.Space(20);
 
 			EditorGUILayout.EndScrollView();
 
@@ -649,188 +825,10 @@ namespace Redline.Scripts.Editor
 			Repaint();
 		}
 
-		/// <summary>
-		/// Draws the memory usage graph
-		/// </summary>
-		private void DrawMemoryGraph(Rect rect)
-		{
-			if (MemoryHistory.Count < 2) return;
+			EditorGUILayout.EndScrollView();
 
-			// Draw background
-			EditorGUI.DrawRect(rect, new Color(0.2f, 0.2f, 0.2f));
-
-			// Find min and max for scaling
-			float maxValue = 0;
-			foreach (var value in MemoryHistory)
-			{
-				maxValue = Mathf.Max(maxValue, value);
-			}
-
-			maxValue = Mathf.Max(maxValue, _memoryThresholdMb);
-			maxValue *= 1.1f; // Add 10% headroom
-
-			// Draw threshold line
-			var thresholdY = rect.y + rect.height - (_memoryThresholdMb / maxValue * rect.height);
-			Handles.color = new Color(1f, 0.5f, 0, 0.8f); // Orange
-			Handles.DrawLine(new Vector3(rect.x, thresholdY), new Vector3(rect.x + rect.width, thresholdY));
-
-			// Draw memory line
-			Handles.color = Color.green;
-			for (var i = 0; i < MemoryHistory.Count - 1; i++)
-			{
-				var startX = rect.x + (i / (float)(MaxHistoryPoints - 1)) * rect.width;
-				var endX = rect.x + ((i + 1) / (float)(MaxHistoryPoints - 1)) * rect.width;
-
-				var startY = rect.y + rect.height - (MemoryHistory[i] / maxValue * rect.height);
-				var endY = rect.y + rect.height - (MemoryHistory[i + 1] / maxValue * rect.height);
-
-				Handles.DrawLine(new Vector3(startX, startY), new Vector3(endX, endY));
-			}
-
-			// Draw labels
-			EditorGUI.LabelField(new Rect(rect.x + 5, rect.y + 5, 100, 20), $"{maxValue:F0} MB");
-			EditorGUI.LabelField(new Rect(rect.x + 5, rect.y + rect.height - 20, 100, 20), "0 MB");
-			EditorGUI.LabelField(new Rect(rect.x + rect.width - 80, thresholdY - 15, 80, 20), $"Limit: {_memoryThresholdMb:F0} MB");
-		}
-
-		/// <summary>
-		/// Gets an object from the pool or creates a new one if pool is empty
-		/// </summary>
-		public static T GetFromPool<T>() where T : class, new()
-		{
-			var type = typeof(T);
-			if (!_objectPools.ContainsKey(type))
-			{
-				_objectPools[type] = new Queue<object>();
-				_poolSizes[type] = DefaultPoolSize;
-			}
-
-			var pool = _objectPools[type];
-			if (pool.Count > 0)
-			{
-				return (T)pool.Dequeue();
-			}
-
-			return new T();
-		}
-
-		/// <summary>
-		/// Returns an object to the pool
-		/// </summary>
-		public static void ReturnToPool<T>(T obj) where T : class
-		{
-			var type = typeof(T);
-			if (!_objectPools.ContainsKey(type))
-			{
-				_objectPools[type] = new Queue<object>();
-				_poolSizes[type] = DefaultPoolSize;
-			}
-
-			var pool = _objectPools[type];
-			if (pool.Count < _poolSizes[type])
-			{
-				pool.Enqueue(obj);
-			}
-		}
-
-		/// <summary>
-		/// Sets the maximum pool size for a specific type
-		/// </summary>
-		public static void SetPoolSize<T>(int size) where T : class
-		{
-			_poolSizes[typeof(T)] = size;
-		}
-
-		/// <summary>
-		/// Clears all object pools
-		/// </summary>
-		public static void ClearPools()
-		{
-			_objectPools.Clear();
-		}
-
-		/// <summary>
-		/// Tracks texture memory usage
-		/// </summary>
-		public static void TrackTexture(Texture2D texture)
-		{
-			if (texture == null) return;
-
-			var memoryInfo = new TextureMemoryInfo
-			{
-				Width = texture.width,
-				Height = texture.height,
-				Format = texture.format,
-				IsCompressed = GraphicsFormatUtility.IsCompressedFormat(texture.graphicsFormat),
-				LastAccess = DateTime.Now
-			};
-
-			// Calculate approximate memory size
-			float bytesPerPixel = memoryInfo.IsCompressed ? 0.5f : 4f; // Approximate for compressed textures
-			memoryInfo.MemorySizeMb = (texture.width * texture.height * bytesPerPixel) / (1024f * 1024f);
-
-			_textureMemoryInfo[texture] = memoryInfo;
-			_totalTextureMemoryMb += memoryInfo.MemorySizeMb;
-
-			// Check if we're approaching memory limits
-			if (_totalTextureMemoryMb > _memoryThresholdMb * TextureMemoryWarningThreshold)
-			{
-				UnityEngine.Debug.LogWarning($"[Redline Memory Master] Texture memory usage ({_totalTextureMemoryMb:F2}MB) is approaching the limit ({_memoryThresholdMb:F2}MB)");
-				OptimizeTextures();
-			}
-		}
-
-		/// <summary>
-		/// Optimizes textures to reduce memory usage
-		/// </summary>
-		private static void OptimizeTextures()
-		{
-			var texturesToOptimize = _textureMemoryInfo
-				.Where(kvp => !kvp.Value.IsCompressed && kvp.Value.MemorySizeMb > 1f) // Only optimize uncompressed textures > 1MB
-				.OrderByDescending(kvp => kvp.Value.MemorySizeMb)
-				.Take(5) // Optimize top 5 largest textures
-				.Select(kvp => kvp.Key)
-				.ToList();
-
-			foreach (var texture in texturesToOptimize)
-			{
-				if (texture == null) continue;
-
-				var originalPath = AssetDatabase.GetAssetPath(texture);
-				if (string.IsNullOrEmpty(originalPath)) continue;
-
-				var importer = AssetImporter.GetAtPath(originalPath) as TextureImporter;
-				if (importer == null) continue;
-
-				// Store original settings
-				var originalMaxSize = importer.maxTextureSize;
-				var originalFormat = importer.textureCompression;
-
-				// Optimize settings
-				importer.maxTextureSize = Mathf.Min(originalMaxSize, 1024); // Reduce max size
-				importer.textureCompression = TextureImporterCompression.Compressed;
-
-				// Apply changes
-				importer.SaveAndReimport();
-
-				// Update memory info
-				if (_textureMemoryInfo.TryGetValue(texture, out var info))
-				{
-					_totalTextureMemoryMb -= info.MemorySizeMb;
-					TrackTexture(texture); // Recalculate memory usage
-				}
-			}
-		}
-
-		/// <summary>
-		/// Tracks loaded asset bundle
-		/// </summary>
-		public static void TrackAssetBundle(AssetBundle bundle, string bundleName)
-		{
-			if (bundle == null || string.IsNullOrEmpty(bundleName)) return;
-
-			_loadedAssetBundles[bundleName] = bundle;
-			_assetBundleLastAccess[bundleName] = DateTime.Now;
+			// Auto-repaint to update the memory display
+			Repaint();
 		}
 
 		/// <summary>

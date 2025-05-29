@@ -7,6 +7,19 @@
     "dev.redline-team.rpm": {
       "Id": "dev.redline-team.rpm",
       "Versions": {
+        "3.3.0": {
+          "Name": "dev.redline-team.rpm",
+          "DisplayName": "Redline Package Manager",
+          "Version": "3.3.0",
+          "Unity": "2022.3",
+          "Description": "The Unity3D Package Manager for VRChat",
+          "ChangelogUrl": "https://github.com/Redline-Team/RPM/releases",
+          "AuthorName": "The Redline Team",
+          "AuthorUrl": "https://github.com/Redline-Team",
+          "License": null,
+          "ZipSHA256": "da7ae44cd3963cbe3cf57fe3292c208c2e87fc8805a2b5a1dcbfdd0464c484d2",
+          "Url": "https://github.com/Redline-Team/RPM/releases/download/v3.3.0/Redline_v3.3.0_VPM.zip"
+        },
         "3.2.2": {
           "Name": "dev.redline-team.rpm",
           "DisplayName": "Redline Package Manager",
@@ -134,6 +147,19 @@
     "dev.redline-team.rhierarchy": {
       "Id": "dev.redline-team.rhierarchy",
       "Versions": {
+        "1.1.0": {
+          "Name": "dev.redline-team.rhierarchy",
+          "DisplayName": "Redline Hierarchy",
+          "Version": "1.1.0",
+          "Unity": "2022.3",
+          "Description": "The Unity3D Hierarchy Enhancer for Unity",
+          "ChangelogUrl": "https://github.com/Redline-Team/RHierarchy/releases",
+          "AuthorName": "The Redline Team",
+          "AuthorUrl": "https://github.com/Redline-Team",
+          "License": null,
+          "ZipSHA256": "6644d0824d0a7086468e3f7a447a3a0f1a259b2c883329a972462620745f87cd",
+          "Url": "https://github.com/Redline-Team/RHierarchy/releases/download/v1.1.0/RedlineHierarchy_v1.1.0_VPM.zip"
+        },
         "1.0.0": {
           "Name": "dev.redline-team.rhierarchy",
           "DisplayName": "Redline Hierarchy",
