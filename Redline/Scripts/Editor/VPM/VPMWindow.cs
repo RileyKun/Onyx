@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
+using Newtonsoft.Json.Linq;
 
 namespace Redline.Editor.VPM
 {
@@ -57,6 +58,14 @@ namespace Redline.Editor.VPM
         private List<VPMRepository> _repositories = new List<VPMRepository>();
         private List<Tuple<VPMRepository, VPMPackage, VPMPackageVersion>> _filteredPackages = new List<Tuple<VPMRepository, VPMPackage, VPMPackageVersion>>();
 
+        private Dictionary<string, bool> _packageFoldouts = new Dictionary<string, bool>();
+
+        private Dictionary<string, HashSet<string>> _packageDependencies = new Dictionary<string, HashSet<string>>();
+        private Dictionary<string, HashSet<string>> _reverseDependencies = new Dictionary<string, HashSet<string>>();
+
+        // Cache for fun messages
+        private Dictionary<string, string> _cachedFunMessages = new Dictionary<string, string>();
+
         [MenuItem("Redline/VPM Repository Manager")]
         public static void ShowWindow()
         {
@@ -72,6 +81,7 @@ namespace Redline.Editor.VPM
             RefreshRepositories();
             RefreshPackages();
             RefreshInstalledPackages();
+            RefreshPackageDependencies();
             
             // Initialize the banner style
             _bannerStyle = new GUIStyle
@@ -82,14 +92,29 @@ namespace Redline.Editor.VPM
                 },
                 // No fixed height - will be calculated dynamically to maintain aspect ratio
             };
+
+            // Generate initial fun messages
+            GenerateFunMessages();
         }
 
-        private void OnGUI()
+        /// <summary>
+        /// Generates new fun messages for all states
+        /// </summary>
+        private void GenerateFunMessages()
+        {
+            _cachedFunMessages.Clear();
+            _cachedFunMessages["no_upgrades"] = GetFunMessage("no_upgrades");
+            _cachedFunMessages["no_packages"] = GetFunMessage("no_packages");
+            _cachedFunMessages["no_search_results"] = GetFunMessage("no_search_results");
+            _cachedFunMessages["no_repositories"] = GetFunMessage("no_repositories");
+        }
+
+        private async void OnGUI()
         {
             // Wrap everything in a try-catch to prevent editor crashes
             try
             {
-                DrawToolbar();
+                await DrawToolbar();
 
                 EditorGUILayout.Space();
 
@@ -129,7 +154,7 @@ namespace Redline.Editor.VPM
             }
         }
 
-        private void DrawToolbar()
+        private async Task DrawToolbar()
         {
             // Draw the Redline banner at the top with dynamic height to maintain aspect ratio
             if (_bannerStyle != null && _bannerStyle.normal.background != null)
@@ -167,8 +192,17 @@ namespace Redline.Editor.VPM
 
             GUILayout.FlexibleSpace();
 
+            // Sync VPM-Manifest versions
+            if (GUILayout.Button("Sync Manifest", EditorStyles.toolbarButton, GUILayout.Width(100)))
+            {
+                await ScanManifestAsync();
+            }
+
             EditorGUI.BeginDisabledGroup(_isRefreshingRepositories);
-            if (GUILayout.Button(_isRefreshingRepositories ? "Refreshing..." : "Refresh All", EditorStyles.toolbarButton, GUILayout.Width(80)))
+            // Replace text button with icon button
+            if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("Refresh").image, 
+                _isRefreshingRepositories ? "Refreshing..." : "Refresh All Repositories"), 
+                EditorStyles.toolbarButton, GUILayout.Width(30)))
             {
                 RefreshRepositoriesFromUrlsAsync();
             }
@@ -197,7 +231,7 @@ namespace Redline.Editor.VPM
             EditorGUILayout.EndHorizontal();
             
             // Add import from VCC/ALCOM button
-            EditorGUILayout.Space(10);
+            EditorGUILayout.Space(5);
             EditorGUILayout.LabelField("Import from VCC/ALCOM", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox("Import repositories from your VRChat Creator Companion or ALCOM installation.", MessageType.Info);
             
@@ -219,7 +253,7 @@ namespace Redline.Editor.VPM
             
             if (_repositories.Count == 0)
             {
-                EditorGUILayout.HelpBox("No repositories added yet. Add a repository using the URL field above.", MessageType.Info);
+                DrawFunMessage(_cachedFunMessages["no_repositories"], new Color(0.8f, 0.4f, 0.2f)); // Orange color
             }
             else
             {
@@ -260,17 +294,16 @@ namespace Redline.Editor.VPM
 
             if (_repositoryFoldouts[repoKey])
             {
-                EditorGUI.indentLevel++;
+                EditorGUILayout.Space(5);
                 
                 EditorGUILayout.LabelField("ID", repository.Id ?? "N/A");
                 EditorGUILayout.LabelField("Author", repository.Author ?? "N/A");
                 EditorGUILayout.LabelField("URL", repository.Url ?? "N/A");
                 EditorGUILayout.LabelField("Packages", repository.Packages?.Count.ToString() ?? "0");
-                
-                EditorGUI.indentLevel--;
             }
             
             EditorGUILayout.EndVertical();
+            EditorGUILayout.Space();
         }
 
         private void DrawPackagesTab()
@@ -285,6 +318,8 @@ namespace Redline.Editor.VPM
             {
                 _searchFilter = newSearchFilter;
                 RefreshPackages();
+                // Generate new search message when search changes
+                _cachedFunMessages["no_search_results"] = GetFunMessage("no_search_results");
             }
             EditorGUILayout.EndHorizontal();
 
@@ -298,9 +333,22 @@ namespace Redline.Editor.VPM
             // List of packages
             _packagesScrollPosition = EditorGUILayout.BeginScrollView(_packagesScrollPosition);
             
-            // Filter packages based on selected repository
+            // Filter packages based on selected repository or upgrades
             List<Tuple<VPMRepository, VPMPackage, VPMPackageVersion>> packagesToShow = _filteredPackages;
-            if (_selectedRepositoryId != "all")
+            
+            if (_selectedRepositoryId == "upgrades")
+            {
+                // Filter to show only packages with updates
+                packagesToShow = _filteredPackages.Where(p => {
+                    string installedVersion = VPMManifestManager.GetInstalledVersion(p.Item2.Id);
+                    if (string.IsNullOrEmpty(installedVersion))
+                        return false;
+                    
+                    VPMPackageVersion newerVersion = p.Item2.GetLatestNewerVersion(installedVersion, _showUnstableReleases);
+                    return newerVersion != null;
+                }).ToList();
+            }
+            else if (_selectedRepositoryId != "all")
             {
                 packagesToShow = _filteredPackages.Where(p => p.Item1.Id == _selectedRepositoryId).ToList();
             }
@@ -309,11 +357,19 @@ namespace Redline.Editor.VPM
             {
                 if (_filteredPackages.Count == 0)
                 {
-                    EditorGUILayout.HelpBox("No packages found. Add repositories to see available packages.", MessageType.Info);
+                    DrawFunMessage(_cachedFunMessages["no_packages"], new Color(0.8f, 0.4f, 0.2f)); // Orange color
+                }
+                else if (_selectedRepositoryId == "upgrades")
+                {
+                    DrawFunMessage(_cachedFunMessages["no_upgrades"]);
+                }
+                else if (!string.IsNullOrEmpty(_searchFilter))
+                {
+                    DrawFunMessage(_cachedFunMessages["no_search_results"], new Color(0.4f, 0.4f, 0.8f)); // Blue color
                 }
                 else
                 {
-                    EditorGUILayout.HelpBox("No packages found in this repository that match your search criteria.", MessageType.Info);
+                    DrawFunMessage(_cachedFunMessages["no_packages"], new Color(0.8f, 0.4f, 0.2f)); // Orange color
                 }
             }
             else
@@ -366,8 +422,6 @@ namespace Redline.Editor.VPM
 
         private void DrawPackageItem(VPMRepository repository, VPMPackage package, VPMPackageVersion latestVersion)
         {
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            
             // Get unique package identifier
             string packageKey = package.Id;
             
@@ -390,14 +444,49 @@ namespace Redline.Editor.VPM
             // Get the selected version object
             VPMPackageVersion selectedVersion = package.Versions[selectedVersionString];
             
-            // Package name and version selection UI
+            // Check if this package is installed and get its version
+            string installedVersion = VPMManifestManager.GetInstalledVersion(package.Id);
+            bool isInstalled = !string.IsNullOrEmpty(installedVersion);
+            
+            // Check if there's a newer version available
+            VPMPackageVersion newerVersion = null;
+            if (isInstalled)
+            {
+                newerVersion = package.GetLatestNewerVersion(installedVersion, _showUnstableReleases);
+            }
+            
+            // Initialize foldout state if not exists
+            if (!_packageFoldouts.ContainsKey(packageKey))
+            {
+                _packageFoldouts[packageKey] = false;
+            }
+
+            // Save the current background color
+            Color originalColor = GUI.backgroundColor;
+            
+            // Set a light green background for packages with updates
+            if (isInstalled && newerVersion != null)
+            {
+                GUI.backgroundColor = new Color(0.2f, 0.8f, 0.2f, 0.2f);
+            }
+            
+            // Start the package box
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            
+            // Package header with foldout
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(package.GetDisplayName(), EditorStyles.boldLabel);
+            _packageFoldouts[packageKey] = EditorGUILayout.Foldout(_packageFoldouts[packageKey], package.GetDisplayName(), true);
             
             EditorGUI.BeginDisabledGroup(_isInstallingPackage);
             
             // Create a list of available versions
             List<string> versionOptions = package.Versions.Keys.ToList();
+            
+            // Filter out unstable versions if not showing unstable releases
+            if (!_showUnstableReleases)
+            {
+                versionOptions = versionOptions.Where(v => VPMPackage.IsStableVersion(v)).ToList();
+            }
             
             // Sort versions in descending order (newest first)
             versionOptions.Sort((a, b) => {
@@ -413,12 +502,26 @@ namespace Redline.Editor.VPM
                 }
             });
             
+            // If no versions are available after filtering, skip this package
+            if (versionOptions.Count == 0)
+            {
+                EditorGUI.EndDisabledGroup();
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.EndVertical();
+                EditorGUILayout.Space();
+                GUI.backgroundColor = originalColor; // Restore color before returning
+                return;
+            }
+            
             // Find the index of the currently selected version
             int selectedIndex = versionOptions.IndexOf(selectedVersionString);
             if (selectedIndex < 0) selectedIndex = 0; // Default to first version if not found
             
-            // Draw the dropdown
-            int newSelectedIndex = EditorGUILayout.Popup(selectedIndex, versionOptions.ToArray(), GUILayout.Width(100));
+            // Calculate the width needed for the version dropdown
+            float versionWidth = EditorStyles.popup.CalcSize(new GUIContent(selectedVersionString)).x;
+            
+            // Draw the dropdown with calculated width
+            int newSelectedIndex = EditorGUILayout.Popup(selectedIndex, versionOptions.ToArray(), GUILayout.Width(versionWidth));
             
             // Update selected version if changed
             if (newSelectedIndex != selectedIndex)
@@ -429,33 +532,122 @@ namespace Redline.Editor.VPM
                 selectedVersion = package.Versions[selectedVersionString];
             }
             
-            // Install button
-            if (GUILayout.Button("Install", GUILayout.Width(60)))
+            // Show appropriate button based on package state
+            if (isInstalled)
             {
-                InstallPackageAsync(selectedVersion);
+                string buttonText;
+                try
+                {
+                    Version currentVer = new Version(installedVersion.Split('-')[0]);
+                    Version selectedVer = new Version(selectedVersionString.Split('-')[0]);
+                    
+                    if (selectedVer > currentVer)
+                    {
+                        buttonText = "Upgrade";
+                    }
+                    else if (selectedVer < currentVer)
+                    {
+                        buttonText = "Downgrade";
+                    }
+                    else
+                    {
+                        buttonText = "Reinstall";
+                    }
+                }
+                catch
+                {
+                    // If version parsing fails, default to reinstall
+                    buttonText = "Reinstall";
+                }
+                
+                // Calculate the width needed for the button
+                float buttonWidth = EditorStyles.miniButton.CalcSize(new GUIContent(buttonText)).x;
+                
+                if (GUILayout.Button(buttonText, EditorStyles.miniButton, GUILayout.Width(buttonWidth)))
+                {
+                    InstallPackageAsync(selectedVersion);
+                }
+            }
+            else
+            {
+                // Calculate the width needed for the install button
+                float buttonWidth = EditorStyles.miniButton.CalcSize(new GUIContent("Install")).x;
+                
+                // Show install button if not installed
+                if (GUILayout.Button("Install", EditorStyles.miniButton, GUILayout.Width(buttonWidth)))
+                {
+                    InstallPackageAsync(selectedVersion);
+                }
             }
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.Space();
-            
-            // Display package details
-            EditorGUILayout.LabelField("Repository", repository.Name ?? "Unknown Repository");
-            EditorGUILayout.LabelField("Version", selectedVersion.Version ?? "Unknown Version");
-            EditorGUILayout.LabelField("Unity", selectedVersion.Unity ?? "Any Unity Version");
-            
-            // Show description and author from the selected version
-            if (!string.IsNullOrEmpty(selectedVersion.Description))
+            // Show package details if foldout is open
+            if (_packageFoldouts[packageKey])
             {
-                EditorGUILayout.LabelField("Description", selectedVersion.Description);
+                EditorGUILayout.Space();
+                
+                // Display package details
+                // Check if this package appears in multiple repositories
+                bool isInMultipleRepos = _repositories.Count(r => 
+                    r.Packages != null && r.Packages.ContainsKey(package.Id)) > 1;
+                
+                EditorGUILayout.LabelField("Repository", isInMultipleRepos ? "Multiple Repositories" : (repository.Name ?? "Unknown Repository"));
+                EditorGUILayout.LabelField("Version", selectedVersion.Version ?? "Unknown Version");
+                EditorGUILayout.LabelField("Unity", selectedVersion.Unity ?? "Any Unity Version");
+                
+                // Show description and author from the selected version
+                if (!string.IsNullOrEmpty(selectedVersion.Description))
+                {
+                    EditorGUILayout.Space(5);
+                    EditorGUILayout.LabelField("Description", EditorStyles.boldLabel);
+                    
+                    // Create a style for the description text area
+                    GUIStyle descriptionStyle = new GUIStyle(EditorStyles.textArea)
+                    {
+                        wordWrap = true,
+                        richText = true,
+                        stretchHeight = true,
+                        normal = { textColor = EditorGUIUtility.isProSkin ? new Color(0.7f, 0.7f, 0.7f) : Color.black }
+                    };
+                    
+                    // Calculate the height needed for the description
+                    float descriptionHeight = descriptionStyle.CalcHeight(new GUIContent(selectedVersion.Description), EditorGUIUtility.currentViewWidth - 40);
+                    
+                    // Draw the description in a scrollable text area
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                    EditorGUILayout.SelectableLabel(selectedVersion.Description, descriptionStyle, GUILayout.Height(descriptionHeight));
+                    EditorGUILayout.EndVertical();
+                }
+                
+                if (!string.IsNullOrEmpty(selectedVersion.AuthorName))
+                {
+                    EditorGUILayout.Space(5);
+                    EditorGUILayout.LabelField("Author", selectedVersion.AuthorName);
+                }
+                
+                // Show update info if available
+                if (isInstalled && newerVersion != null)
+                {
+                    EditorGUILayout.Space(5);
+                    EditorGUILayout.LabelField("Update Available", EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField($"Current Version: {installedVersion}");
+                    EditorGUILayout.LabelField($"New Version: {newerVersion.Version}");
+                    
+                    // Add a button to quickly update to the latest version
+                    if (GUILayout.Button($"Update to {newerVersion.Version}", EditorStyles.miniButton))
+                    {
+                        InstallPackageAsync(newerVersion);
+                    }
+                }
             }
             
-            if (!string.IsNullOrEmpty(selectedVersion.AuthorName))
-            {
-                EditorGUILayout.LabelField("Author", selectedVersion.AuthorName);
-            }
-            
+            // End the package box
             EditorGUILayout.EndVertical();
+            
+            // Restore the original background color
+            GUI.backgroundColor = originalColor;
+            
             EditorGUILayout.Space();
         }
 
@@ -567,6 +759,18 @@ namespace Redline.Editor.VPM
             if (success)
             {
                 Debug.Log($"Successfully installed {packageVersion.Name} {packageVersion.Version}");
+                
+                // Refresh Unity's asset database for the specific package
+                string packagePath = Path.Combine(Application.dataPath, "..", "Packages", packageVersion.Name);
+                if (Directory.Exists(packagePath))
+                {
+                    // Force Unity to refresh the package directory
+                    AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+                    Debug.Log($"Refreshed Unity asset database for {packageVersion.Name}");
+                }
+
+                // Automatically sync the manifest after successful installation
+                await ScanManifestAsync();
             }
             else
             {
@@ -587,7 +791,7 @@ namespace Redline.Editor.VPM
         private void DrawRepositoryTabs()
         {
             // Calculate how many tabs we need to display
-            int tabCount = _repositories.Count + 1; // +1 for "All Packages" tab
+            int tabCount = _repositories.Count + 2; // +2 for "All Packages" and "Upgrades" tabs
             
             // Don't show tabs if there's only one repository
             if (tabCount <= 2)
@@ -599,7 +803,7 @@ namespace Redline.Editor.VPM
             Dictionary<string, List<VPMRepository>> repositoryGroups = new Dictionary<string, List<VPMRepository>>();
             
             // Add repository groups
-            repositoryGroups["VRChat"] = new List<VPMRepository>();
+            repositoryGroups["VRC"] = new List<VPMRepository>();
             repositoryGroups["Community"] = new List<VPMRepository>();
             
             // Categorize repositories
@@ -612,7 +816,7 @@ namespace Redline.Editor.VPM
                 // Group VRChat repositories
                 if (repo.Id == "com.vrchat.repos.official" || repo.Id == "com.vrchat.repos.curated")
                 {
-                    repositoryGroups["VRChat"].Add(repo);
+                    repositoryGroups["VRC"].Add(repo);
                 }
                 else
                 {
@@ -641,12 +845,21 @@ namespace Redline.Editor.VPM
             // First row - Main tabs
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
             
-            // "All Packages" tab
+            // "All" tab
             bool allSelected = GUILayout.Toggle(_selectedRepositoryId == "all" && _selectedRepositoryGroup == "none", 
-                "All Packages", EditorStyles.toolbarButton);
+                "All", EditorStyles.toolbarButton);
             if (allSelected && (_selectedRepositoryId != "all" || _selectedRepositoryGroup != "none"))
             {
                 _selectedRepositoryId = "all";
+                _selectedRepositoryGroup = "none";
+            }
+            
+            // "Upgrades" tab
+            bool upgradesSelected = GUILayout.Toggle(_selectedRepositoryId == "upgrades" && _selectedRepositoryGroup == "none", 
+                "Upgrades", EditorStyles.toolbarButton);
+            if (upgradesSelected && (_selectedRepositoryId != "upgrades" || _selectedRepositoryGroup != "none"))
+            {
+                _selectedRepositoryId = "upgrades";
                 _selectedRepositoryGroup = "none";
             }
             
@@ -670,10 +883,26 @@ namespace Redline.Editor.VPM
                     _selectedRepositoryGroup = groupName;
                     _selectedRepositoryId = "group"; // Special ID to indicate we're viewing a group
                     _repositoryGroupFoldouts[groupName] = true; // Expand the group
+                    
+                    // Automatically select the first repository in the group
+                    var sortedRepos = repositoryGroups[groupName].ToList();
+                    if (_selectedRepositoryGroup == "VRC")
+                    {
+                        sortedRepos.Sort((a, b) => {
+                            // Official repository should always be first
+                            if (a.Id == "com.vrchat.repos.official") return -1;
+                            if (b.Id == "com.vrchat.repos.official") return 1;
+                            // Other repositories maintain their original order
+                            return 0;
+                        });
+                    }
+                    
+                    if (sortedRepos.Count > 0)
+                    {
+                        _selectedRepositoryId = sortedRepos[0].Id;
+                    }
                 }
             }
-            
-            // No more ungrouped repositories - all are now in groups
             
             EditorGUILayout.EndHorizontal();
             
@@ -682,26 +911,34 @@ namespace Redline.Editor.VPM
             {
                 EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
                 
-                // Add some indentation for subtabs
-                GUILayout.Space(15);
-                
                 // Draw subtabs for the selected group
-                foreach (VPMRepository repo in repositoryGroups[_selectedRepositoryGroup])
+                float currentLineWidth = 0; // Start with no indentation
+                float windowWidth = EditorGUIUtility.currentViewWidth;
+                
+                // Sort repositories to ensure Official appears first in VRChat group
+                var sortedRepos = repositoryGroups[_selectedRepositoryGroup].ToList();
+                if (_selectedRepositoryGroup == "VRC")
                 {
-                    string subtabLabel;
+                    sortedRepos.Sort((a, b) => {
+                        // Official repository should always be first
+                        if (a.Id == "com.vrchat.repos.official") return -1;
+                        if (b.Id == "com.vrchat.repos.official") return 1;
+                        // Other repositories maintain their original order
+                        return 0;
+                    });
+                }
+                
+                foreach (VPMRepository repo in sortedRepos)
+                {
+                    string subtabLabel = GetSubtabLabel(repo);
+                    float buttonWidth = EditorStyles.toolbarButton.CalcSize(new GUIContent(subtabLabel)).x;
                     
-                    // Special labels for VRChat repositories
-                    if (repo.Id == "com.vrchat.repos.official")
+                    // If adding this button would exceed the window width, start a new line
+                    if (currentLineWidth + buttonWidth > windowWidth - 20) // 20px margin
                     {
-                        subtabLabel = "Official";
-                    }
-                    else if (repo.Id == "com.vrchat.repos.curated")
-                    {
-                        subtabLabel = "Curated";
-                    }
-                    else
-                    {
-                        subtabLabel = !string.IsNullOrEmpty(repo.Name) ? repo.Name : repo.Id;
+                        EditorGUILayout.EndHorizontal();
+                        EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+                        currentLineWidth = 0;
                     }
                     
                     // Draw the subtab
@@ -712,20 +949,42 @@ namespace Redline.Editor.VPM
                     {
                         _selectedRepositoryId = repo.Id;
                     }
+                    
+                    currentLineWidth += buttonWidth;
                 }
-                
-                // Fill the rest of the space
-                GUILayout.FlexibleSpace();
                 
                 EditorGUILayout.EndHorizontal();
             }
             
             EditorGUILayout.EndVertical();
         }
+
+        /// <summary>
+        /// Gets the label to display for a repository subtab
+        /// </summary>
+        private string GetSubtabLabel(VPMRepository repo)
+        {
+            // Special labels for VRChat repositories
+            if (repo.Id == "com.vrchat.repos.official")
+            {
+                return "Official";
+            }
+            else if (repo.Id == "com.vrchat.repos.curated")
+            {
+                return "Curated";
+            }
+            
+            // For other repositories, use their name or ID
+            return !string.IsNullOrEmpty(repo.Name) ? repo.Name : repo.Id;
+        }
         
         private void RefreshPackages()
         {
             _filteredPackages.Clear();
+
+            // First, collect all packages and track which ones appear in multiple repositories
+            Dictionary<string, List<Tuple<VPMRepository, VPMPackage, VPMPackageVersion>>> packageOccurrences = 
+                new Dictionary<string, List<Tuple<VPMRepository, VPMPackage, VPMPackageVersion>>>();
 
             foreach (VPMRepository repository in _repositories)
             {
@@ -738,18 +997,60 @@ namespace Redline.Editor.VPM
                         // Get the latest version based on the unstable setting
                         VPMPackageVersion latestVersion = package.GetLatestVersion(_showUnstableReleases);
 
-                        if (latestVersion != null)
+                        // Skip if no suitable version was found
+                        if (latestVersion == null)
+                            continue;
+
+                        // Double-check version stability if unstable releases are disabled
+                        if (!_showUnstableReleases && !VPMPackage.IsStableVersion(latestVersion.Version))
+                            continue;
+
+                        // Apply search filter if any
+                        if (string.IsNullOrEmpty(_searchFilter) ||
+                            latestVersion.DisplayName?.IndexOf(_searchFilter, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                            package.Id?.IndexOf(_searchFilter, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                            latestVersion.Description?.IndexOf(_searchFilter, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
-                            // Apply search filter if any
-                            if (string.IsNullOrEmpty(_searchFilter) ||
-                                latestVersion.DisplayName?.IndexOf(_searchFilter, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                package.Id?.IndexOf(_searchFilter, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                latestVersion.Description?.IndexOf(_searchFilter, StringComparison.OrdinalIgnoreCase) >= 0)
+                            var packageTuple = new Tuple<VPMRepository, VPMPackage, VPMPackageVersion>(repository, package, latestVersion);
+                            
+                            if (!packageOccurrences.ContainsKey(package.Id))
                             {
-                                _filteredPackages.Add(new Tuple<VPMRepository, VPMPackage, VPMPackageVersion>(repository, package, latestVersion));
+                                packageOccurrences[package.Id] = new List<Tuple<VPMRepository, VPMPackage, VPMPackageVersion>>();
                             }
+                            packageOccurrences[package.Id].Add(packageTuple);
                         }
                     }
+                }
+            }
+
+            // Now process the packages, handling duplicates
+            foreach (var packageGroup in packageOccurrences)
+            {
+                string packageId = packageGroup.Key;
+                var occurrences = packageGroup.Value;
+
+                if (occurrences.Count == 1)
+                {
+                    // Single occurrence, add as is
+                    _filteredPackages.Add(occurrences[0]);
+                }
+                else
+                {
+                    // Multiple occurrences, find the one with the latest version
+                    var latestVersion = occurrences.OrderByDescending(p => 
+                    {
+                        try
+                        {
+                            return new Version(p.Item3.Version.Split('-')[0]);
+                        }
+                        catch
+                        {
+                            return new Version(0, 0, 0);
+                        }
+                    }).First();
+
+                    // Add the latest version with a special repository
+                    _filteredPackages.Add(latestVersion);
                 }
             }
 
@@ -845,33 +1146,21 @@ namespace Redline.Editor.VPM
             
             EditorGUILayout.BeginHorizontal();
             string displayName = !string.IsNullOrEmpty(package.displayName) ? package.displayName : package.name;
-            EditorGUILayout.LabelField(displayName, EditorStyles.boldLabel);
             
-            // Check if this is the VRChat base package and if we can remove it
-            bool canRemove = true;
-            string disabledReason = "";
+            // Initialize foldout state if not exists
+            if (!_packageFoldouts.ContainsKey(package.name))
+            {
+                _packageFoldouts[package.name] = false;
+            }
             
-            if (package.name == "com.vrchat.base")
-            {
-                // Check if any VRChat SDK packages are installed
-                bool avatarsInstalled = _installedPackages.Any(p => p.name == "com.vrchat.avatars");
-                bool worldsInstalled = _installedPackages.Any(p => p.name == "com.vrchat.worlds");
-                
-                if (avatarsInstalled || worldsInstalled)
-                {
-                    canRemove = false;
-                    disabledReason = $"Cannot remove VRChat Base while {(avatarsInstalled ? "Avatars" : "Worlds")} SDK is installed";
-                }
-            }
-            else if (package.name == "dev.redline-team.rpm")
-            {
-                // Prevent Redline Package Manager from removing itself
-                canRemove = false;
-                disabledReason = "Cannot remove Redline Package Manager (RPM) as it cannot uninstall itself";
-            }
+            _packageFoldouts[package.name] = EditorGUILayout.Foldout(_packageFoldouts[package.name], displayName, true);
+            
+            // Check if the package can be removed
+            string disabledReason;
+            bool canRemove = CanRemovePackage(package.name, out disabledReason);
             
             EditorGUI.BeginDisabledGroup(_isRemovingPackage || !canRemove);
-            if (GUILayout.Button("Remove", GUILayout.Width(60)))
+            if (GUILayout.Button("Remove", EditorStyles.miniButton, GUILayout.Width(60)))
             {
                 if (EditorUtility.DisplayDialog("Remove Package", $"Are you sure you want to remove {displayName}?", "Yes", "No"))
                 {
@@ -881,25 +1170,59 @@ namespace Redline.Editor.VPM
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndHorizontal();
             
-            // Show warning if package cannot be removed
-            if (!canRemove)
+            if (_packageFoldouts[package.name])
             {
-                EditorGUILayout.HelpBox(disabledReason, MessageType.Warning);
-            }
-            
-            EditorGUILayout.Space();
-            
-            EditorGUILayout.LabelField("Package ID", package.name);
-            EditorGUILayout.LabelField("Version", package.version);
-            
-            if (!string.IsNullOrEmpty(package.description))
-            {
-                EditorGUILayout.LabelField("Description", package.description);
-            }
-            
-            if (!string.IsNullOrEmpty(package.author))
-            {
-                EditorGUILayout.LabelField("Author", package.author);
+                EditorGUILayout.Space(5);
+                
+                // Show warning if package cannot be removed
+                if (!canRemove)
+                {
+                    EditorGUILayout.HelpBox(disabledReason, MessageType.Warning);
+                    EditorGUILayout.Space(5);
+                }
+                
+                EditorGUILayout.LabelField("Package ID", package.name);
+                EditorGUILayout.LabelField("Version", package.version);
+                
+                // Show dependencies if any
+                if (_packageDependencies.TryGetValue(package.name, out var dependencies) && dependencies.Count > 0)
+                {
+                    EditorGUILayout.Space(5);
+                    EditorGUILayout.LabelField("Dependencies", EditorStyles.boldLabel);
+                    foreach (var dep in dependencies)
+                    {
+                        EditorGUILayout.LabelField("• " + dep);
+                    }
+                }
+                
+                if (!string.IsNullOrEmpty(package.description))
+                {
+                    EditorGUILayout.Space(5);
+                    EditorGUILayout.LabelField("Description", EditorStyles.boldLabel);
+                    
+                    // Create a style for the description text area
+                    GUIStyle descriptionStyle = new GUIStyle(EditorStyles.textArea)
+                    {
+                        wordWrap = true,
+                        richText = true,
+                        stretchHeight = true,
+                        normal = { textColor = EditorGUIUtility.isProSkin ? new Color(0.7f, 0.7f, 0.7f) : Color.black }
+                    };
+                    
+                    // Calculate the height needed for the description
+                    float descriptionHeight = descriptionStyle.CalcHeight(new GUIContent(package.description), EditorGUIUtility.currentViewWidth - 40);
+                    
+                    // Draw the description in a scrollable text area
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                    EditorGUILayout.SelectableLabel(package.description, descriptionStyle, GUILayout.Height(descriptionHeight));
+                    EditorGUILayout.EndVertical();
+                }
+                
+                if (!string.IsNullOrEmpty(package.author))
+                {
+                    EditorGUILayout.Space(5);
+                    EditorGUILayout.LabelField("Author", package.author);
+                }
             }
             
             EditorGUILayout.EndVertical();
@@ -914,42 +1237,25 @@ namespace Redline.Editor.VPM
             if (package == null || string.IsNullOrEmpty(package.DirectoryPath))
                 return;
             
-            // Double-check VRChat package dependencies before removal
-            if (package.name == "com.vrchat.base")
+            // Check if the package can be removed
+            string disabledReason;
+            if (!CanRemovePackage(package.name, out disabledReason))
             {
-                // Check if any VRChat SDK packages are installed
-                bool avatarsInstalled = _installedPackages.Any(p => p.name == "com.vrchat.avatars");
-                bool worldsInstalled = _installedPackages.Any(p => p.name == "com.vrchat.worlds");
-                
-                if (avatarsInstalled || worldsInstalled)
-                {
-                    string sdkName = avatarsInstalled ? "Avatars" : "Worlds";
-                    EditorUtility.DisplayDialog("Cannot Remove Package", 
-                        $"VRChat Base cannot be removed while the {sdkName} SDK is installed. Please remove the {sdkName} SDK first.", "OK");
-                    return;
-                }
+                EditorUtility.DisplayDialog("Cannot Remove Package", disabledReason, "OK");
+                return;
             }
                 
             _isRemovingPackage = true;
             _currentRemovingPackage = !string.IsNullOrEmpty(package.displayName) ? package.displayName : package.name;
             
+            bool success = false;
             await Task.Run(() => {
                 try
                 {
-                    // Delete the package directory
-                    if (Directory.Exists(package.DirectoryPath))
-                    {
-                        Directory.Delete(package.DirectoryPath, true);
-                        
-                        // Also delete the .meta file if it exists
-                        string metaFilePath = package.DirectoryPath + ".meta";
-                        if (File.Exists(metaFilePath))
-                        {
-                            File.Delete(metaFilePath);
-                        }
-                    }
-                    
+                    // Use the VPMManager to remove the package
+                    VPMManager.RemovePackage(package.name);
                     Debug.Log($"Successfully removed package: {package.name}");
+                    success = true;
                 }
                 catch (Exception e)
                 {
@@ -960,13 +1266,246 @@ namespace Redline.Editor.VPM
             
             _isRemovingPackage = false;
             
-            // Refresh AssetDatabase to detect the removed package
-            AssetDatabase.Refresh();
-            
-            // Refresh the list of installed packages
+            // Refresh the list of installed packages and dependencies
             RefreshInstalledPackages();
+            RefreshPackageDependencies();
+
+            if (success)
+            {
+                // Automatically sync the manifest after successful removal
+                await ScanManifestAsync();
+            }
             
             Repaint();
+        }
+
+        private async Task ScanManifestAsync()
+        {
+            try
+            {
+                // Show progress dialog
+                EditorUtility.DisplayProgressBar("Syncing Manifest", "Scanning installed packages...", 0f);
+
+                // Run the scan in a background thread
+                int updatedCount = await Task.Run(() => VPMManifestManager.ScanAndUpdateManifest());
+
+                // Hide progress dialog
+                EditorUtility.ClearProgressBar();
+
+                // Show results only if there were updates
+                if (updatedCount > 0)
+                {
+                    Debug.Log($"Manifest sync complete: Updated {updatedCount} package(s) in the manifest file.");
+                }
+
+                // Refresh the installed packages list
+                RefreshInstalledPackages();
+            }
+            catch (Exception e)
+            {
+                EditorUtility.ClearProgressBar();
+                Debug.LogError($"Error syncing manifest: {e.Message}");
+            }
+        }
+
+        private void RefreshPackageDependencies()
+        {
+            _packageDependencies.Clear();
+            _reverseDependencies.Clear();
+
+            // Read the manifest file
+            string manifestPath = Path.Combine(Application.dataPath, "..", "vpm-manifest.json");
+            if (!File.Exists(manifestPath))
+                return;
+
+            try
+            {
+                string json = File.ReadAllText(manifestPath);
+                JObject manifest = JObject.Parse(json);
+
+                // Get the locked section which contains all dependencies
+                JObject locked = manifest["locked"] as JObject;
+                if (locked == null)
+                    return;
+
+                foreach (var package in locked)
+                {
+                    string packageName = package.Key;
+                    JObject packageData = package.Value as JObject;
+                    if (packageData == null)
+                        continue;
+
+                    // Get dependencies for this package
+                    JObject dependencies = packageData["dependencies"] as JObject;
+                    if (dependencies == null)
+                        continue;
+
+                    // Initialize the dependency sets if they don't exist
+                    if (!_packageDependencies.ContainsKey(packageName))
+                        _packageDependencies[packageName] = new HashSet<string>();
+                    if (!_reverseDependencies.ContainsKey(packageName))
+                        _reverseDependencies[packageName] = new HashSet<string>();
+
+                    // Add each dependency
+                    foreach (var dependency in dependencies)
+                    {
+                        string depName = dependency.Key;
+                        string depVersion = dependency.Value.ToString();
+
+                        // Add to package's dependencies
+                        if (!_packageDependencies.ContainsKey(packageName))
+                            _packageDependencies[packageName] = new HashSet<string>();
+                        _packageDependencies[packageName].Add(depName);
+
+                        // Add to reverse dependencies
+                        if (!_reverseDependencies.ContainsKey(depName))
+                            _reverseDependencies[depName] = new HashSet<string>();
+                        _reverseDependencies[depName].Add(packageName);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error parsing manifest file: {e.Message}");
+            }
+        }
+
+        private bool CanRemovePackage(string packageName, out string reason)
+        {
+            reason = null;
+
+            // Check if this package is a dependency of any other installed package
+            if (_reverseDependencies.TryGetValue(packageName, out var dependents) && dependents.Count > 0)
+            {
+                var dependentNames = string.Join(", ", dependents);
+                reason = $"Cannot remove {packageName} because it is required by: {dependentNames}";
+                return false;
+            }
+
+            // Special case for VRChat base package
+            if (packageName == "com.vrchat.base")
+            {
+                bool avatarsInstalled = _installedPackages.Any(p => p.name == "com.vrchat.avatars");
+                bool worldsInstalled = _installedPackages.Any(p => p.name == "com.vrchat.worlds");
+                
+                if (avatarsInstalled || worldsInstalled)
+                {
+                    reason = $"Cannot remove VRChat Base while {(avatarsInstalled ? "Avatars" : "Worlds")} SDK is installed";
+                    return false;
+                }
+            }
+            // Prevent Redline Package Manager from removing itself
+            else if (packageName == "dev.redline-team.rpm")
+            {
+                reason = "Cannot remove Redline Package Manager (RPM) as it cannot uninstall itself";
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Draws a fun message with custom styling
+        /// </summary>
+        private void DrawFunMessage(string message, Color? textColor = null)
+        {
+            // Create a custom style for the fun message
+            GUIStyle funStyle = new GUIStyle(EditorStyles.helpBox)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 12,
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = textColor ?? new Color(0.2f, 0.8f, 0.2f) } // Default to green if no color specified
+            };
+            
+            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField(message, funStyle, GUILayout.Height(40));
+            EditorGUILayout.Space(10);
+        }
+
+        /// <summary>
+        /// Gets a random pair of ASCII decorations
+        /// </summary>
+        private (string left, string right) GetRandomDecoration()
+        {
+            (string, string)[] decorations = new[] {
+                ("*** ", " ***"),
+                ("=== ", " ==="),
+                (">>> ", " <<<"),
+                ("~~~ ", " ~~~"),
+                ("[ ", " ]"),
+                ("< ", " >"),
+                ("{ ", " }"),
+                ("( ", " )")
+            };
+            return decorations[UnityEngine.Random.Range(0, decorations.Length)];
+        }
+
+        /// <summary>
+        /// Gets a random fun message for different UI states
+        /// </summary>
+        private string GetFunMessage(string messageType)
+        {
+            // Get random decoration pair
+            var decoration = GetRandomDecoration();
+
+            switch (messageType)
+            {
+                case "no_upgrades":
+                    string[] upgradeMessages = new[] {
+                        "Everything's up to date! Time for a coffee break ☕",
+                        "All caught up! Your packages are living their best life",
+                        "No upgrades needed! Your setup is looking fresh",
+                        "Everything's current! You're ahead of the curve",
+                        "All packages are up to date! You're crushing it",
+                        "No upgrades available! Your packages are already in the future",
+                        "Everything's perfect! Time to celebrate!",
+                        "No upgrades needed! Your packages are already at peak performance"
+                    };
+                    return decoration.left + upgradeMessages[UnityEngine.Random.Range(0, upgradeMessages.Length)] + decoration.right;
+
+                case "no_packages":
+                    string[] noPackagesMessages = new[] {
+                        "No packages found! Time to go shopping!",
+                        "Nothing here yet! Ready to discover some cool packages?",
+                        "Package shelf is empty! Let's fill it up",
+                        "No packages in the library! Time to add some",
+                        "Package collection is empty! Let's build it up",
+                        "No packages yet! Ready to start your collection?",
+                        "Package list is empty! Time to add some goodies",
+                        "No packages found! Ready to launch your collection?"
+                    };
+                    return decoration.left + noPackagesMessages[UnityEngine.Random.Range(0, noPackagesMessages.Length)] + decoration.right;
+
+                case "no_search_results":
+                    string[] searchMessages = new[] {
+                        "No matches found! Try different keywords",
+                        "Search came up empty! Time to try something else",
+                        "Nothing matches your search! Let's try again",
+                        "Search results are empty! Maybe try different terms?",
+                        "No packages match your search! Time to explore",
+                        "Search found nothing! Let's try another approach",
+                        "No matches! Ready to try a different search?",
+                        "Search returned empty! Let's try something else"
+                    };
+                    return decoration.left + searchMessages[UnityEngine.Random.Range(0, searchMessages.Length)] + decoration.right;
+
+                case "no_repositories":
+                    string[] repoMessages = new[] {
+                        "No repositories yet! Time to add some",
+                        "Repository shelf is empty! Let's fill it up",
+                        "No repositories found! Ready to discover some?",
+                        "Repository list is empty! Time to add some",
+                        "No repositories yet! Let's build your collection",
+                        "Repository collection is empty! Ready to start?",
+                        "No repositories found! Time to add some",
+                        "Repository list is empty! Let's launch your collection"
+                    };
+                    return decoration.left + repoMessages[UnityEngine.Random.Range(0, repoMessages.Length)] + decoration.right;
+
+                default:
+                    return "No items found";
+            }
         }
     }
     

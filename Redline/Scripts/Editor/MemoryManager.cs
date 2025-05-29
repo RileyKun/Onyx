@@ -5,6 +5,8 @@ using System.Runtime.InteropServices;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
+using System.Linq;
 
 namespace Redline.Scripts.Editor
 {
@@ -15,6 +17,11 @@ namespace Redline.Scripts.Editor
 	[InitializeOnLoad]
 	public class MemoryManagementTool : EditorWindow
 	{
+		// Memory pooling system
+		private static readonly Dictionary<Type, Queue<object>> _objectPools = new();
+		private static readonly Dictionary<Type, int> _poolSizes = new();
+		private const int DefaultPoolSize = 100;
+
 		// Core memory tracking
 		private static float _memoryUsageMb;
 		private static float _peakMemoryUsageMb;
@@ -61,6 +68,41 @@ namespace Redline.Scripts.Editor
 		private static float _totalSystemMemoryMb;
 		private static float _totalPhysicalMemoryMb;
 		private static float _totalSwapMb;
+
+		// Texture memory management
+		private static readonly Dictionary<Texture2D, TextureMemoryInfo> _textureMemoryInfo = new();
+		private static float _totalTextureMemoryMb;
+		private const float TextureMemoryWarningThreshold = 0.8f; // 80% of total memory
+
+		// Asset bundle memory management
+		private static readonly Dictionary<string, AssetBundle> _loadedAssetBundles = new();
+		private static readonly Dictionary<string, DateTime> _assetBundleLastAccess = new();
+		private const float AssetBundleUnloadTimeMinutes = 30f; // Unload unused asset bundles after 30 minutes
+
+		// Memory leak detection
+		private static readonly Dictionary<Type, int> _objectCounts = new();
+		private static readonly Dictionary<Type, float> _objectMemoryUsage = new();
+		private static readonly Queue<MemorySnapshot> _memorySnapshots = new();
+		private const int MaxSnapshots = 10;
+		private const float MemoryLeakThreshold = 0.2f; // 20% increase in memory usage
+
+		private class TextureMemoryInfo
+		{
+			public float MemorySizeMb;
+			public bool IsCompressed;
+			public int Width;
+			public int Height;
+			public TextureFormat Format;
+			public DateTime LastAccess;
+		}
+
+		private class MemorySnapshot
+		{
+			public DateTime Timestamp;
+			public Dictionary<Type, int> ObjectCounts;
+			public Dictionary<Type, float> ObjectMemoryUsage;
+			public float TotalMemoryUsage;
+		}
 
 		// Windows API for physical memory detection
 		[DllImport("kernel32.dll")]
@@ -436,6 +478,9 @@ namespace Redline.Scripts.Editor
 					MemoryHistory.RemoveAt(0);
 				}
 				_lastGraphUpdateTime = (float)EditorApplication.timeSinceStartup;
+
+				// Take memory snapshot for leak detection
+				TakeMemorySnapshot();
 			}
 
 			// Check if we need to auto-cleanup based on memory threshold
@@ -649,6 +694,171 @@ namespace Redline.Scripts.Editor
 		}
 
 		/// <summary>
+		/// Gets an object from the pool or creates a new one if pool is empty
+		/// </summary>
+		public static T GetFromPool<T>() where T : class, new()
+		{
+			var type = typeof(T);
+			if (!_objectPools.ContainsKey(type))
+			{
+				_objectPools[type] = new Queue<object>();
+				_poolSizes[type] = DefaultPoolSize;
+			}
+
+			var pool = _objectPools[type];
+			if (pool.Count > 0)
+			{
+				return (T)pool.Dequeue();
+			}
+
+			return new T();
+		}
+
+		/// <summary>
+		/// Returns an object to the pool
+		/// </summary>
+		public static void ReturnToPool<T>(T obj) where T : class
+		{
+			var type = typeof(T);
+			if (!_objectPools.ContainsKey(type))
+			{
+				_objectPools[type] = new Queue<object>();
+				_poolSizes[type] = DefaultPoolSize;
+			}
+
+			var pool = _objectPools[type];
+			if (pool.Count < _poolSizes[type])
+			{
+				pool.Enqueue(obj);
+			}
+		}
+
+		/// <summary>
+		/// Sets the maximum pool size for a specific type
+		/// </summary>
+		public static void SetPoolSize<T>(int size) where T : class
+		{
+			_poolSizes[typeof(T)] = size;
+		}
+
+		/// <summary>
+		/// Clears all object pools
+		/// </summary>
+		public static void ClearPools()
+		{
+			_objectPools.Clear();
+		}
+
+		/// <summary>
+		/// Tracks texture memory usage
+		/// </summary>
+		public static void TrackTexture(Texture2D texture)
+		{
+			if (texture == null) return;
+
+			var memoryInfo = new TextureMemoryInfo
+			{
+				Width = texture.width,
+				Height = texture.height,
+				Format = texture.format,
+				IsCompressed = GraphicsFormatUtility.IsCompressedFormat(texture.graphicsFormat),
+				LastAccess = DateTime.Now
+			};
+
+			// Calculate approximate memory size
+			float bytesPerPixel = memoryInfo.IsCompressed ? 0.5f : 4f; // Approximate for compressed textures
+			memoryInfo.MemorySizeMb = (texture.width * texture.height * bytesPerPixel) / (1024f * 1024f);
+
+			_textureMemoryInfo[texture] = memoryInfo;
+			_totalTextureMemoryMb += memoryInfo.MemorySizeMb;
+
+			// Check if we're approaching memory limits
+			if (_totalTextureMemoryMb > _memoryThresholdMb * TextureMemoryWarningThreshold)
+			{
+				UnityEngine.Debug.LogWarning($"[Redline Memory Master] Texture memory usage ({_totalTextureMemoryMb:F2}MB) is approaching the limit ({_memoryThresholdMb:F2}MB)");
+				OptimizeTextures();
+			}
+		}
+
+		/// <summary>
+		/// Optimizes textures to reduce memory usage
+		/// </summary>
+		private static void OptimizeTextures()
+		{
+			var texturesToOptimize = _textureMemoryInfo
+				.Where(kvp => !kvp.Value.IsCompressed && kvp.Value.MemorySizeMb > 1f) // Only optimize uncompressed textures > 1MB
+				.OrderByDescending(kvp => kvp.Value.MemorySizeMb)
+				.Take(5) // Optimize top 5 largest textures
+				.Select(kvp => kvp.Key)
+				.ToList();
+
+			foreach (var texture in texturesToOptimize)
+			{
+				if (texture == null) continue;
+
+				var originalPath = AssetDatabase.GetAssetPath(texture);
+				if (string.IsNullOrEmpty(originalPath)) continue;
+
+				var importer = AssetImporter.GetAtPath(originalPath) as TextureImporter;
+				if (importer == null) continue;
+
+				// Store original settings
+				var originalMaxSize = importer.maxTextureSize;
+				var originalFormat = importer.textureCompression;
+
+				// Optimize settings
+				importer.maxTextureSize = Mathf.Min(originalMaxSize, 1024); // Reduce max size
+				importer.textureCompression = TextureImporterCompression.Compressed;
+
+				// Apply changes
+				importer.SaveAndReimport();
+
+				// Update memory info
+				if (_textureMemoryInfo.TryGetValue(texture, out var info))
+				{
+					_totalTextureMemoryMb -= info.MemorySizeMb;
+					TrackTexture(texture); // Recalculate memory usage
+				}
+			}
+		}
+
+		/// <summary>
+		/// Tracks loaded asset bundle
+		/// </summary>
+		public static void TrackAssetBundle(AssetBundle bundle, string bundleName)
+		{
+			if (bundle == null || string.IsNullOrEmpty(bundleName)) return;
+
+			_loadedAssetBundles[bundleName] = bundle;
+			_assetBundleLastAccess[bundleName] = DateTime.Now;
+		}
+
+		/// <summary>
+		/// Unloads unused asset bundles
+		/// </summary>
+		private static void UnloadUnusedAssetBundles()
+		{
+			var bundlesToUnload = _assetBundleLastAccess
+				.Where(kvp => (DateTime.Now - kvp.Value).TotalMinutes > AssetBundleUnloadTimeMinutes)
+				.Select(kvp => kvp.Key)
+				.ToList();
+
+			foreach (var bundleName in bundlesToUnload)
+			{
+				if (_loadedAssetBundles.TryGetValue(bundleName, out var bundle))
+				{
+					if (bundle != null)
+					{
+						bundle.Unload(true);
+						UnityEngine.Debug.Log($"[Redline Memory Master] Unloaded unused asset bundle: {bundleName}");
+					}
+					_loadedAssetBundles.Remove(bundleName);
+					_assetBundleLastAccess.Remove(bundleName);
+				}
+			}
+		}
+
+		/// <summary>
 		/// Performs a memory cleanup operation
 		/// </summary>
 		public static void PerformCleanup()
@@ -656,6 +866,15 @@ namespace Redline.Scripts.Editor
 			UnityEngine.Debug.Log("[Redline Memory Master] Performing memory cleanup...");
 
 			var beforeMb = GC.GetTotalMemory(false) / (1024f * 1024f);
+
+			// Clear object pools first
+			ClearPools();
+
+			// Optimize textures
+			OptimizeTextures();
+
+			// Unload unused asset bundles
+			UnloadUnusedAssetBundles();
 
 			// Force a GC collection
 			GC.Collect();
@@ -720,6 +939,68 @@ namespace Redline.Scripts.Editor
 		{
 			PerformCleanup();
 			return true;
+		}
+
+		/// <summary>
+		/// Takes a memory snapshot for leak detection
+		/// </summary>
+		private static void TakeMemorySnapshot()
+		{
+			var snapshot = new MemorySnapshot
+			{
+				Timestamp = DateTime.Now,
+				ObjectCounts = new Dictionary<Type, int>(_objectCounts),
+				ObjectMemoryUsage = new Dictionary<Type, float>(_objectMemoryUsage),
+				TotalMemoryUsage = _memoryUsageMb
+			};
+
+			_memorySnapshots.Enqueue(snapshot);
+			if (_memorySnapshots.Count > MaxSnapshots)
+			{
+				_memorySnapshots.Dequeue();
+			}
+
+			// Check for potential memory leaks
+			if (_memorySnapshots.Count >= 2)
+			{
+				var oldestSnapshot = _memorySnapshots.Peek();
+				var memoryIncrease = (_memoryUsageMb - oldestSnapshot.TotalMemoryUsage) / oldestSnapshot.TotalMemoryUsage;
+
+				if (memoryIncrease > MemoryLeakThreshold)
+				{
+					UnityEngine.Debug.LogWarning($"[Redline Memory Master] Potential memory leak detected! Memory usage increased by {(memoryIncrease * 100):F1}% over {MaxSnapshots} snapshots");
+					AnalyzeMemoryLeak(oldestSnapshot);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Analyzes potential memory leaks by comparing object counts and memory usage
+		/// </summary>
+		private static void AnalyzeMemoryLeak(MemorySnapshot oldestSnapshot)
+		{
+			var suspiciousTypes = new List<(Type type, float increase)>();
+
+			foreach (var kvp in _objectCounts)
+			{
+				if (oldestSnapshot.ObjectCounts.TryGetValue(kvp.Key, out var oldCount))
+				{
+					var countIncrease = (float)(kvp.Value - oldCount) / oldCount;
+					if (countIncrease > MemoryLeakThreshold)
+					{
+						suspiciousTypes.Add((kvp.Key, countIncrease));
+					}
+				}
+			}
+
+			if (suspiciousTypes.Any())
+			{
+				UnityEngine.Debug.LogWarning("[Redline Memory Master] Suspicious object type increases:");
+				foreach (var (type, increase) in suspiciousTypes.OrderByDescending(x => x.increase))
+				{
+					UnityEngine.Debug.LogWarning($"- {type.Name}: {increase * 100:F1}% increase in count");
+				}
+			}
 		}
 	}
 }

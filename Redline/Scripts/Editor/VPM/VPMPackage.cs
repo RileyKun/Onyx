@@ -46,21 +46,12 @@ namespace Redline.Editor.VPM
             // Debug log to help diagnose version filtering (only if debug logging is enabled)
             if (VPMSettings.EnableDebugLogging)
                 Debug.Log($"Checking if version is stable: {version}");
-                
-            // Check for common unstable version indicators (case insensitive)
-            string lowerVersion = version.ToLowerInvariant();
-            if (lowerVersion.Contains("-") || // e.g. 1.2.3-beta.1
-                lowerVersion.Contains("alpha") ||
-                lowerVersion.Contains("beta") ||
-                lowerVersion.Contains("rc") ||
-                lowerVersion.Contains("preview") ||
-                lowerVersion.Contains("pre") ||
-                lowerVersion.Contains("dev") ||
-                lowerVersion.Contains("nightly") ||
-                lowerVersion.Contains("snapshot"))
+            
+            // Check for any non-numeric characters (except dots)
+            if (version.Any(c => !char.IsDigit(c) && c != '.'))
             {
                 if (VPMSettings.EnableDebugLogging)
-                    Debug.Log($"Version {version} is UNSTABLE (contains unstable indicator)");
+                    Debug.Log($"Version {version} is UNSTABLE (contains non-numeric characters)");
                 return false;
             }
             
@@ -69,19 +60,38 @@ namespace Redline.Editor.VPM
             {
                 // Split by dots and check if all parts are numeric
                 string[] parts = version.Split('.');
+                
+                // Must have at least 2 parts (major.minor)
+                if (parts.Length < 2)
+                {
+                    if (VPMSettings.EnableDebugLogging)
+                        Debug.Log($"Version {version} is UNSTABLE (must have at least major.minor)");
+                    return false;
+                }
+                
+                // Must not have more than 3 parts (major.minor.patch)
+                if (parts.Length > 3)
+                {
+                    if (VPMSettings.EnableDebugLogging)
+                        Debug.Log($"Version {version} is UNSTABLE (must not have more than 3 parts)");
+                    return false;
+                }
+                
+                // Check each part
                 foreach (string part in parts)
                 {
-                    if (!int.TryParse(part, out _))
+                    // Each part must be a valid number
+                    if (!int.TryParse(part, out int num) || num < 0)
                     {
                         if (VPMSettings.EnableDebugLogging)
-                            Debug.Log($"Version {version} is UNSTABLE (contains non-numeric part: {part})");
-                        return false; // Non-numeric part found
+                            Debug.Log($"Version {version} is UNSTABLE (contains invalid number: {part})");
+                        return false;
                     }
                 }
                 
                 if (VPMSettings.EnableDebugLogging)
                     Debug.Log($"Version {version} is STABLE");
-                return true; // All parts are numeric
+                return true; // All parts are valid numbers
             }
             catch (Exception ex)
             {
@@ -142,6 +152,62 @@ namespace Redline.Editor.VPM
             {
                 // If sorting fails, just return the first version
                 return filteredVersions.First().Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the latest version that is newer than the specified version
+        /// </summary>
+        /// <param name="currentVersion">The current version to compare against</param>
+        /// <param name="includeUnstable">Whether to include unstable versions</param>
+        /// <returns>The latest newer version, or null if no newer version is available</returns>
+        public VPMPackageVersion GetLatestNewerVersion(string currentVersion, bool includeUnstable = true)
+        {
+            if (string.IsNullOrEmpty(currentVersion) || Versions == null || Versions.Count == 0)
+                return null;
+
+            try
+            {
+                Version currentVer = new Version(currentVersion.Split('-')[0]);
+                
+                // Filter versions based on stability if needed
+                var filteredVersions = Versions.Where(v => 
+                {
+                    // First check if we should include unstable versions
+                    if (!includeUnstable && !IsStableVersion(v.Key))
+                        return false;
+
+                    try
+                    {
+                        // For stable versions, compare directly
+                        if (IsStableVersion(v.Key))
+                        {
+                            Version stableVer = new Version(v.Key);
+                            return stableVer > currentVer;
+                        }
+                        
+                        // For unstable versions, compare base versions
+                        string baseVersion = v.Key.Split('-')[0];
+                        Version unstableVer = new Version(baseVersion);
+                        return unstableVer > currentVer;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                });
+
+                if (!filteredVersions.Any())
+                    return null;
+
+                // Sort by version and get the latest
+                return filteredVersions
+                    .OrderByDescending(v => new Version(v.Key.Split('-')[0]))
+                    .First().Value;
+            }
+            catch
+            {
+                return null;
             }
         }
 

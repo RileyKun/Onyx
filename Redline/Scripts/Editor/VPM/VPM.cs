@@ -8,12 +8,6 @@ namespace Redline.Editor.VPM
     /// </summary>
     public static class VPM
     {
-        [MenuItem("Redline/Open VPM Manager")]
-        public static void OpenVPMManager()
-        {
-            VPMWindow.ShowWindow();
-        }
-
         /// <summary>
         /// Initializes the VPM system
         /// </summary>

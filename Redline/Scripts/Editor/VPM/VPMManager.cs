@@ -508,8 +508,6 @@ namespace Redline.Editor.VPM
             }
         }
 
-
-        
         /// <summary>
         /// Checks if a package is installed
         /// </summary>
@@ -680,6 +678,18 @@ namespace Redline.Editor.VPM
                     Debug.LogWarning($"Failed to clean up temporary files: {e.Message}");
                 }
 
+                // Update the manifest file
+                Dictionary<string, string> dependencies = null;
+                if (packageVersion.Name == "com.vrchat.avatars" || packageVersion.Name == "com.vrchat.worlds")
+                {
+                    // Add VRChat base as a dependency
+                    dependencies = new Dictionary<string, string>
+                    {
+                        ["com.vrchat.base"] = "3.8.1" // This should match the version we installed
+                    };
+                }
+                VPMManifestManager.AddOrUpdatePackage(packageVersion.Name, packageVersion.Version, dependencies);
+
                 // Refresh AssetDatabase to detect the new package
                 AssetDatabase.Refresh();
 
@@ -725,6 +735,44 @@ namespace Redline.Editor.VPM
                     string tempPath = Path.Combine(destDirName, subdir.Name);
                     DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Removes an installed package
+        /// </summary>
+        /// <param name="packageName">The name of the package to remove</param>
+        public static void RemovePackage(string packageName)
+        {
+            if (string.IsNullOrEmpty(packageName))
+                return;
+
+            string packagesDir = GetPackagesDirectory();
+            string packageDir = Path.Combine(packagesDir, packageName);
+
+            try
+            {
+                if (Directory.Exists(packageDir))
+                {
+                    Directory.Delete(packageDir, true);
+                    
+                    // Also delete the associated .meta file if it exists
+                    string metaFilePath = packageDir + ".meta";
+                    if (File.Exists(metaFilePath))
+                    {
+                        File.Delete(metaFilePath);
+                    }
+
+                    // Update the manifest file
+                    VPMManifestManager.RemovePackage(packageName);
+
+                    // Refresh AssetDatabase to detect the removed package
+                    AssetDatabase.Refresh();
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to remove package {packageName}: {e.Message}");
             }
         }
     }

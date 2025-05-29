@@ -7,6 +7,19 @@
     "dev.redline-team.rpm": {
       "Id": "dev.redline-team.rpm",
       "Versions": {
+        "3.2.2": {
+          "Name": "dev.redline-team.rpm",
+          "DisplayName": "Redline Package Manager",
+          "Version": "3.2.2",
+          "Unity": "2022.3",
+          "Description": "The Unity3D Package Manager for VRChat",
+          "ChangelogUrl": "https://github.com/Redline-Team/RPM/releases",
+          "AuthorName": "The Redline Team",
+          "AuthorUrl": "https://github.com/Redline-Team",
+          "License": null,
+          "ZipSHA256": "df59b3f5f4daae233c6389ddbf3e851402523d52d4a86d77888b5fe6e56a2487",
+          "Url": "https://github.com/Redline-Team/RPM/releases/download/v3.2.2/Redline_v3.2.2_VPM.zip"
+        },
         "3.2.1": {
           "Name": "dev.redline-team.rpm",
           "DisplayName": "Redline Package Manager",
@@ -1099,6 +1112,19 @@
     "com.facs01.facs_utilities": {
       "Id": "com.facs01.facs_utilities",
       "Versions": {
+        "25.5.27": {
+          "Name": "com.facs01.facs_utilities",
+          "DisplayName": "FACS Utilities",
+          "Version": "25.5.27",
+          "Unity": "2022.3",
+          "Description": "Tools to help you edit and repair Unity/VRChat projects",
+          "ChangelogUrl": "https://github.com/FACS01-01/FACS_Utilities/releases",
+          "AuthorName": "FACS01",
+          "AuthorUrl": "https://github.com/FACS01-01",
+          "License": null,
+          "ZipSHA256": "b959c493bc2b1561112e457c32d1263ffed44f183f0ceb175a7269bc2a4e473a",
+          "Url": "https://github.com/FACS01-01/FACS_Utilities/releases/download/25.05.27/FACS.Utilities.25.05.27.zip"
+        },
         "24.5.3": {
           "Name": "com.facs01.facs_utilities",
           "DisplayName": "FACS Utilities",
@@ -2530,6 +2556,32 @@
     "net.bluwizard.hierarchy": {
       "Id": "net.bluwizard.hierarchy",
       "Versions": {
+        "1.7.0": {
+          "Name": "net.bluwizard.hierarchy",
+          "DisplayName": "BluWizard LABS - Enhanced Hierarchy System",
+          "Version": "1.7.0",
+          "Unity": "2019.4",
+          "Description": "Blu's personal editor enhancement system that introduces an improved Hierarchy look, tailored made for VRChat Creators.",
+          "ChangelogUrl": null,
+          "AuthorName": "BluWizard",
+          "AuthorUrl": "https://vpm.bluwizard.net",
+          "License": null,
+          "ZipSHA256": "fc369ae95b6286a935ac82f74453af3fbdf021ff687308ff31473e6cc7975459",
+          "Url": "https://github.com/BluWizard10/Blu-Hierarchy/releases/download/1.7.0/net.bluwizard.hierarchy-1.7.0.zip"
+        },
+        "1.6.0": {
+          "Name": "net.bluwizard.hierarchy",
+          "DisplayName": "BluWizard LABS - Enhanced Hierarchy System",
+          "Version": "1.6.0",
+          "Unity": "2019.4",
+          "Description": "Blu's personal editor enhancement system that introduces an improved Hierarchy look, tailored made for VRChat Creators.",
+          "ChangelogUrl": null,
+          "AuthorName": "BluWizard",
+          "AuthorUrl": "https://vpm.bluwizard.net",
+          "License": null,
+          "ZipSHA256": "9f6895b6189988027608209a2ee740836eb45bac8d7718669d599b0952d74dfe",
+          "Url": "https://github.com/BluWizard10/Blu-Hierarchy/releases/download/1.6.0/net.bluwizard.hierarchy-1.6.0.zip"
+        },
         "1.5.2": {
           "Name": "net.bluwizard.hierarchy",
           "DisplayName": "BluWizard LABS - Enhanced Hierarchy System",

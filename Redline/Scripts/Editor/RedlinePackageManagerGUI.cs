@@ -110,7 +110,7 @@ namespace Redline.Scripts.Editor {
             
             // Button to open VPM Manager
             if (GUILayout.Button("Open VPM Manager", GUILayout.Height(30))) {
-                VPM.OpenVPMManager();
+                VPMWindow.ShowWindow();
             }
             EditorGUILayout.EndVertical();
             GUILayout.Space(8);
