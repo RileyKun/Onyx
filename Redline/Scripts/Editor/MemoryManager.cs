@@ -106,6 +106,10 @@ namespace Redline.Scripts.Editor
 		private const int MaxSnapshots = 10;
 		private const float MemoryLeakThreshold = 0.2f; // 20% increase in memory usage
 
+		private static readonly Dictionary<Type, PoolStatistics> _poolStatistics = new();
+		private static readonly List<GCCollectionInfo> _gcCollectionHistory = new();
+		private static readonly List<MemoryAllocationInfo> _memoryAllocationHistory = new();
+
 		private class TextureMemoryInfo
 		{
 			public float MemorySizeMb;
@@ -122,6 +126,29 @@ namespace Redline.Scripts.Editor
 			public Dictionary<Type, int> ObjectCounts;
 			public Dictionary<Type, float> ObjectMemoryUsage;
 			public float TotalMemoryUsage;
+		}
+
+		private class PoolStatistics
+		{
+			public int CurrentSize;
+			public int PeakSize;
+			public int TotalCreated;
+			public int TotalReused;
+		}
+
+		private class GCCollectionInfo
+		{
+			public DateTime Timestamp;
+			public long MemoryBefore;
+			public long MemoryAfter;
+			public int CollectionCount;
+		}
+
+		private class MemoryAllocationInfo
+		{
+			public Type ObjectType;
+			public long AllocationSize;
+			public DateTime Timestamp;
 		}
 
 		// Windows API for physical memory detection
@@ -825,12 +852,6 @@ namespace Redline.Scripts.Editor
 			Repaint();
 		}
 
-			EditorGUILayout.EndScrollView();
-
-			// Auto-repaint to update the memory display
-			Repaint();
-		}
-
 		/// <summary>
 		/// Unloads unused asset bundles
 		/// </summary>
@@ -999,6 +1020,167 @@ namespace Redline.Scripts.Editor
 					UnityEngine.Debug.LogWarning($"- {type.Name}: {increase * 100:F1}% increase in count");
 				}
 			}
+		}
+
+		/// <summary>
+		/// Draws the memory usage graph in the editor window
+		/// </summary>
+		private void DrawMemoryGraph(Rect rect)
+		{
+			if (MemoryHistory.Count == 0) return;
+
+			var maxMemory = MemoryHistory.Max();
+			var minMemory = MemoryHistory.Min();
+			var range = maxMemory - minMemory;
+			if (range < 0.1f) range = 0.1f;
+
+			var points = new Vector3[MemoryHistory.Count];
+			for (var i = 0; i < MemoryHistory.Count; i++)
+			{
+				var x = rect.x + (rect.width * i / (MemoryHistory.Count - 1));
+				var y = rect.y + rect.height - ((MemoryHistory[i] - minMemory) / range * rect.height);
+				points[i] = new Vector3(x, y, 0);
+			}
+
+			Handles.color = Color.green;
+			Handles.DrawAAPolyLine(2f, points);
+
+			// Draw threshold line
+			if (_memoryThresholdMb > minMemory && _memoryThresholdMb < maxMemory)
+			{
+				var thresholdY = rect.y + rect.height - ((_memoryThresholdMb - minMemory) / range * rect.height);
+				Handles.color = Color.red;
+				Handles.DrawLine(
+					new Vector3(rect.x, thresholdY, 0),
+					new Vector3(rect.x + rect.width, thresholdY, 0)
+				);
+			}
+		}
+
+		/// <summary>
+		/// Draws the GC collection history graph
+		/// </summary>
+		private void DrawGCCollectionGraph(Rect rect)
+		{
+			if (_gcCollectionHistory.Count == 0) return;
+
+			var maxMemory = (float)_gcCollectionHistory.Max(x => x.MemoryBefore);
+			var minMemory = (float)_gcCollectionHistory.Min(x => x.MemoryAfter);
+			var range = maxMemory - minMemory;
+			if (range < 0.1f) range = 0.1f;
+
+			var points = new Vector3[_gcCollectionHistory.Count * 2];
+			for (var i = 0; i < _gcCollectionHistory.Count; i++)
+			{
+				var collection = _gcCollectionHistory[i];
+				var x = rect.x + (rect.width * i / (_gcCollectionHistory.Count - 1));
+
+				// Before collection point
+				var beforeY = rect.y + rect.height - (((float)collection.MemoryBefore - minMemory) / range * rect.height);
+				points[i * 2] = new Vector3(x, beforeY, 0);
+
+				// After collection point
+				var afterY = rect.y + rect.height - (((float)collection.MemoryAfter - minMemory) / range * rect.height);
+				points[i * 2 + 1] = new Vector3(x, afterY, 0);
+			}
+
+			Handles.color = Color.yellow;
+			Handles.DrawAAPolyLine(2f, points);
+		}
+
+		/// <summary>
+		/// Clears all object pools
+		/// </summary>
+		private static void ClearPools()
+		{
+			foreach (var pool in _objectPools.Values)
+			{
+				pool.Clear();
+			}
+			_objectPools.Clear();
+			_poolSizes.Clear();
+		}
+
+		/// <summary>
+		/// Optimizes textures to reduce memory usage
+		/// </summary>
+		private static void OptimizeTextures()
+		{
+			var texturesToOptimize = _textureMemoryInfo
+				.Where(kvp => kvp.Value.MemorySizeMb > 1f && !kvp.Value.IsCompressed)
+				.OrderByDescending(kvp => kvp.Value.MemorySizeMb)
+				.Take(5);
+
+			foreach (var kvp in texturesToOptimize)
+			{
+				var texture = kvp.Key;
+				var info = kvp.Value;
+
+				// Skip if texture is null or already destroyed
+				if (texture == null) continue;
+
+				// Create a temporary copy of the texture
+				var tempTexture = new Texture2D(texture.width, texture.height, texture.format, texture.mipmapCount > 1);
+				tempTexture.SetPixels(texture.GetPixels());
+				tempTexture.Apply();
+
+				// Compress the texture
+				var compressedTexture = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, texture.mipmapCount > 1);
+				compressedTexture.SetPixels(tempTexture.GetPixels());
+				compressedTexture.Apply();
+
+				// Replace the original texture
+				EditorUtility.CopySerialized(compressedTexture, texture);
+
+				// Clean up temporary textures
+				DestroyImmediate(tempTexture);
+				DestroyImmediate(compressedTexture);
+
+				// Update texture info
+				info.IsCompressed = true;
+				info.MemorySizeMb = CalculateTextureMemorySize(texture);
+			}
+		}
+
+		/// <summary>
+		/// Calculates the memory size of a texture in megabytes
+		/// </summary>
+		private static float CalculateTextureMemorySize(Texture2D texture)
+		{
+			if (texture == null) return 0f;
+
+			var width = texture.width;
+			var height = texture.height;
+			var format = texture.format;
+			var mipmapCount = texture.mipmapCount;
+
+			// Calculate base size
+			long bytesPerPixel = format switch
+			{
+				TextureFormat.RGBA32 => 4L,
+				TextureFormat.RGB24 => 3L,
+				TextureFormat.RGBA64 => 8L,
+				TextureFormat.RGBAFloat => 16L,
+				_ => 4L // Default to RGBA32
+			};
+
+			var baseSize = width * height * bytesPerPixel;
+
+			// Calculate mipmap size
+			var mipmapSize = 0L;
+			if (mipmapCount > 1)
+			{
+				var currentWidth = width;
+				var currentHeight = height;
+				for (var i = 1; i < mipmapCount; i++)
+				{
+					currentWidth /= 2;
+					currentHeight /= 2;
+					mipmapSize += currentWidth * currentHeight * bytesPerPixel;
+				}
+			}
+
+			return (baseSize + mipmapSize) / (1024f * 1024f);
 		}
 	}
 }
