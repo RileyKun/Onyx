@@ -8,10 +8,12 @@ namespace Redline.Scripts.Editor {
         private const string Url1 = "https://arch-linux.pro/";
         private const string Link1 = "https://status.arch-linux.pro";
         private static Vector2 _changeLogScroll;
+        private static Vector2 _targetScroll;
         private static GUIStyle _toolkitHeader;
         private static GUIStyle _redlineBottomHeader;
         private static GUIStyle _redlineHeaderLearnMoreButton;
         private static GUIStyle _redlineBottomHeaderLearnMoreButton;
+        private const float ScrollSpeed = 0.1f;
 
         static RedlineInfo() {
             // Ensure that the splash screen displays correctly
@@ -35,7 +37,7 @@ namespace Redline.Scripts.Editor {
 
         public void OnEnable() {
             titleContent = new GUIContent("Redline Info");
-            minSize = new Vector2(400, 720);
+            minSize = new Vector2(500, 720);
 
             _redlineBottomHeader = new GUIStyle();
             _toolkitHeader = new GUIStyle
@@ -56,7 +58,7 @@ namespace Redline.Scripts.Editor {
                 // Original aspect ratio is 1024:217
                 float aspectRatio = 1024f / 217f;
                 // Calculate height based on current window width to maintain aspect ratio
-                float width = EditorGUIUtility.currentViewWidth;
+                float width = position.width;
                 float height = width / aspectRatio;
                 
                 // Draw the banner with calculated height
@@ -66,7 +68,7 @@ namespace Redline.Scripts.Editor {
             SetupButtonStyle();
 
             // Displaying URLs
-            DisplayLinkButton("Redline Ultimate Toolbox", Url);
+            DisplayLinkButton("Redline Package Manager", Url);
             DisplayLinkButton("Arch-Linux.Pro", Url1);
             DisplayLinkButton("Status", Link1);
 
@@ -74,28 +76,48 @@ namespace Redline.Scripts.Editor {
             GUILayout.Label($"Redline Version {RedlineVersionUtility.GetCurrentVersion()}");
             GUILayout.Label("Redline imported correctly if you are seeing this");
 
-            // Changelog ScrollView
-            _changeLogScroll = GUILayout.BeginScrollView(_changeLogScroll, GUILayout.Width(390));
+            // Smooth scrolling implementation
+            _targetScroll = GUILayout.BeginScrollView(_changeLogScroll, GUILayout.Width(position.width));
+            _changeLogScroll = Vector2.Lerp(_changeLogScroll, _targetScroll, ScrollSpeed);
             GUILayout.Label(
                 @"
 == Redline Package Manager ==
 
-Holy crap we're back!
+A powerful VRChat Package Manager for Unity!
+
+---------------------------------------------------------
+∞∞∞∞∞∞∞∞∞∞∞∞Features∞∞∞∞∞∞∞∞∞∞∞∞
+• Manage VRChat packages directly in Unity
+• Import repositories from VCC/ALCOM
+• View and manage package dependencies
+• Track installation history
+• Compare package versions
+• Backup and restore packages
+• Advanced search and filtering
+• Automatic dependency resolution
+• Support for multiple repositories
+• Clean and intuitive interface
 
 ---------------------------------------------------------
 ∞∞∞∞∞∞∞∞∞∞∞∞Information∞∞∞∞∞∞∞∞∞∞∞∞
-This unity kit provides tools and scripts for you
-I am not responsible for misuse of these tools and scripts
-The goal is to become the main package anyone needs
-If you have issues visit the github repository issues tab
-Updates can be done from within unity itself (or manually)
-Bugs/Issues can be reported via github issues
+Redline Package Manager (RPM) is a comprehensive tool for managing
+VRChat packages in Unity. It provides a user-friendly interface for
+installing, updating, and managing packages, with features like
+dependency visualization, version comparison, and installation history.
+
+The package is designed to work seamlessly with VRChat's package
+ecosystem, supporting both official and community repositories.
+It can import repositories from VCC/ALCOM and provides advanced
+features for package management.
+
+For issues, feature requests, or bug reports, please visit our
+GitHub repository. Updates can be installed directly through
+Unity or manually via the package manager.
 
 ---------------------------------------------------------
-∞∞∞∞Contributors to Redline Unity Kit∞∞∞∞
+∞∞∞∞Contributors to Redline Package Manager∞∞∞∞
 > Developer: AromaXR (PhoenixAceVFX)
 > Contributor: RileyKun
-- Contributor: WTFBlaze - Made the old import system
 ============================================
                 ");
             GUILayout.EndScrollView();
@@ -107,11 +129,16 @@ Bugs/Issues can be reported via github issues
             GUILayout.BeginHorizontal();
             EditorPrefs.SetBool("Redline_ShowInfoPanel", GUILayout.Toggle(EditorPrefs.GetBool("Redline_ShowInfoPanel"), "Show at startup"));
             GUILayout.EndHorizontal();
+
+            // Force repaint to update smooth scrolling
+            if (_changeLogScroll != _targetScroll) {
+                Repaint();
+            }
         }
 
         // Helper method to set up button styles
         private void SetupButtonStyle() {
-            _redlineHeaderLearnMoreButton = EditorStyles.miniButton;
+            _redlineHeaderLearnMoreButton = new GUIStyle(EditorStyles.miniButton);
             _redlineHeaderLearnMoreButton.normal.textColor = Color.black;
             _redlineHeaderLearnMoreButton.fontSize = 12;
             _redlineHeaderLearnMoreButton.border = new RectOffset(10, 10, 10, 10);

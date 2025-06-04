@@ -7,6 +7,32 @@
     "dev.redline-team.rpm": {
       "Id": "dev.redline-team.rpm",
       "Versions": {
+        "3.3.2": {
+          "Name": "dev.redline-team.rpm",
+          "DisplayName": "Redline Package Manager",
+          "Version": "3.3.2",
+          "Unity": "2022.3",
+          "Description": "The Unity3D Package Manager for VRChat",
+          "ChangelogUrl": "https://github.com/Redline-Team/RPM/releases",
+          "AuthorName": "The Redline Team",
+          "AuthorUrl": "https://github.com/Redline-Team",
+          "License": null,
+          "ZipSHA256": "1231192bd454c31620ac100ce3ad46f8b54e0f4021f8b3da8927e76715d32326",
+          "Url": "https://github.com/Redline-Team/RPM/releases/download/v3.3.2/Redline_v3.3.2_VPM.zip"
+        },
+        "3.3.1": {
+          "Name": "dev.redline-team.rpm",
+          "DisplayName": "Redline Package Manager",
+          "Version": "3.3.1",
+          "Unity": "2022.3",
+          "Description": "The Unity3D Package Manager for VRChat",
+          "ChangelogUrl": "https://github.com/Redline-Team/RPM/releases",
+          "AuthorName": "The Redline Team",
+          "AuthorUrl": "https://github.com/Redline-Team",
+          "License": null,
+          "ZipSHA256": "8ae62d3d8a3ce79ff3727c68d5a19155807d3608196cb44a125690903a60ebd4",
+          "Url": "https://github.com/Redline-Team/RPM/releases/download/v3.3.1/Redline_v3.3.1_VPM.zip"
+        },
         "3.3.0": {
           "Name": "dev.redline-team.rpm",
           "DisplayName": "Redline Package Manager",
@@ -196,6 +222,32 @@
     "com.poiyomi.toon": {
       "Id": "com.poiyomi.toon",
       "Versions": {
+        "9.2.43": {
+          "Name": "com.poiyomi.toon",
+          "DisplayName": "Poiyomi Toon Shader",
+          "Version": "9.2.43",
+          "Unity": "2019.4",
+          "Description": "Feature-rich shaders for Unity and VRChat.",
+          "ChangelogUrl": null,
+          "AuthorName": "Poiyomi",
+          "AuthorUrl": "https://github.com/poiyomi/PoiyomiToonShader",
+          "License": null,
+          "ZipSHA256": "ce2934354d02b45b999026916aa9780410576ffc81e0fed61d9aa49820b61253",
+          "Url": "https://github.com/poiyomi/PoiyomiToonShader/releases/download/v9.2.43/com.poiyomi.toon-9.2.43.zip"
+        },
+        "9.2.42": {
+          "Name": "com.poiyomi.toon",
+          "DisplayName": "Poiyomi Toon Shader",
+          "Version": "9.2.42",
+          "Unity": "2019.4",
+          "Description": "Feature-rich shaders for Unity and VRChat.",
+          "ChangelogUrl": null,
+          "AuthorName": "Poiyomi",
+          "AuthorUrl": "https://github.com/poiyomi/PoiyomiToonShader",
+          "License": null,
+          "ZipSHA256": "a6a94751bf0b58a42a2422e4476683a4a5b2f5ee448c291963eb480d115c3dd8",
+          "Url": "https://github.com/poiyomi/PoiyomiToonShader/releases/download/v9.2.42/com.poiyomi.toon-9.2.42.zip"
+        },
         "9.2.41": {
           "Name": "com.poiyomi.toon",
           "DisplayName": "Poiyomi Toon Shader",
@@ -1169,6 +1221,32 @@
     "com.github.kurotu.vrc-quest-tools": {
       "Id": "com.github.kurotu.vrc-quest-tools",
       "Versions": {
+        "2.10.0": {
+          "Name": "com.github.kurotu.vrc-quest-tools",
+          "DisplayName": "VRCQuestTools",
+          "Version": "2.10.0",
+          "Unity": "2019.4",
+          "Description": "Editor extension to support uploading VRChat Android avatars",
+          "ChangelogUrl": "https://kurotu.github.io/VRCQuestTools/docs/changelog?lang=auto",
+          "AuthorName": "kurotu",
+          "AuthorUrl": null,
+          "License": null,
+          "ZipSHA256": "11e3bdb290fc4e7a5f32c159ec9d56092e47ed8daa8685b710be6eff4f3bc57e",
+          "Url": "https://github.com/kurotu/VRCQuestTools/releases/download/v2.10.0/com.github.kurotu.vrc-quest-tools-2.10.0.zip"
+        },
+        "2.10.0-beta.5": {
+          "Name": "com.github.kurotu.vrc-quest-tools",
+          "DisplayName": "VRCQuestTools",
+          "Version": "2.10.0-beta.5",
+          "Unity": "2019.4",
+          "Description": "Editor extension to support uploading VRChat Android avatars",
+          "ChangelogUrl": "https://kurotu.github.io/VRCQuestTools/docs/changelog?lang=auto",
+          "AuthorName": "kurotu",
+          "AuthorUrl": null,
+          "License": null,
+          "ZipSHA256": "f6d66ca8a8d19753bd6f37702711fe01cb51f8510461b6f3f30a063f99af7e66",
+          "Url": "https://github.com/kurotu/VRCQuestTools/releases/download/v2.10.0-beta.5/com.github.kurotu.vrc-quest-tools-2.10.0-beta.5.zip"
+        },
         "2.10.0-beta.4": {
           "Name": "com.github.kurotu.vrc-quest-tools",
           "DisplayName": "VRCQuestTools",

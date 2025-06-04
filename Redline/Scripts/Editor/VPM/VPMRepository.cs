@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
+using Redline.Scripts.Editor;
 
 namespace Redline.Editor.VPM
 {
@@ -30,6 +31,98 @@ namespace Redline.Editor.VPM
         public string LocalPath;
 
         /// <summary>
+        /// Gets the path where VPM repositories should be stored
+        /// </summary>
+        private static string GetVPMRepositoriesPath()
+        {
+            string reposPath = RedlineSettings.GetRepositoriesPath();
+            Directory.CreateDirectory(reposPath);
+            return reposPath;
+        }
+
+        /// <summary>
+        /// Gets the path to the marker file that indicates if default repositories have been imported
+        /// </summary>
+        private static string GetDefaultReposMarkerPath()
+        {
+            return Path.Combine(GetVPMRepositoriesPath(), ".default_repos_imported");
+        }
+
+        /// <summary>
+        /// Checks if default repositories have been imported
+        /// </summary>
+        public static bool HaveDefaultRepositoriesBeenImported()
+        {
+            return File.Exists(GetDefaultReposMarkerPath());
+        }
+
+        /// <summary>
+        /// Copies default repositories from the package to the user's repository directory
+        /// </summary>
+        /// <param name="force">If true, will copy repositories even if they've been imported before</param>
+        public static void CopyDefaultRepositories(bool force = false)
+        {
+            // Get the project's root directory
+            string projectPath = Directory.GetParent(Application.dataPath).FullName;
+            string defaultReposPath = Path.Combine(projectPath, RedlineSettings.ProjectConfigPath, "VPM");
+            string userReposPath = GetVPMRepositoriesPath();
+            string markerPath = GetDefaultReposMarkerPath();
+
+            // If we've already imported and not forcing, skip
+            if (!force && HaveDefaultRepositoriesBeenImported())
+            {
+                Debug.Log("Default repositories have already been imported. Use force=true to reimport.");
+                return;
+            }
+
+            if (!Directory.Exists(defaultReposPath))
+            {
+                Debug.LogWarning($"Default repositories path not found: {defaultReposPath}");
+                return;
+            }
+
+            // Create the user's repository directory if it doesn't exist
+            Directory.CreateDirectory(userReposPath);
+
+            bool success = true;
+            // Copy each repository file
+            foreach (string repoFile in Directory.GetFiles(defaultReposPath, "*.json"))
+            {
+                string fileName = Path.GetFileName(repoFile);
+                string targetPath = Path.Combine(userReposPath, fileName);
+
+                // If forcing, we'll overwrite existing files
+                if (force || !File.Exists(targetPath))
+                {
+                    try
+                    {
+                        File.Copy(repoFile, targetPath, force);
+                        Debug.Log($"Copied default repository: {fileName}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"Failed to copy repository {fileName}: {ex.Message}");
+                        success = false;
+                    }
+                }
+            }
+
+            // Only create the marker file if all copies were successful
+            if (success)
+            {
+                try
+                {
+                    File.WriteAllText(markerPath, DateTime.Now.ToString("o"));
+                    Debug.Log("Default repositories imported successfully");
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"Failed to create marker file: {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
         /// Downloads a VPM repository from a URL and saves it to the local VPM directory
         /// </summary>
         /// <param name="url">The URL to download the repository from</param>
@@ -40,8 +133,8 @@ namespace Redline.Editor.VPM
             try
             {
                 // Create the directory if it doesn't exist
-                string vpmDirectory = VPMManager.GetVPMConfigDirectory();
-                Debug.Log($"VPM Directory from Manager: {vpmDirectory}");
+                string vpmDirectory = GetVPMRepositoriesPath();
+                Debug.Log($"VPM Directory: {vpmDirectory}");
                 
                 if (!Directory.Exists(vpmDirectory))
                 {

@@ -35,34 +35,24 @@ namespace Redline.Editor.VPM
         /// <returns>The absolute path to the VPM config directory</returns>
         public static string GetVPMConfigDirectory()
         {
-            // Hardcode the exact path structure to ensure consistency
+            // Get the package path relative to the project root
             string projectPath = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
-            Debug.Log($"Unity project path: {projectPath}");
-            
-            // Always use the same path structure: Packages/dev.redline-team.rpm/Redline/Configs/VPM
             string packagePath = Path.Combine(projectPath, "Packages", "dev.redline-team.rpm");
-            Debug.Log($"Package path: {packagePath}");
             
+            // First try the package path
             string vpmConfigDir = Path.Combine(packagePath, "Redline", "Configs", "VPM");
-            Debug.Log($"VPM config directory: {vpmConfigDir}");
+            
+            // If that doesn't exist, try the Assets path (for development)
+            if (!Directory.Exists(vpmConfigDir))
+            {
+                vpmConfigDir = Path.Combine(Application.dataPath, "Packages", "dev.redline-team.rpm", "Redline", "Configs", "VPM");
+            }
             
             // Ensure the directory exists
             if (!Directory.Exists(vpmConfigDir))
             {
                 Debug.Log($"Creating VPM config directory: {vpmConfigDir}");
                 Directory.CreateDirectory(vpmConfigDir);
-            }
-            else
-            {
-                Debug.Log($"VPM config directory already exists: {vpmConfigDir}");
-                
-                // List files in the directory to verify
-                try {
-                    string[] files = Directory.GetFiles(vpmConfigDir);
-                    Debug.Log($"Files in VPM directory ({files.Length}): {string.Join(", ", files)}");
-                } catch (Exception ex) {
-                    Debug.LogError($"Error listing files: {ex.Message}");
-                }
             }
             
             return vpmConfigDir;
@@ -89,6 +79,19 @@ namespace Redline.Editor.VPM
                 Directory.CreateDirectory(tempDir);
             }
             return tempDir;
+        }
+
+        /// <summary>
+        /// Gets the directory where package backups are stored
+        /// </summary>
+        private static string GetBackupDirectory()
+        {
+            string backupDir = Path.Combine(Application.dataPath, "..", "Packages", "VPM_Backups");
+            if (!Directory.Exists(backupDir))
+            {
+                Directory.CreateDirectory(backupDir);
+            }
+            return backupDir;
         }
 
         /// <summary>
@@ -573,7 +576,10 @@ namespace Redline.Editor.VPM
                 onComplete?.Invoke(false);
                 return false;
             }
-            
+
+            // Create backup before installation
+            BackupPackage(packageVersion.Name);
+
             // Handle VRChat package special cases
             if (packageVersion.Name == "com.vrchat.avatars" || packageVersion.Name == "com.vrchat.worlds")
             {
@@ -700,6 +706,69 @@ namespace Redline.Editor.VPM
             {
                 Debug.LogError($"Failed to install package: {e.Message}");
                 onComplete?.Invoke(false);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Creates a backup of a package before installation
+        /// </summary>
+        private static void BackupPackage(string packageName)
+        {
+            string packagesDir = GetPackagesDirectory();
+            string packageDir = Path.Combine(packagesDir, packageName);
+            string backupDir = GetBackupDirectory();
+            string backupPath = Path.Combine(backupDir, $"{packageName}_{DateTime.Now:yyyyMMdd_HHmmss}");
+
+            if (Directory.Exists(packageDir))
+            {
+                try
+                {
+                    DirectoryCopy(packageDir, backupPath, true);
+                    Debug.Log($"Created backup of {packageName} at {backupPath}");
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Failed to create backup of {packageName}: {e.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Restores a package from the most recent backup
+        /// </summary>
+        public static bool RestorePackageFromBackup(string packageName)
+        {
+            string backupDir = GetBackupDirectory();
+            string packagesDir = GetPackagesDirectory();
+            string packageDir = Path.Combine(packagesDir, packageName);
+
+            // Find the most recent backup
+            string[] backups = Directory.GetDirectories(backupDir, $"{packageName}_*");
+            if (backups.Length == 0)
+            {
+                Debug.LogError($"No backups found for {packageName}");
+                return false;
+            }
+
+            string latestBackup = backups.OrderByDescending(d => d).First();
+
+            try
+            {
+                // Remove current package if it exists
+                if (Directory.Exists(packageDir))
+                {
+                    Directory.Delete(packageDir, true);
+                }
+
+                // Restore from backup
+                DirectoryCopy(latestBackup, packageDir, true);
+                Debug.Log($"Restored {packageName} from backup {latestBackup}");
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to restore {packageName} from backup: {e.Message}");
                 return false;
             }
         }

@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Redline.Scripts.Editor.DiscordRPC.Editor;
+using Redline.Editor.VPM;
 
 namespace Redline.Scripts.Editor {
     public class RedlineSettings : EditorWindow {
@@ -11,13 +12,12 @@ namespace Redline.Scripts.Editor {
         private const string Url1 = "https://arch-linux.pro/";
 
         public const string ProjectConfigPath = "Packages/dev.redline-team.rpm/Redline/Configs/";
-        private const string BackgroundConfig = "BackgroundVideo.txt";
         private const string ProjectDownloadPath = "Packages/dev.redline-team.rpm/Redline/Assets/";
 
         private static GUIStyle _toolkitHeader;
 
         [MenuItem("Redline/Settings", false, 501)]
-        private static void Init() {
+        public static void Init() {
             var window = (RedlineSettings)GetWindow(typeof(RedlineSettings));
             window.Show();
         }
@@ -32,7 +32,7 @@ namespace Redline.Scripts.Editor {
                 "Redline"
             );
 
-            var assetPath = EditorPrefs.GetString("Redline_customAssetPath", defaultPath);
+            var assetPath = EditorPrefs.GetString("RedlineDirectory", defaultPath);
 
             // Ensure the path ends with a directory separator
             if (!assetPath.EndsWith(Path.DirectorySeparatorChar.ToString())) {
@@ -41,6 +41,13 @@ namespace Redline.Scripts.Editor {
 
             Directory.CreateDirectory(assetPath);
             return assetPath;
+        }
+
+        /// <summary>
+        /// Gets the path where VPM repositories should be stored
+        /// </summary>
+        public static string GetRepositoriesPath() {
+            return Path.Combine(GetAssetPath(), "Repos");
         }
 
         public void OnEnable() {
@@ -61,9 +68,8 @@ namespace Redline.Scripts.Editor {
                 EditorPrefs.SetBool("RedlineDiscordRPC", true);
             }
 
-            if (!File.Exists(ProjectConfigPath + BackgroundConfig) || EditorPrefs.HasKey("Redline_background")) return;
-            EditorPrefs.SetBool("Redline_background", false);
-            File.WriteAllText(ProjectConfigPath + BackgroundConfig, "False");
+            // Copy default repositories to user's directory
+            VPMRepository.CopyDefaultRepositories();
         }
 
         public void OnGUI() {
@@ -86,10 +92,8 @@ namespace Redline.Scripts.Editor {
             DisplayLinks();
             DisplayRedlineSettings();
             DisplayConsoleSettings();
-            DisplayBackgroundSettings();
             DisplayAssetPathSettings();
         }
-
 
         private static void DisplayLinks() {
             GUILayout.BeginHorizontal();
@@ -243,32 +247,9 @@ namespace Redline.Scripts.Editor {
             GUILayout.EndHorizontal();
         }
 
-        private static void DisplayBackgroundSettings() {
+        private void DisplayAssetPathSettings() {
             GUILayout.Space(4);
-            GUILayout.Label("Upload panel:");
-            GUILayout.BeginHorizontal();
-            var isBackgroundEnabled = EditorPrefs.GetBool("Redline_background", false);
-            var enableBackground = EditorGUILayout.ToggleLeft("Custom background", isBackgroundEnabled);
-            if (enableBackground != isBackgroundEnabled) {
-                EditorPrefs.SetBool("Redline_background", enableBackground);
-                File.WriteAllText(ProjectConfigPath + BackgroundConfig, enableBackground.ToString());
-            }
-            GUILayout.EndHorizontal();
-        }
-
-        private static void DisplayAssetPathSettings() {
-            GUILayout.Space(4);
-            GUILayout.Label("Import panel:");
-            GUILayout.BeginHorizontal();
-            var isOnlyProjectEnabled = EditorPrefs.GetBool("Redline_onlyProject", false);
-            var enableOnlyProject = EditorGUILayout.ToggleLeft("Save files only in project", isOnlyProjectEnabled);
-            if (enableOnlyProject != isOnlyProjectEnabled) {
-                EditorPrefs.SetBool("Redline_onlyProject", enableOnlyProject);
-            }
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(4);
-            GUILayout.Label("Asset path:");
+            GUILayout.Label("Redline Workspace:");
             GUILayout.BeginHorizontal();
             var defaultPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -276,11 +257,11 @@ namespace Redline.Scripts.Editor {
             );
             var customAssetPath = EditorGUILayout.TextField(
                 "",
-                EditorPrefs.GetString("Redline_customAssetPath", defaultPath)
+                EditorPrefs.GetString("RedlineDirectory", defaultPath)
             );
 
             if (GUILayout.Button("Choose", GUILayout.Width(60))) {
-                var path = EditorUtility.OpenFolderPanel("Asset download folder",
+                var path = EditorUtility.OpenFolderPanel("Select Redline Workspace",
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Redline");
                 if (!string.IsNullOrEmpty(path)) {
                     customAssetPath = path;
@@ -291,8 +272,8 @@ namespace Redline.Scripts.Editor {
                 customAssetPath = defaultPath;
             }
 
-            if (EditorPrefs.GetString("Redline_customAssetPath", defaultPath) != customAssetPath) {
-                EditorPrefs.SetString("Redline_customAssetPath", customAssetPath);
+            if (EditorPrefs.GetString("RedlineDirectory", defaultPath) != customAssetPath) {
+                EditorPrefs.SetString("RedlineDirectory", customAssetPath);
             }
             GUILayout.EndHorizontal();
         }

@@ -7,6 +7,19 @@
     "com.vrcfury.vrcfury": {
       "Id": "com.vrcfury.vrcfury",
       "Versions": {
+        "1.1230.0": {
+          "Name": "com.vrcfury.vrcfury",
+          "DisplayName": "VRCFury",
+          "Version": "1.1230.0",
+          "Unity": "2019.4",
+          "Description": "Non-Destructive Tools for VRChat Avatars",
+          "ChangelogUrl": null,
+          "AuthorName": "VRCFury",
+          "AuthorUrl": null,
+          "License": null,
+          "ZipSHA256": null,
+          "Url": "https://vcc.vrcfury.com/download/1.1230.0"
+        },
         "1.1229.0": {
           "Name": "com.vrcfury.vrcfury",
           "DisplayName": "VRCFury",

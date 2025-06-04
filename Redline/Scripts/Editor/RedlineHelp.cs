@@ -7,10 +7,5 @@ namespace Redline.Scripts.Editor {
         public static void OpenDiscordLink() {
             Application.OpenURL("https://github.com/Redline-Team");
         }
-
-        [MenuItem("Redline/Update Importer Config", false, 1000)]
-        public static void ForceUpdateConfigs() {
-            RedlineImportManager.UpdateConfig();
-        }
     }
 }

@@ -1,12 +1,21 @@
 <div align="center">
 
-> **⚠️ WARNING: V3 is not backwards compatible with V2 ⚠️**  
-> You may have to manually remove the old package folder (`dev.runaxr.redline`) to import this update.  
-> We have attempted to automate this process but cannot guarantee it will work in all cases.
+<details>
+<summary><b>⚠️ WARNING: V4 is not backwards compatible with V3 ⚠️</b></summary>
+
+This version removes deprecated features and introduces breaking changes.
+</details>
+
+<details>
+<summary><b>⚠️ WARNING: V3 is not backwards compatible with V2 ⚠️</b></summary>
+
+You may have to manually remove the old package folder (`dev.runaxr.redline`) to import this update.  
+We have attempted to automate this process but cannot guarantee it will work in all cases.
+</details>
 
 <img src="RPMBanner.png" width="500" alt="Redline Package Manager">
 
-<img src="CurrentRelease.png" width="650" />
+<img src="hyprupld-20250603-204712.png" width="650" />
 
 ### A proper in-engine alternative to the VRChat Creator Companion and ALCOM
 
@@ -23,12 +32,50 @@ Redline Package Manager (RPM) is a powerful Unity editor extension designed to s
 
 ### ✨ Key Features
 
-- **In-Engine Package Management** - Browse, download, and manage packages without leaving Unity
-- **VCC/ALCOM Integration** - Seamlessly import your existing VRChat Creator Companion or ALCOM repositories with one click
-- **Autosave System** - Configurable automatic saving to prevent work loss
-- **Memory Management** - Multiple presets to optimize Unity's memory usage with custom limit support
-- **Automatic Updates** - Built-in update checker to keep your tools current
-- **Open Source** - Full source code available under GPL-3.0 license
+<details>
+<summary><b>In-Engine Package Management</b></summary>
+
+- Browse, download, and manage packages without leaving Unity
+- Seamlessly import your existing VRChat Creator Companion or ALCOM repositories
+</details>
+
+<details>
+<summary><b>Advanced Package Features</b></summary>
+
+- Dependency visualization and management
+- Version comparison tool
+- Installation history tracking
+- Package backup and restore
+- Advanced search and filtering
+- Automatic dependency resolution
+</details>
+
+<details>
+<summary><b>Smart Package Handling</b></summary>
+
+- Automatic handling of VRChat SDK dependencies
+- Smart management of package temp folders
+- Intelligent package removal with dependency checks
+</details>
+
+<details>
+<summary><b>Repository Management</b></summary>
+
+- Support for multiple repositories
+- Repository grouping and organization
+- Easy repository import from VCC/ALCOM
+- Default repository management
+</details>
+
+<details>
+<summary><b>User Interface</b></summary>
+
+- Clean and intuitive interface
+- Package comparison view
+- Dependency graph visualization
+- Installation history view
+- Advanced filtering options
+</details>
 
 ## 📥 Installation
 
@@ -44,12 +91,10 @@ Redline Package Manager (RPM) is a powerful Unity editor extension designed to s
 Add our repository to VCC or ALCOM using this URL:
 - `https://rlist.arch-linux.pro/index.json`
 
-### Development Builds
+### Automatic Builds
 
 We offer automatically built bleeding-edge packages for testing new features:
-> ⚠️ **Warning**: Development builds may contain bugs or unstable features
-
-
+> ⚠️ **Warning**: Automatic builds may contain bugs or unstable features
 
 ## 🔧 System Requirements
 
