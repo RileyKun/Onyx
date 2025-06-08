@@ -1,7 +1,7 @@
 <div align="center">
 
 <details>
-<summary><b>⚠️ WARNING: V4 is not backwards compatible with V3 ⚠️</b></summary>
+<summary><b>⚠️ WARNING: V4 is not backwards compatible with V3 OR V2⚠️</b></summary>
 
 This version removes deprecated features and introduces breaking changes.
 </details>
