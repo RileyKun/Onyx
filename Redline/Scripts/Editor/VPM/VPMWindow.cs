@@ -221,7 +221,7 @@ namespace Redline.Editor.VPM
             }
         }
 
-        private void DrawToolbar()
+        private async void DrawToolbar()
         {
             // Draw the Redline banner at the top with dynamic height to maintain aspect ratio
             if (_bannerStyle != null && _bannerStyle.normal.background != null)
@@ -262,7 +262,7 @@ namespace Redline.Editor.VPM
             // Sync VPM-Manifest versions
             if (GUILayout.Button("Sync Manifest", EditorStyles.toolbarButton, GUILayout.Width(100)))
             {
-                ScanManifestAsync();
+                await ScanManifestAsync();
             }
 
             // Add settings button

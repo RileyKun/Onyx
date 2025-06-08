@@ -330,11 +330,8 @@ namespace Redline.Scripts.Editor {
         EditorSceneManager.SaveScene(currentScene, autoSavePath, true);
         Debug.Log($"Scene autosaved to: {autoSavePath}");
         
-        // Show notification
-        EditorApplication.Beep();
-        EditorUtility.DisplayDialog("Scene Autosaved", 
-          $"Your scene has been autosaved to:\n{autoSavePath}", 
-          "OK");
+        // Do not use dialogs again Aroma, this is all we need
+        Debug.Log($"[Redline Autosave] Scene has been automatically saved to: {autoSavePath}");
         
         // Clean up old autosaves
         CleanupOldAutosaves(directory, fileName);
