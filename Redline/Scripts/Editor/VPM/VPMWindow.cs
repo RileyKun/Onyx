@@ -1098,30 +1098,101 @@ namespace Redline.Editor.VPM
                         return 0;
                     });
                 }
+
+                // Check if Compacted Overflow Fix is enabled
+                bool compactedOverflowFix = EditorPrefs.GetBool("Redline_CompactedOverflowFix", true);
                 
-                foreach (VPMRepository repo in sortedRepos)
+                if (compactedOverflowFix && _selectedRepositoryGroup == "Community")
                 {
-                    string subtabLabel = GetSubtabLabel(repo);
-                    float buttonWidth = EditorStyles.toolbarButton.CalcSize(new GUIContent(subtabLabel)).x;
+                    // Calculate how many rows we would need
+                    int rowCount = 1;
+                    float currentRowWidth = 0;
                     
-                    // If adding this button would exceed the window width, start a new line
-                    if (currentLineWidth + buttonWidth > windowWidth - 20) // 20px margin
+                    foreach (VPMRepository repo in sortedRepos)
                     {
-                        EditorGUILayout.EndHorizontal();
-                        EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-                        currentLineWidth = 0;
-                    }
-                    
-                    // Draw the subtab
-                    bool selected = GUILayout.Toggle(_selectedRepositoryId == repo.Id, 
-                        subtabLabel, EditorStyles.toolbarButton);
+                        string subtabLabel = GetSubtabLabel(repo);
+                        float buttonWidth = EditorStyles.toolbarButton.CalcSize(new GUIContent(subtabLabel)).x;
                         
-                    if (selected && _selectedRepositoryId != repo.Id)
-                    {
-                        _selectedRepositoryId = repo.Id;
+                        if (currentRowWidth + buttonWidth > windowWidth - 20) // 20px margin
+                        {
+                            rowCount++;
+                            currentRowWidth = buttonWidth;
+                        }
+                        else
+                        {
+                            currentRowWidth += buttonWidth;
+                        }
                     }
                     
-                    currentLineWidth += buttonWidth;
+                    // If more than 4 rows would be needed, use a dropdown
+                    if (rowCount > 4)
+                    {
+                        // Create a list of repository names for the dropdown
+                        string[] repoNames = sortedRepos.Select(repo => GetSubtabLabel(repo)).ToArray();
+                        
+                        // Find the index of the currently selected repository
+                        int selectedIndex = sortedRepos.FindIndex(repo => repo.Id == _selectedRepositoryId);
+                        if (selectedIndex < 0) selectedIndex = 0;
+                        
+                        // Draw the dropdown
+                        int newSelectedIndex = EditorGUILayout.Popup(selectedIndex, repoNames, EditorStyles.toolbarDropDown);
+                        if (newSelectedIndex != selectedIndex)
+                        {
+                            _selectedRepositoryId = sortedRepos[newSelectedIndex].Id;
+                        }
+                    }
+                    else
+                    {
+                        // Draw normal tabs if 4 or fewer rows
+                        foreach (VPMRepository repo in sortedRepos)
+                        {
+                            string subtabLabel = GetSubtabLabel(repo);
+                            float buttonWidth = EditorStyles.toolbarButton.CalcSize(new GUIContent(subtabLabel)).x;
+                            
+                            if (currentLineWidth + buttonWidth > windowWidth - 20) // 20px margin
+                            {
+                                EditorGUILayout.EndHorizontal();
+                                EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+                                currentLineWidth = 0;
+                            }
+                            
+                            bool selected = GUILayout.Toggle(_selectedRepositoryId == repo.Id, 
+                                subtabLabel, EditorStyles.toolbarButton);
+                                
+                            if (selected && _selectedRepositoryId != repo.Id)
+                            {
+                                _selectedRepositoryId = repo.Id;
+                            }
+                            
+                            currentLineWidth += buttonWidth;
+                        }
+                    }
+                }
+                else
+                {
+                    // Draw normal tabs for VRC group or when Compacted Overflow Fix is disabled
+                    foreach (VPMRepository repo in sortedRepos)
+                    {
+                        string subtabLabel = GetSubtabLabel(repo);
+                        float buttonWidth = EditorStyles.toolbarButton.CalcSize(new GUIContent(subtabLabel)).x;
+                        
+                        if (currentLineWidth + buttonWidth > windowWidth - 20) // 20px margin
+                        {
+                            EditorGUILayout.EndHorizontal();
+                            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+                            currentLineWidth = 0;
+                        }
+                        
+                        bool selected = GUILayout.Toggle(_selectedRepositoryId == repo.Id, 
+                            subtabLabel, EditorStyles.toolbarButton);
+                            
+                        if (selected && _selectedRepositoryId != repo.Id)
+                        {
+                            _selectedRepositoryId = repo.Id;
+                        }
+                        
+                        currentLineWidth += buttonWidth;
+                    }
                 }
                 
                 EditorGUILayout.EndHorizontal();

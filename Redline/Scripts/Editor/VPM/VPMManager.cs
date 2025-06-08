@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using Newtonsoft.Json.Linq;
+using Redline.Scripts.Editor;
 
 namespace Redline.Editor.VPM
 {
@@ -35,18 +36,7 @@ namespace Redline.Editor.VPM
         /// <returns>The absolute path to the VPM config directory</returns>
         public static string GetVPMConfigDirectory()
         {
-            // Get the package path relative to the project root
-            string projectPath = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
-            string packagePath = Path.Combine(projectPath, "Packages", "dev.redline-team.rpm");
-            
-            // First try the package path
-            string vpmConfigDir = Path.Combine(packagePath, "Redline", "Configs", "VPM");
-            
-            // If that doesn't exist, try the Assets path (for development)
-            if (!Directory.Exists(vpmConfigDir))
-            {
-                vpmConfigDir = Path.Combine(Application.dataPath, "Packages", "dev.redline-team.rpm", "Redline", "Configs", "VPM");
-            }
+            string vpmConfigDir = RedlineSettings.GetRepositoriesPath();
             
             // Ensure the directory exists
             if (!Directory.Exists(vpmConfigDir))

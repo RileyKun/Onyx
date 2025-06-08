@@ -117,6 +117,16 @@ namespace Redline.Scripts.Editor {
 
             EditorGUI.BeginChangeCheck();
             
+            // Compacted Overflow Fix Toggle
+            GUILayout.BeginHorizontal();
+            var isCompactedOverflowEnabled = EditorPrefs.GetBool("Redline_CompactedOverflowFix", true);
+            var enableCompactedOverflow = EditorGUILayout.ToggleLeft("Compacted Overflow Fix", isCompactedOverflowEnabled);
+            if (enableCompactedOverflow != isCompactedOverflowEnabled) {
+                EditorPrefs.SetBool("Redline_CompactedOverflowFix", enableCompactedOverflow);
+            }
+            GUILayout.EndHorizontal();
+            EditorGUILayout.HelpBox("When enabled, repositories in the Community tab will be compacted into a dropdown if there are more than 4 rows.", MessageType.Info);
+            
             // Discord RPC Toggle
             GUILayout.BeginHorizontal();
             var isDiscordRpcEnabled = EditorPrefs.GetBool("RedlineDiscordRPC", true);
