@@ -60,37 +60,14 @@ jobs:
           field: unityPackage
           value: 'https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.prop }}/${{ env.unityPackage }}'
           
-      - name: Create directory structure
+      - name: Prepare Files
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
         run: |
-          mkdir -p temp/${{ env.packagePath }}
-          cp -r UnityPackage/* temp/${{ env.packagePath }}/
-          
-      - name: Create Zip
-        if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
-        run: |
-          cd temp
+          cd UnityPackage
+          # Create meta file list
+          find . -type f -name "*.meta" > ../metaList
+          # Create zip
           zip -r ../${{env.zipFile}} . -x "*.git*" "*.github*" ".gitignore"
-          cd ..
-          
-      - name: Prepare Meta Files
-        if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
-        run: |
-          cd temp
-          find . -type f -name "*.meta" -exec echo {} \; > ../metaList
-          cd ..
-          
-      - name: Verify Meta Files
-        if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
-        run: |
-          cd temp
-          cat ../metaList | while read file; do
-            if [ -f "$file" ]; then
-              echo "Found meta file: $file"
-            else
-              echo "Warning: Meta file not found: $file"
-            fi
-          done
           cd ..
           
       - name: Create UnityPackage
@@ -113,7 +90,6 @@ jobs:
       - name: Cleanup
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
         run: |
-          rm -rf temp
           rm metaList
         
       - name: Make Release
