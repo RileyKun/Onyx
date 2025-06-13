@@ -1,24 +1,26 @@
 <div align="center">
 
 <details>
-<summary><b>⚠️ WARNING: V5 is not backwards compatible with V4, V3 or V2 ⚠️</b></summary>
+<summary><b>⚠️ WARNING: Major Redline Versions are NOT backwards compatible ⚠️</b></summary>
+<details>
+<summary><b>⚠️ V5 Release ⚠️</b></summary>
 
 This version features a complete reconstruction of the project organization, making it incompatible with previous versions.
 </details>
 
 <details>
-<summary><b>⚠️ WARNING: V4 is not backwards compatible with V3 or V2 ⚠️</b></summary>
+<summary><b>⚠️ V4 Release ⚠️</b></summary>
 
 This version removes deprecated features and introduces breaking changes.
 </details>
 
 <details>
-<summary><b>⚠️ WARNING: V3 is not backwards compatible with V2 ⚠️</b></summary>
+<summary><b>⚠️ V3 Release ⚠️</b></summary>
 
 You may have to manually remove the old package folder (`dev.runaxr.redline`) to import this update.  
 We have attempted to automate this process but cannot guarantee it will work in all cases.
 </details>
-
+</details>
 <img src="RPMBanner.png" width="500" alt="Redline Package Manager">
 
 <img src="PreviewImages/MainPreview.png" width="650" />
