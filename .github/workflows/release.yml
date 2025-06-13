@@ -65,18 +65,23 @@ jobs:
         run: |
           mkdir -p temp/${{ env.packagePath }}
           cp -r UnityPackage/* temp/${{ env.packagePath }}/
+          cd temp
+          find . -name "*.meta" > ../metaList
+          cd ..
           
       - name: Create Zip
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
         run: |
           cd temp
           zip -r ../${{env.zipFile}} . -x "*.git*" "*.github*" ".gitignore"
+          cd ..
           
-      - name: Find Meta Files
+      - name: Update Meta List
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
         run: |
           cd temp
           find . -name "*.meta" > ../metaList
+          cd ..
           
       - name: Create UnityPackage
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
