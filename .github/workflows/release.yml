@@ -18,19 +18,19 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: UnityPackage
     steps:
     
       - name: Checkout
         uses: actions/checkout@v3
+        
+      - name: Change to UnityPackage Directory
+        run: cd UnityPackage
     
       - name: Get Version
         id: version
         uses: zoexx/github-action-json-file-properties@b9f36ce6ee6fe2680cd3c32b2c62e22eade7e590
         with: 
-            file_path: "package.json"
+            file_path: "UnityPackage/package.json"
             prop_path: "version"
       
       - name: Generate Tag
@@ -52,40 +52,42 @@ jobs:
       - name: Set ZIP Url
         uses: jossef/action-set-json-field@v2.1
         with:
-          file: package.json
+          file: UnityPackage/package.json
           field: url
           value: 'https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.prop }}/${{ env.zipFile }}'
           
       - name: Set UnityPackage Url
         uses: jossef/action-set-json-field@v2.1
         with:
-          file: package.json
+          file: UnityPackage/package.json
           field: unityPackage
           value: 'https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.prop }}/${{ env.unityPackage }}'
           
       - name: Create Meta List
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
         run: |
+          cd UnityPackage
           find . -type f -name "*.meta" > ../metaList
           
       - name: Create Zip
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
         run: |
+          cd UnityPackage
           zip -r ../${{env.zipFile}} . -x "*.git*" "*.github*" ".gitignore"
           
       - name: Create UnityPackage
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
         uses: pCYSl5EDgo/create-unitypackage@cfcd3cf0391a5ef1306342794866a9897c32af0b
         with:
-          package-path: ../${{ env.unityPackage }}
-          include-files: ../metaList
+          package-path: ${{ env.unityPackage }}
+          include-files: metaList
           
       - name: Add Icon to UnityPackage
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
         uses: foxscore/add-icon-to-unitypackage@v1
         with:
-          package_path: ../${{ env.unityPackage }}
-          icon_path: '../.github/thumbnail.png'
+          package_path: ${{ env.unityPackage }}
+          icon_path: '.github/thumbnail.png'
           package_not_found_behavior: 'warn'
           icon_not_found_behavior: 'warn'
           icon_already_present_behavior: 'warn'
@@ -93,7 +95,7 @@ jobs:
       - name: Cleanup
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
         run: |
-          rm ../metaList
+          rm metaList
         
       - name: Make Release
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
@@ -102,5 +104,5 @@ jobs:
           name: "${{ env.packageReleaseName }} v${{ steps.version.outputs.value }}"
           tag_name: "v${{ steps.version.outputs.value }}"
           files: |
-            ../${{ env.zipFile }}
-            ../${{ env.unityPackage }}
+            ${{ env.zipFile }}
+            ${{ env.unityPackage }}
