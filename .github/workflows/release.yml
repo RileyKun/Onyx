@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: main
-    paths: package.json
+    paths: UnityPackage/package.json
 
 env:
   packageName: "dev.redline-team.rpm"
@@ -27,7 +27,7 @@ jobs:
         id: version
         uses: zoexx/github-action-json-file-properties@b9f36ce6ee6fe2680cd3c32b2c62e22eade7e590
         with: 
-            file_path: "./package.json"
+            file_path: "./UnityPackage/package.json"
             prop_path: "version"
       
       - name: Generate Tag
@@ -49,14 +49,14 @@ jobs:
       - name: Set ZIP Url
         uses: jossef/action-set-json-field@v2.1
         with:
-          file: ./package.json
+          file: ./UnityPackage/package.json
           field: url
           value: 'https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.prop }}/${{ env.zipFile }}'
           
       - name: Set UnityPackage Url
         uses: jossef/action-set-json-field@v2.1
         with:
-          file: ./package.json
+          file: ./UnityPackage/package.json
           field: unityPackage
           value: 'https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.prop }}/${{ env.unityPackage }}'
           
