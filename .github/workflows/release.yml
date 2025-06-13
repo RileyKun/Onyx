@@ -65,9 +65,6 @@ jobs:
         run: |
           mkdir -p temp/${{ env.packagePath }}
           cp -r UnityPackage/* temp/${{ env.packagePath }}/
-          cd temp
-          find . -name "*.meta" > ../metaList
-          cd ..
           
       - name: Create Zip
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
@@ -76,11 +73,24 @@ jobs:
           zip -r ../${{env.zipFile}} . -x "*.git*" "*.github*" ".gitignore"
           cd ..
           
-      - name: Update Meta List
+      - name: Prepare Meta Files
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
         run: |
           cd temp
-          find . -name "*.meta" > ../metaList
+          find . -type f -name "*.meta" -exec echo {} \; > ../metaList
+          cd ..
+          
+      - name: Verify Meta Files
+        if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
+        run: |
+          cd temp
+          cat ../metaList | while read file; do
+            if [ -f "$file" ]; then
+              echo "Found meta file: $file"
+            else
+              echo "Warning: Meta file not found: $file"
+            fi
+          done
           cd ..
           
       - name: Create UnityPackage
