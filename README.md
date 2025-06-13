@@ -164,7 +164,7 @@ Add our repository to VCC or ALCOM using this URL:
 ### Automatic Builds
 
 We offer automatically built packages for easy releasing:
-> ⚠️ **Warning**: Automatic builds only happen with version revisions
+> ⚠️ **Warning**: Automatic builds only happen with version revisions  
 > 🔧 This means that what is on the repo is what is on releases
 
 ## 🔧 System Requirements
