@@ -1,0 +1,15 @@
+{
+  "name": "dev.redline-team.rpm",
+  "version": "5.0.0",
+  "description": "The Unity3D Package Manager for VRChat",
+  "displayName": "Redline Package Manager",
+  "unity": "2022.3",
+  "author": {
+    "name": "The Redline Team",
+    "url": "https://github.com/Redline-Team"
+  },
+  "changelogUrl": "https://github.com/Redline-Team/RPM/releases",
+  "license": "GPL-3.0",
+  "type": "Tool",
+  "vpmDependencies": {}
+}

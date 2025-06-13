@@ -1,7 +1,13 @@
 <div align="center">
 
 <details>
-<summary><b>⚠️ WARNING: V4 is not backwards compatible with V3 OR V2⚠️</b></summary>
+<summary><b>⚠️ WARNING: V5 is not backwards compatible with V4, V3 or V2 ⚠️</b></summary>
+
+This version features a complete reconstruction of the project organization, making it incompatible with previous versions.
+</details>
+
+<details>
+<summary><b>⚠️ WARNING: V4 is not backwards compatible with V3 or V2 ⚠️</b></summary>
 
 This version removes deprecated features and introduces breaking changes.
 </details>
@@ -15,7 +21,44 @@ We have attempted to automate this process but cannot guarantee it will work in 
 
 <img src="RPMBanner.png" width="500" alt="Redline Package Manager">
 
-<img src="hyprupld-20250603-204712.png" width="650" />
+<img src="PreviewImages/MainPreview.png" width="650" />
+
+<details>
+<summary><b>📸 Additional Preview Images</b></summary>
+
+<div align="center">
+  <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+    <div style="flex: 1 1 45%; max-width: 45%; padding: 10px;">
+      <img src="PreviewImages/Repositories.png" width="100%" />
+      <h4>Repositories View</h4>
+    </div>
+    <div style="flex: 1 1 45%; max-width: 45%; padding: 10px;">
+      <img src="PreviewImages/Repo Catalog.png" width="100%" />
+      <h4>Repository Catalog</h4>
+    </div>
+    <div style="flex: 1 1 45%; max-width: 45%; padding: 10px;">
+      <img src="PreviewImages/Packages Subtab.png" width="100%" />
+      <h4>Packages Subtab</h4>
+    </div>
+    <div style="flex: 1 1 45%; max-width: 45%; padding: 10px;">
+      <img src="PreviewImages/Installed.png" width="100%" />
+      <h4>Installed Packages</h4>
+    </div>
+    <div style="flex: 1 1 45%; max-width: 45%; padding: 10px;">
+      <img src="PreviewImages/Settings.png" width="100%" />
+      <h4>Settings Panel</h4>
+    </div>
+    <div style="flex: 1 1 45%; max-width: 45%; padding: 10px;">
+      <img src="PreviewImages/Autosaver.png" width="100%" />
+      <h4>Autosave Settings</h4>
+    </div>
+    <div style="flex: 1 1 45%; max-width: 45%; padding: 10px;">
+      <img src="PreviewImages/MemoryMaster.png" width="100%" />
+      <h4>Memory Master Tool</h4>
+    </div>
+  </div>
+</div>
+</details>
 
 ### A proper in-engine alternative to the VRChat Creator Companion and ALCOM
 
@@ -37,6 +80,10 @@ Redline Package Manager (RPM) is a powerful Unity editor extension designed to s
 
 - Browse, download, and manage packages without leaving Unity
 - Seamlessly import your existing VRChat Creator Companion or ALCOM repositories
+- Support for multiple repositories and repository grouping
+- Easy repository import from VCC/ALCOM
+- Default repository management
+- Compacted Overflow Fix for organized community repositories
 </details>
 
 <details>
@@ -48,23 +95,43 @@ Redline Package Manager (RPM) is a powerful Unity editor extension designed to s
 - Package backup and restore
 - Advanced search and filtering
 - Automatic dependency resolution
-</details>
-
-<details>
-<summary><b>Smart Package Handling</b></summary>
-
-- Automatic handling of VRChat SDK dependencies
-- Smart management of package temp folders
 - Intelligent package removal with dependency checks
+- Smart management of package temp folders
 </details>
 
 <details>
-<summary><b>Repository Management</b></summary>
+<summary><b>Scene Autosave</b></summary>
 
-- Support for multiple repositories
-- Repository grouping and organization
-- Easy repository import from VCC/ALCOM
-- Default repository management
+- Configurable autosave intervals and prefixes
+- Save on Play and Save on Compile options
+- Multiple backup strategies: Rotating, Incremental, Timestamped, Hybrid
+- Scene-specific settings and custom save triggers
+- Exclude specific scenes from autosave
+- Option to save all open scenes
+- Compress saves and save metadata options
+- Notifications and save history timeline
+- Restore from autosave functionality
+</details>
+
+<details>
+<summary><b>Memory Master Tool</b></summary>
+
+- Comprehensive memory monitoring (current, peak, system RAM, swap)
+- Manual and timer-based automatic memory cleanup
+- Configurable memory thresholds and presets (e.g., Low End, High End, Auto)
+- Visual memory usage graph
+- Object pool statistics
+- Texture management with automatic optimization (compression, resizing)
+- GC Collection history
+- Memory allocation patterns (for leak detection)
+- Asset Bundle management (tracking and unloading unused bundles)
+</details>
+
+<details>
+<summary><b>Discord Rich Presence Integration</b></summary>
+
+- Display your Unity Editor activity in Discord
+- Customizable RPC states
 </details>
 
 <details>
@@ -75,6 +142,7 @@ Redline Package Manager (RPM) is a powerful Unity editor extension designed to s
 - Dependency graph visualization
 - Installation history view
 - Advanced filtering options
+- Repository Catalog for browsing available repositories
 </details>
 
 ## 📥 Installation

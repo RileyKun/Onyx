@@ -1,0 +1,22 @@
+{
+    "name": "dev.redline-team.rpm.Editor",
+    "rootNamespace": "Redline.Editor",
+    "references": [
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:4f7b2136b33a6914a9d8c0e3e27a0d8e8",
+        "GUID:7c9e87ebacd3a4f4d8b81a5a8a8b8b8b"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_EDITOR"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+} 

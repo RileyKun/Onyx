@@ -1,4 +1,4 @@
-name: Build Bleeding Edge
+name: Build Release
 
 on: 
   workflow_dispatch:
@@ -10,7 +10,7 @@ env:
   packageName: "dev.redline-team.rpm"
   packagePath: "Packages/dev.redline-team.rpm"
   packageFileName: "Redline"
-  packageReleaseName: "Bleeding Edge"
+  packageReleaseName: "Release"
 
 permissions:
   contents: write
@@ -32,7 +32,7 @@ jobs:
       
       - name: Generate Tag
         id: tag
-        run: echo prop="${{ steps.version.outputs.value }}BE" >> $GITHUB_OUTPUT
+        run: echo prop="${{ steps.version.outputs.value }}" >> $GITHUB_OUTPUT
 
       - name: Check If Release Tag Exists
         id: checkReleaseTag
@@ -60,23 +60,23 @@ jobs:
           field: unityPackage
           value: 'https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.prop }}/${{ env.unityPackage }}'
           
-      - name: Create directory and move files
+      - name: Create directory structure
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
         run: |
-          mkdir -p ${{env.packagePath}}
-          rsync -r --exclude="${{ env.packagePath }}" ./ "${{ env.packagePath }}"/
-        
+          mkdir -p temp/${{ env.packagePath }}
+          cp -r UnityPackage/* temp/${{ env.packagePath }}/
+          
       - name: Create Zip
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
-        uses: thedoctor0/zip-release@09336613be18a8208dfa66bd57efafd9e2685657
-        with:
-          type: "zip"
-          directory: "${{env.packagePath}}/"
-          filename: "../../${{env.zipFile}}" # make the zip file two directories up, since we start two directories in above
-          exclusions: "*.git* *.github* .gitignore Packages/"
+        run: |
+          cd temp
+          zip -r ../${{env.zipFile}} . -x "*.git*" "*.github*" ".gitignore"
           
-      - run: find "${{env.packagePath}}" -name \*.meta >> metaList
+      - name: Find Meta Files
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
+        run: |
+          cd temp
+          find . -name "*.meta" > ../metaList
           
       - name: Create UnityPackage
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
@@ -94,6 +94,12 @@ jobs:
           package_not_found_behavior: 'warn'
           icon_not_found_behavior: 'warn'
           icon_already_present_behavior: 'warn'
+          
+      - name: Cleanup
+        if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
+        run: |
+          rm -rf temp
+          rm metaList
         
       - name: Make Release
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
