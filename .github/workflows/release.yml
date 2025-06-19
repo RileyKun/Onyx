@@ -69,19 +69,10 @@ jobs:
       - name: Create Zip with Proper Structure
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
         run: |
-          # Create temporary directory structure
-          mkdir -p temp_zip/${{ env.packageName }}
-          
-          # Copy UnityPackage contents to the properly named folder
-          cp -r UnityPackage/* temp_zip/${{ env.packageName }}/
-          
-          # Create zip from the temp directory
-          cd temp_zip
+          # Create zip directly from UnityPackage contents (no subfolder)
+          cd UnityPackage
           zip -r ../${{env.zipFile}} . -x "*.git*" "*.github*" ".gitignore"
           cd ..
-          
-          # Cleanup temp directory
-          rm -rf temp_zip
           
       - name: Create UnityPackage
         if: ${{ steps.checkReleaseTag.outputs.exists == 'false' }}
