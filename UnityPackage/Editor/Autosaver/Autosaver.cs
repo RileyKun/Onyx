@@ -366,7 +366,7 @@ namespace Redline.Editor.Autosaver {
     private static void OnEditorUpdate() {
       if (!IsAutosaveEnabled() || _isPlayMode) return;
 
-      var window = GetWindow<Sceneautosave>();
+      var window = Resources.FindObjectsOfTypeAll<Sceneautosave>().FirstOrDefault();
       if (window != null) {
         window.UpdateTimer();
       }
@@ -379,7 +379,7 @@ namespace Redline.Editor.Autosaver {
       _isPlayMode = state == PlayModeStateChange.EnteredPlayMode;
       
       if (state == PlayModeStateChange.ExitingEditMode && SaveOnPlay) {
-        var window = GetWindow<Sceneautosave>();
+        var window = Resources.FindObjectsOfTypeAll<Sceneautosave>().FirstOrDefault();
         if (window != null) {
           window.SaveScene();
         }
@@ -391,7 +391,7 @@ namespace Redline.Editor.Autosaver {
     /// </summary>
     private static void OnBeforeAssemblyReload() {
       if (SaveOnCompile) {
-        var window = GetWindow<Sceneautosave>();
+        var window = Resources.FindObjectsOfTypeAll<Sceneautosave>().FirstOrDefault();
         if (window != null) {
           window.SaveScene();
         }
@@ -457,9 +457,11 @@ namespace Redline.Editor.Autosaver {
     /// Menu item to open the autosave window
     /// </summary>
     [MenuItem("Redline/Scene AutoSave", false, 500)]
-    private static void Init() {
-      var window = (Sceneautosave)GetWindow(typeof(Sceneautosave));
-      window.Show();
+    public static void ShowWindow()
+    {
+        var window = GetWindow<Sceneautosave>("Auto Save");
+        window.minSize = new Vector2(400, 200);
+        window.Show();
     }
 
     /// <summary>

@@ -160,6 +160,9 @@ namespace Redline.Editor.VPM
         private int selectedCatalogTab = 0;
         private readonly string[] catalogTabNames = { "Available", "Unavailable" };
         private Vector2 catalogScrollPosition;
+        // Cooldown for catalog refresh
+        private DateTime? lastCatalogRefreshTime = null;
+        private const int CatalogRefreshCooldownSeconds = 300; // 5 minutes
 
         [MenuItem("Redline/VPM Repository Manager")]
         public static void ShowWindow()
@@ -2149,7 +2152,42 @@ namespace Redline.Editor.VPM
 
             if (GUILayout.Button("Refresh Catalog"))
             {
-                RefreshCatalog();
+                if (lastCatalogRefreshTime.HasValue &&
+                    (DateTime.Now - lastCatalogRefreshTime.Value).TotalSeconds < CatalogRefreshCooldownSeconds)
+                {
+                    double secondsLeft = CatalogRefreshCooldownSeconds - (DateTime.Now - lastCatalogRefreshTime.Value).TotalSeconds;
+                    int minutes = (int)(secondsLeft / 60);
+                    int seconds = (int)(secondsLeft % 60);
+                    string timeString = minutes > 0
+                        ? $"{minutes} minute{(minutes == 1 ? "" : "s")} {seconds} second{(seconds == 1 ? "" : "s")}" 
+                        : $"{seconds} second{(seconds == 1 ? "" : "s")}";
+                    EditorUtility.DisplayDialog(
+                        "Please Wait",
+                        $"You must wait {timeString} before refreshing the catalog again.",
+                        "OK"
+                    );
+                }
+                else
+                {
+                    RefreshCatalog();
+                    lastCatalogRefreshTime = DateTime.Now;
+                }
+            }
+
+            // Show cooldown info in the UI
+            if (lastCatalogRefreshTime.HasValue &&
+                (DateTime.Now - lastCatalogRefreshTime.Value).TotalSeconds < CatalogRefreshCooldownSeconds)
+            {
+                double secondsLeft = CatalogRefreshCooldownSeconds - (DateTime.Now - lastCatalogRefreshTime.Value).TotalSeconds;
+                int minutes = (int)(secondsLeft / 60);
+                int seconds = (int)(secondsLeft % 60);
+                string timeString = minutes > 0
+                    ? $"{minutes} minute{(minutes == 1 ? "" : "s")} {seconds} second{(seconds == 1 ? "" : "s")}" 
+                    : $"{seconds} second{(seconds == 1 ? "" : "s")}";
+                EditorGUILayout.HelpBox(
+                    $"You can refresh the catalog again in {timeString}.",
+                    MessageType.Info
+                );
             }
 
             if (isCatalogLoading)
