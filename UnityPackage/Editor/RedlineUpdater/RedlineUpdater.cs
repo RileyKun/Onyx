@@ -4,11 +4,23 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Redline.Editor;
+
+[Serializable]
+public class GitHubRelease
+{
+    public string tag_name;
+    public string name;
+    public bool draft;
+    public bool prerelease;
+    public DateTime published_at;
+    public string html_url;
+}
 
 namespace Redline.Editor.RedlineUpdater {
     /// <summary>
@@ -16,8 +28,8 @@ namespace Redline.Editor.RedlineUpdater {
     /// </summary>
     public class RedlineAutomaticUpdateAndInstall : MonoBehaviour {
         #region Constants
-        private const string VERSION_URL = "https://redline.arch-linux.pro/API/version.txt";
-        private const string PACKAGE_URL = "https://redline.arch-linux.pro/API/assets/latest/Redline.unitypackage";
+        private const string GITHUB_API_URL = "https://api.github.com/repos/Redline-Team/RPM/releases/latest";
+        private const string GITHUB_RELEASE_URL = "https://github.com/Redline-Team/RPM/releases/latest/download/Redline_{0}.unitypackage";
         private const string LAST_DECLINED_VERSION_KEY = "Redline_LastDeclinedVersion";
         private const string ASSET_NAME = "Redline.unitypackage";
         private const string TOOLKIT_PATH = "Packages/dev.redline-team.rpm";
@@ -59,9 +71,19 @@ namespace Redline.Editor.RedlineUpdater {
         private static async Task<string> GetServerVersionWithRetry() {
             for (int attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
                 try {
-                    using var response = await HttpClient.GetAsync(VERSION_URL);
+                    HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("RedlineUpdater/1.0");
+                    using var response = await HttpClient.GetAsync(GITHUB_API_URL);
                     response.EnsureSuccessStatusCode();
-                    return await response.Content.ReadAsStringAsync();
+                    
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    var version = JsonUtility.FromJson<GitHubRelease>(jsonResponse)?.tag_name;
+                    
+                    // Remove 'v' prefix if present
+                    if (!string.IsNullOrEmpty(version) && version.StartsWith("v")) {
+                        version = version.Substring(1);
+                    }
+                    
+                    return version;
                 } catch (Exception ex) {
                     LogError($"Attempt {attempt}/{MAX_RETRY_ATTEMPTS} failed: {ex.Message}");
                     if (attempt < MAX_RETRY_ATTEMPTS) {
@@ -189,6 +211,15 @@ namespace Redline.Editor.RedlineUpdater {
             if (!ConfirmInstallation()) return;
 
             try {
+                // First get the latest version to construct the correct asset URL
+                string serverVersion = await GetServerVersionWithRetry();
+                if (string.IsNullOrEmpty(serverVersion)) {
+                    throw new Exception("Failed to get server version");
+                }
+
+                // Construct the asset URL with the version
+                string assetUrl = string.Format(GITHUB_RELEASE_URL, $"v{serverVersion}");
+                
                 using var webClient = new WebClient();
                 ConfigureWebClient(webClient);
                 
@@ -201,7 +232,8 @@ namespace Redline.Editor.RedlineUpdater {
                     }
                 };
 
-                webClient.DownloadFileAsync(new Uri(PACKAGE_URL), ASSET_NAME);
+                Log($"Downloading asset from: {assetUrl}");
+                webClient.DownloadFileAsync(new Uri(assetUrl), ASSET_NAME);
                 await downloadTask.Task;
             } catch (Exception ex) {
                 LogError($"Download failed: {ex.Message}");
@@ -248,12 +280,21 @@ namespace Redline.Editor.RedlineUpdater {
             }
         }
 
-        private static void OfferManualDownload() {
-            if (EditorUtility.DisplayDialog(
-                "Redline Updater", 
-                "Automatic update failed. Would you like to download the package manually?",
-                "Download Manually", "Cancel")) {
-                Application.OpenURL(PACKAGE_URL);
+        private static async void OfferManualDownload() {
+            try {
+                // Get the latest version to construct the correct download URL
+                string serverVersion = await GetServerVersionWithRetry();
+                if (string.IsNullOrEmpty(serverVersion)) {
+                    // Fallback to GitHub releases page if we can't get the version
+                    Application.OpenURL("https://github.com/Redline-Team/RPM/releases/latest");
+                    return;
+                }
+                
+                string downloadUrl = string.Format(GITHUB_RELEASE_URL, $"v{serverVersion}");
+                Application.OpenURL(downloadUrl);
+            } catch {
+                // Fallback to GitHub releases page if anything goes wrong
+                Application.OpenURL("https://github.com/Redline-Team/RPM/releases/latest");
             }
         }
         #endregion
