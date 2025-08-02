@@ -826,10 +826,10 @@ namespace Redline.Editor.VPM
                 EditorGUILayout.Space();
                 
                 // Display package details
-                bool isInMultipleRepos = _repositories.Count(r => 
+                bool isInMultipleDocs = _repositories.Count(r => 
                     r.Packages != null && r.Packages.ContainsKey(package.Id)) > 1;
                 
-                EditorGUILayout.LabelField("Repository", isInMultipleRepos ? "Multiple Repositories" : (repository.Name ?? "Unknown Repository"));
+                EditorGUILayout.LabelField("Repository", isInMultipleDocs ? "Multiple Repositories" : (repository.Name ?? "Unknown Repository"));
                 EditorGUILayout.LabelField("Version", selectedVersion.Version ?? "Unknown Version");
                 EditorGUILayout.LabelField("Unity", selectedVersion.Unity ?? "Any Unity Version");
                 
@@ -2273,43 +2273,9 @@ namespace Redline.Editor.VPM
             }
         }
 
-        private async void ImportRepository(RepositoryInfo repo)
+        private void ImportRepository(RepositoryInfo repo)
         {
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    var response = await client.GetStringAsync(repo.Url);
-                    
-                    // Get the repositories path from RedlineSettings
-                    var reposPath = RedlineSettings.GetRepositoriesPath();
-                    
-                    // Create the Repos directory if it doesn't exist
-                    Directory.CreateDirectory(reposPath);
-                    
-                    // Generate a filename from the URL
-                    var uri = new Uri(repo.Url);
-                    var filename = Path.GetFileName(uri.LocalPath);
-                    if (string.IsNullOrEmpty(filename))
-                    {
-                        filename = "repository.json";
-                    }
-                    
-                    // Save the repository JSON
-                    var filePath = Path.Combine(reposPath, filename);
-                    File.WriteAllText(filePath, response);
-                    
-                    EditorUtility.DisplayDialog("Success", 
-                        $"Repository '{repo.Name}' has been imported successfully to:\n{filePath}", 
-                        "OK");
-                }
-            }
-            catch (Exception ex)
-            {
-                EditorUtility.DisplayDialog("Error", 
-                    $"Failed to import repository: {ex.Message}", 
-                    "OK");
-            }
+            AddRepositoryAsync(repo.Url);
         }
     }
     
