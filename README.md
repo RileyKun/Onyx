@@ -192,6 +192,8 @@ We want to thank all the amazing people who have contributed to making RPM bette
 
 [![Contributors](https://contrib.rocks/image?repo=Redline-Team/RPM)](https://github.com/Redline-Team/RPM/graphs/contributors)
 
+![Alt](https://repobeats.axiom.co/api/embed/964eb714896ae0cfc06ef17587deaf115041c69f.svg "Repobeats analytics image")
+
 </div>
 
 ## 🤝 Contributing
