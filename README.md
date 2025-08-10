@@ -1,6 +1,15 @@
 <div align="center">
 
 <details>
+<summary><b>⚠️ SCAM ALERT ⚠️</b></summary>
+This is a Free and Open Source Software  
+  
+If you bought this anywhere else or did not get it from here, the Jinxxy, or our VPM then you have been scammed!  
+I will not charge people for FOSS software  
+</details>
+
+
+<details>
 <summary><b>⚠️ WARNING: Major Redline Versions are NOT backwards compatible ⚠️</b></summary>
 <details>
 <summary><b>⚠️ V5 Release ⚠️</b></summary>
