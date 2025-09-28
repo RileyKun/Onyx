@@ -116,7 +116,7 @@ Unity or manually via the package manager.
 
 ---------------------------------------------------------
 ∞∞∞∞Contributors to Redline Package Manager∞∞∞∞
-> Developer: AromaXR (PhoenixAceVFX)
+> Developer: _Numeri
 > Contributor: RileyKun
 ============================================
                 ");
