@@ -1,14 +1,14 @@
 {
-  "name": "dev.redline-team.rpm",
-  "version": "5.1.3",
-  "description": "The Unity3D Package Manager for VRChat",
-  "displayName": "Redline Package Manager",
+  "name": "com.pixy.onyx",
+  "version": "1.0.0",
+  "description": "A fork of RPM focused on streamlining VRChat content creation without leaving the engine.",
+  "displayName": "Onyx",
   "unity": "2022.3",
   "author": {
-    "name": "The Redline Team",
-    "url": "https://github.com/Redline-Team"
+    "name": "Pixy; The Redline Team",
+    "url": "https://github.com/RileyKun/Onyx"
   },
-  "changelogUrl": "https://github.com/Redline-Team/RPM/releases",
+  // "changelogUrl": "https://github.com/Redline-Team/RPM/releases",
   "license": "GPL-3.0",
   "type": "Tool",
   "vpmDependencies": {}
