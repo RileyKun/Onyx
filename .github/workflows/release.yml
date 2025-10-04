@@ -7,9 +7,9 @@ on:
     paths: UnityPackage/package.json
 
 env:
-  packageName: "dev.redline-team.rpm"
-  packagePath: "Packages/dev.redline-team.rpm"
-  packageFileName: "Redline"
+  packageName: "com.pixy.onyx"
+  packagePath: "Packages/com.pixy.onyx"
+  packageFileName: "Onyx"
   packageReleaseName: "Release"
 
 permissions:
